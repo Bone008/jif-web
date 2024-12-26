@@ -4,6 +4,7 @@ import { JIF } from "../jif/jif";
 import { FullJIF, FullThrow, loadWithDefaults } from "../jif/jif_loader";
 import { getThrowsTable, ThrowsTableData } from "../jif/orbits";
 import { DATA_3_COUNT_PASSING } from "../jif/test_data";
+import { MathJax } from "better-react-mathjax";
 
 export function OrbitsCalculator() {
   const defaultJif = DATA_3_COUNT_PASSING;
@@ -92,12 +93,13 @@ function ThrowCell({
   } else {
     label = `${thrw.duration.toString(36)}${isPass ? "p" : ""}`;
   }
-  const subText = isPass ? jif.jugglers[toJuggler].label : null;
+  if (isPass) {
+    label += "_" + jif.jugglers[toJuggler].label;
+  }
 
   return (
     <div className="supsub">
-      {label}
-      {subText}
+      <MathJax>$${label}$$</MathJax>
     </div>
   );
 }
