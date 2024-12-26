@@ -1,16 +1,17 @@
 import { JifObject, Juggler, Limb, JIF, Throw, LimbKind } from "./jif";
 
 const LIMB_NAMES_BY_KIND: Record<LimbKind, string> = {
-  right_hand: 'R',
-  left_hand: 'L',
-  other: 'O',
+  right_hand: "R",
+  left_hand: "L",
+  other: "O",
 };
 
 type RequiredRecursive<T> = {
-  [P in keyof T]-?:
-  T[P] extends (infer U)[] ? RequiredRecursive<U>[] :
-  T[P] extends (object | undefined) ? RequiredRecursive<T[P]> :
-  T[P];
+  [P in keyof T]-?: T[P] extends (infer U)[]
+    ? RequiredRecursive<U>[]
+    : T[P] extends object | undefined
+      ? RequiredRecursive<T[P]>
+      : T[P];
 };
 
 export type FullJIF = RequiredRecursive<JIF>;
@@ -29,8 +30,14 @@ export function loadWithDefaults(jif: JIF): FullJIF {
 
   const rawLimbs = jif.limbs || emptyObjects(jugglers.length * 2);
   const limbs = rawLimbs.map<FullLimb>((limb, i) => {
-    const kind: LimbKind = def(limb.kind,
-      i < jugglers.length ? 'right_hand' : i < jugglers.length * 2 ? 'left_hand' : 'other');
+    const kind: LimbKind = def(
+      limb.kind,
+      i < jugglers.length
+        ? "right_hand"
+        : i < jugglers.length * 2
+          ? "left_hand"
+          : "other",
+    );
     return {
       juggler: def(limb.juggler, i % jugglers.length),
       kind,
@@ -51,12 +58,16 @@ export function loadWithDefaults(jif: JIF): FullJIF {
     };
   });
 
-  const objects: FullObject[] = [/* TODO */];
+  const objects: FullObject[] = [
+    /* TODO */
+  ];
   return { jugglers, limbs, throws, objects };
 }
 
 export function inferPeriod(jif: JIF): number {
-  return jif.throws ? Math.max(...jif.throws.map((t, i) => def(t.time, i))) + 1 : 0;
+  return jif.throws
+    ? Math.max(...jif.throws.map((t, i) => def(t.time, i))) + 1
+    : 0;
 }
 
 // Util
@@ -70,7 +81,7 @@ export function emptyObjects<T extends {}>(num: number): Array<Partial<T>> {
 }
 
 export function indexToJugglerName(index: number): string {
-  return String.fromCharCode('A'.charCodeAt(0) + index);
+  return String.fromCharCode("A".charCodeAt(0) + index);
 }
 
 /** Returns a value, unless it is undefined, then it returns defaultValue. */
