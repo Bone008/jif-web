@@ -35,6 +35,7 @@ body {
 }
 .error {
   color: #c00;
+  white-space: pre-wrap;
 }
 
 a {

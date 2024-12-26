@@ -1,4 +1,5 @@
 import { JIF, Juggler, Throw } from "./jif";
+import { ManipulatorInstruction } from "./manipulation";
 
 export type PrechacNotation = string[];
 /**
@@ -71,9 +72,7 @@ function parseInstruction(str: string): PrechacInstruction {
   if (!isFinite(duration)) {
     throw new Error("invalid duration for throw: " + str);
   }
-  const passTarget = match[2]
-    ? match[2].toUpperCase().charCodeAt(0) - "A".charCodeAt(0)
-    : null;
+  const passTarget = match[2] ? jugglerIndexFromLetter(match[2]) : null;
   return { duration, passTarget };
 }
 
@@ -84,4 +83,41 @@ function limbOfJuggler(
   numJugglers: number
 ): number {
   return 2 * jugglerIndex + limbIndex;
+}
+
+/** Parses text-based instructions for a single manipulator. */
+export function parseManipulator(
+  instructions: string
+): ManipulatorInstruction[] {
+  const manipulator: ManipulatorInstruction[] = [];
+  const parts = instructions.split(/\s+/);
+  for (const [beat, part] of parts.entries()) {
+    if (part.match(/^-+$/)) {
+      continue;
+    }
+    const match = part.toLowerCase().match(/^(s|i|ii)([a-z])$/);
+    if (!match) {
+      throw new Error(
+        `Invalid manipulator instruction: ${part}\n` +
+          `Expected something like "sA", "iA", or "iiA", with - as placeholder.`
+      );
+    }
+    const type =
+      match[1] === "s"
+        ? "substitute"
+        : match[1] === "i"
+          ? "intercept1b"
+          : "intercept2b";
+    manipulator.push({
+      type,
+      throwTime: beat,
+      throwFromJuggler: jugglerIndexFromLetter(match[2]),
+    });
+  }
+  return manipulator;
+}
+
+/** Returns 0-based index from a-based letter. */
+function jugglerIndexFromLetter(letter: string): number {
+  return letter.toUpperCase().charCodeAt(0) - "A".charCodeAt(0);
 }

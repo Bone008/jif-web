@@ -15,7 +15,7 @@ export interface ManipulatorInstruction {
 
 export function addManipulator(
   inputJif: FullJIF,
-  spec: ManipulatorInstruction[],
+  spec: ManipulatorInstruction[]
 ): FullJIF {
   // Drop the recursive completeness constraint.
   const jif: Required<JIF> = _.cloneDeep(inputJif);
@@ -38,7 +38,7 @@ export function addManipulator(
   const firstInterceptTime = Math.min(
     ...spec
       .filter((instruction) => instruction.type.startsWith("intercept"))
-      .map((instruction) => instruction.throwTime),
+      .map((instruction) => instruction.throwTime)
   );
 
   if (isFinite(firstInterceptTime)) {
@@ -51,7 +51,7 @@ export function addManipulator(
         instruction.throwTime < firstInterceptTime
           ? // Follow backwards relabeling.
             jif.jugglers.findIndex(
-              (juggler) => juggler.becomes === instruction.throwFromJuggler,
+              (juggler) => juggler.becomes === instruction.throwFromJuggler
             )
           : instruction.throwFromJuggler,
     }));
@@ -69,7 +69,7 @@ export function addManipulator(
     const thrw = getThrowFromJuggler(jif, throwFromJuggler, throwTime);
     if (!thrw) {
       throw new Error(
-        `Could not find throw for manipulation at time ${throwTime} from juggler ${throwFromJuggler}!`,
+        `Could not find throw for manipulation at time ${throwTime} from juggler ${throwFromJuggler}!`
       );
     }
 
@@ -108,7 +108,7 @@ export function addManipulator(
           // Sanity check.
           if (causalTime === causalThreshold && nextThrow !== thrw) {
             throw new Error(
-              "Assertion violated: different throw landing at the same time as intercepted throw!",
+              "Assertion violated: different throw landing at the same time as intercepted throw!"
             );
           }
           const limbKind = jif.limbs[nextThrow.to!].kind!;
@@ -193,7 +193,7 @@ export function addManipulator(
 function fillManipulatorThrows(
   jif: Required<JIF>,
   timeInterval: [number, number],
-  manipIndex: number,
+  manipIndex: number
 ) {
   for (let time = timeInterval[0]; time < timeInterval[1]; time++) {
     // Validation: Does a throw already exist?
@@ -201,7 +201,7 @@ function fillManipulatorThrows(
       throw new Error(
         `trying to fill manipulator throw, but one already exists! by ${
           manipIndex
-        } at t=${time}`,
+        } at t=${time}`
       );
     }
     jif.throws.push({
@@ -210,12 +210,12 @@ function fillManipulatorThrows(
       from: getLimbOfJuggler(
         jif,
         manipIndex,
-        time % 2 === 0 ? "right_hand" : "left_hand",
+        time % 2 === 0 ? "right_hand" : "left_hand"
       ),
       to: getLimbOfJuggler(
         jif,
         manipIndex,
-        time % 2 === 0 ? "left_hand" : "right_hand",
+        time % 2 === 0 ? "left_hand" : "right_hand"
       ),
     });
   }
@@ -243,24 +243,24 @@ export function shiftPatternBy(jif: Required<JIF>, delta: number) {
       thrw.from = getLimbOfJuggler(
         jif,
         relabelingBackward[limbFrom.juggler!],
-        limbFrom.kind!,
+        limbFrom.kind!
       );
       thrw.to = getLimbOfJuggler(
         jif,
         relabelingBackward[limbTo.juggler!],
-        limbTo.kind!,
+        limbTo.kind!
       );
     } else if (newTime >= period) {
       thrw.time = newTime - period;
       thrw.from = getLimbOfJuggler(
         jif,
         relabelingForward[limbFrom.juggler!],
-        limbFrom.kind!,
+        limbFrom.kind!
       );
       thrw.to = getLimbOfJuggler(
         jif,
         relabelingForward[limbTo.juggler!],
-        limbTo.kind!,
+        limbTo.kind!
       );
     } else {
       thrw.time = newTime;
@@ -271,21 +271,21 @@ export function shiftPatternBy(jif: Required<JIF>, delta: number) {
 function getLimbOfJuggler(
   jif: Required<JIF>,
   j: number,
-  limbKind: LimbKind,
+  limbKind: LimbKind
 ): number {
   return jif.limbs.findIndex(
-    (limb) => limb.juggler === j && limb.kind === limbKind,
+    (limb) => limb.juggler === j && limb.kind === limbKind
   );
 }
 
-function getThrowFromJuggler(
+export function getThrowFromJuggler(
   jif: Required<JIF>,
   j: number,
-  time: number,
+  time: number
 ): Throw | null {
   return (
     jif.throws.find(
-      (thrw) => thrw.time === time && jif.limbs[thrw.from!].juggler === j,
+      (thrw) => thrw.time === time && jif.limbs[thrw.from!].juggler === j
     ) || null
   );
 }
@@ -293,7 +293,7 @@ function getThrowFromJuggler(
 export function formatManipulator(
   jif: FullJIF,
   spec: ManipulatorInstruction[],
-  all2Beat = false,
+  all2Beat = false
 ): string {
   const period = inferPeriod(jif);
   let out: string[] = Array(period).fill("--");
@@ -305,11 +305,11 @@ export function formatManipulator(
     const thrw = getThrowFromJuggler(
       jif,
       throwFromJuggler,
-      throwTime,
+      throwTime
     ) as FullThrow;
     if (!thrw) {
       throw new Error(
-        `Could not find throw for manipulation at time ${throwTime} from juggler ${throwFromJuggler}!`,
+        `Could not find throw for manipulation at time ${throwTime} from juggler ${throwFromJuggler}!`
       );
     }
     const dest = jif.jugglers[jif.limbs[thrw.to!].juggler].label;
