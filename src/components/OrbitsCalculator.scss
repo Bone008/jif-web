@@ -12,10 +12,6 @@ table.throws {
       color 200ms linear;
   }
 
-  tr:last-child td {
-    border-top: 3px solid var(--table-border);
-  }
-
   th:first-child,
   td:first-child {
     font-family: "Righteous";
@@ -30,7 +26,7 @@ table.throws {
 
   .line {
     &__m {
-      td {
+      &:first-child {
         border-top: 3px solid var(--table-border);
       }
 
