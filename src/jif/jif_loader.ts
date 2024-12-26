@@ -36,7 +36,7 @@ export function loadWithDefaults(jif: JIF): FullJIF {
         ? "right_hand"
         : i < jugglers.length * 2
           ? "left_hand"
-          : "other",
+          : "other"
     );
     return {
       juggler: def(limb.juggler, i % jugglers.length),
@@ -65,7 +65,7 @@ export function loadWithDefaults(jif: JIF): FullJIF {
 }
 
 export function inferPeriod(jif: JIF): number {
-  return jif.throws
+  return jif.throws?.length
     ? Math.max(...jif.throws.map((t, i) => def(t.time, i))) + 1
     : 0;
 }
