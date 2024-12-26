@@ -1,16 +1,16 @@
 import "./OrbitsCalculator.scss";
 import { useMemo, useState } from "react";
-import { JIF } from "./jif/jif";
-import { FullJIF, FullThrow, loadWithDefaults } from "./jif/jif_loader";
-import { getThrowsTable, ThrowsTableData } from "./jif/orbits";
-import { DATA_3_COUNT_PASSING } from "./jif/test_data";
+import { JIF } from "../jif/jif";
+import { FullJIF, FullThrow, loadWithDefaults } from "../jif/jif_loader";
+import { getThrowsTable, ThrowsTableData } from "../jif/orbits";
+import { DATA_3_COUNT_PASSING } from "../jif/test_data";
 
 export function OrbitsCalculator() {
   const defaultJif = DATA_3_COUNT_PASSING;
   const [jifInput, setJifInput] = useState<string>(JSON.stringify(defaultJif));
   const { error, jif, throwsTable } = useMemo(
     () => processInput(jifInput),
-    [jifInput],
+    [jifInput]
   );
 
   return (
@@ -37,7 +37,7 @@ function ThrowsTable({
   data: ThrowsTableData;
 }) {
   const maxThrowHeight = Math.max(
-    ...throws.flat().map((thrw) => thrw?.duration ?? 0),
+    ...throws.flat().map((thrw) => thrw?.duration ?? 0)
   );
   const useLetters = maxThrowHeight == 3;
 
