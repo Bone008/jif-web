@@ -3,27 +3,28 @@ html {
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;  
+  -moz-osx-font-smoothing: grayscale;
+
+  --table-border: rgba(255, 255, 255, 0.4);
+  --passingzone-color: #321d5b;
+  --passingzone-color-light: #4b3673;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   display: flex;
+  background-color: var(--passingzone-color);
+  color: rgba(255, 255, 255, 0.87);
 }
 
 #root {
   padding: 0 2em;
   flex-grow: 1;
 }
-
 
 .card {
   padding: 2em;
@@ -32,7 +33,9 @@ body {
 .secondary {
   color: #888;
 }
-
+.error {
+  color: #c00;
+}
 
 a {
   font-weight: 500;
