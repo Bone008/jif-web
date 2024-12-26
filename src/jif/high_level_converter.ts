@@ -15,7 +15,7 @@ export function prechacToJif(prechac: PrechacNotation): JIF {
     const elements = line.trim().split(/\s+/);
 
     if (period && elements.length !== period) {
-      throw new Error('instructions must be the same length!');
+      throw new Error("instructions must be the same length!");
     }
     period = elements.length;
     for (const [time, str] of elements.entries()) {
@@ -31,11 +31,12 @@ export function prechacToJif(prechac: PrechacNotation): JIF {
     }
   }
   return {
-    jugglers: Array.from({ length: prechac.length },
-      (_, j) => ({ becomes: (j + 1) % prechac.length })),
+    jugglers: Array.from({ length: prechac.length }, (_, j) => ({
+      becomes: (j + 1) % prechac.length,
+    })),
     limbs: Array.from({ length: prechac.length * 2 }, (_, l) => ({
       juggler: Math.floor(l / 2),
-      kind: l % 2 === 0 ? 'right_hand' : 'left_hand',
+      kind: l % 2 === 0 ? "right_hand" : "left_hand",
     })),
     throws: jifThrows,
   };
@@ -51,18 +52,26 @@ const REGEX_INSTRUCTION = /^([0-9a-z])([a-z])?$/i;
 function parseInstruction(str: string): PrechacInstruction {
   const match = REGEX_INSTRUCTION.exec(str);
   if (!match) {
-    throw new Error('throw must match (single-letter throw)(pass target)?(!manipulation)?');
+    throw new Error(
+      "throw must match (single-letter throw)(pass target)?(!manipulation)?",
+    );
   }
 
   const duration = parseInt(match[1], 36);
   if (!isFinite(duration)) {
-    throw new Error('invalid duration for throw: ' + str);
+    throw new Error("invalid duration for throw: " + str);
   }
-  const passTarget = match[2] ? match[2].toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0) : null;
+  const passTarget = match[2]
+    ? match[2].toUpperCase().charCodeAt(0) - "A".charCodeAt(0)
+    : null;
   return { duration, passTarget };
 }
 
 // May need to change if default limb order changes.
-function limbOfJuggler(jugglerIndex: number, limbIndex: number, numJugglers: number): number {
+function limbOfJuggler(
+  jugglerIndex: number,
+  limbIndex: number,
+  numJugglers: number,
+): number {
   return 2 * jugglerIndex + limbIndex;
 }
