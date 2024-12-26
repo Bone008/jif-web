@@ -13,7 +13,7 @@ export interface Juggler {
   position?: [number, number];
 }
 
-export type LimbKind = 'right_hand'|'left_hand'|'other';
+export type LimbKind = "right_hand" | "left_hand" | "other";
 export interface Limb {
   juggler?: number;
   label?: string;
@@ -21,7 +21,7 @@ export interface Limb {
 }
 
 export interface JifObject {
-  type?: 'ball'|'club'|'ring';
+  type?: "ball" | "club" | "ring";
   color?: string;
 }
 
