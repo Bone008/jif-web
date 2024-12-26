@@ -1,10 +1,22 @@
 import { MathJax } from "better-react-mathjax";
 import _ from "lodash";
 import { useEffect, useMemo, useState } from "react";
+import { parseManipulator, prechacToJif } from "../jif/high_level_converter";
 import { JIF } from "../jif/jif";
-import { FullJIF, FullThrow, loadWithDefaults } from "../jif/jif_loader";
+import {
+  FullJIF,
+  FullThrow,
+  inferPeriod,
+  loadWithDefaults,
+} from "../jif/jif_loader";
+import {
+  getThrowFromJuggler,
+  ManipulatorInstruction,
+} from "../jif/manipulation";
 import { getThrowsTable, ThrowsTableData } from "../jif/orbits";
 import {
+  DATA_5_COUNT_POPCORN,
+  DATA_HOLY_GRAIL,
   RAW_DATA_3_COUNT_PASSING,
   RAW_DATA_3_COUNT_PASSING_2X,
   RAW_DATA_4_COUNT_PASSING,
@@ -12,11 +24,8 @@ import {
   RAW_DATA_WALKING_FEED_10C,
   RAW_DATA_WALKING_FEED_9C,
   RAW_DATA_WALKING_FEED_9C_2X,
-  DATA_5_COUNT_POPCORN,
-  DATA_HOLY_GRAIL,
 } from "../jif/test_data";
 import "./OrbitsCalculator.scss";
-import { prechacToJif } from "../jif/high_level_converter";
 
 const ALL_PRESET_STRINGS: [string, string][] = [
   ["3-count", RAW_DATA_3_COUNT_PASSING.join("\n")],
@@ -32,15 +41,29 @@ const ALL_PRESET_STRINGS: [string, string][] = [
 
 export function OrbitsCalculator() {
   const [presetIndex, setPresetIndex] = useState(0);
-  const [jifInput, setJifInput] = useState<string>("");
-  const { error, jif, throwsTable } = useMemo(
-    () => processInput(jifInput),
-    [jifInput]
+  const [jifInput, setJifInput] = useState<string>(
+    ALL_PRESET_STRINGS[presetIndex][1]
+  );
+  const {
+    error: jifError,
+    jif,
+    throwsTable,
+  } = useMemo(() => processInput(jifInput), [jifInput]);
+
+  const [manipulationInput, setManipulationInput] = useState<string>("");
+  const {
+    error: manipulationError,
+    manipulators,
+    formattedManipulators,
+  } = useMemo(
+    () => (jif ? processManipulationInput(manipulationInput, jif) : {}),
+    [jif, manipulationInput]
   );
 
-  useEffect(() => {
-    setJifInput(ALL_PRESET_STRINGS[presetIndex][1]);
-  }, [presetIndex]);
+  function updatePreset(value: number) {
+    setPresetIndex(value);
+    setJifInput(ALL_PRESET_STRINGS[value][1]);
+  }
 
   return (
     <>
@@ -50,7 +73,7 @@ export function OrbitsCalculator() {
           Preset:&nbsp;&nbsp;
           <select
             value={presetIndex}
-            onChange={(e) => setPresetIndex(Number(e.target.value))}
+            onChange={(e) => updatePreset(Number(e.target.value))}
           >
             {ALL_PRESET_STRINGS.map(([label], i) => (
               <option key={i} value={i}>
@@ -70,19 +93,38 @@ export function OrbitsCalculator() {
           style={{ width: "100%", resize: "vertical" }}
         ></textarea>
       </label>
+      <label>
+        Enter manipulator instructions (without carry):
+        <textarea
+          value={manipulationInput}
+          onChange={(e) => setManipulationInput(e.target.value)}
+          placeholder=""
+          rows={2}
+          style={{ width: "100%", resize: "vertical" }}
+        ></textarea>
+      </label>
 
-      {error && <p className="error">{error}</p>}
-      {jif && throwsTable && <ThrowsTable jif={jif} data={throwsTable} />}
+      {jifError && <p className="error">{jifError}</p>}
+      {manipulationError && <p className="error">{manipulationError}</p>}
+      {jif && throwsTable && (
+        <ThrowsTable
+          jif={jif}
+          throws={throwsTable}
+          formattedManipulators={formattedManipulators}
+        />
+      )}
     </>
   );
 }
 
 function ThrowsTable({
   jif,
-  data: throws,
+  throws,
+  formattedManipulators,
 }: {
   jif: FullJIF;
-  data: ThrowsTableData;
+  throws: ThrowsTableData;
+  formattedManipulators?: string[][];
 }) {
   const isSynchronous = _.some(
     _.countBy(
@@ -95,6 +137,12 @@ function ThrowsTable({
     throws.flat().map((thrw) => thrw?.duration ?? 0)
   );
   const useLetters = isSynchronous && maxThrowHeight == 3;
+
+  const manipulatorNameSuffixes =
+    formattedManipulators?.length === 1
+      ? [null]
+      : (formattedManipulators?.map((_, i) => <sub key={i}>{i + 1}</sub>) ??
+        []);
 
   return (
     <table className="throws">
@@ -124,10 +172,20 @@ function ThrowsTable({
             <td>&rarr; {jif.jugglers[jif.jugglers[j].becomes].label}</td>
           </tr>
         ))}
-        <tr>
-          <td colSpan={(throws[0]?.length ?? 0) + 2}></td>
-        </tr>
       </tbody>
+      <tfoot>
+        {formattedManipulators?.map((manipulator, i) => (
+          <tr key={i} className="line__m">
+            <td>M{manipulatorNameSuffixes[i]}</td>
+            {manipulator.map((instruction, t) => (
+              <td key={t}>
+                <MathJax key={instruction}>$${instruction}$$</MathJax>
+              </td>
+            ))}
+            <td>&rarr; M{manipulatorNameSuffixes[i]}</td>
+          </tr>
+        ))}
+      </tfoot>
     </table>
   );
 }
@@ -156,7 +214,7 @@ function ThrowCell({
     }
   }
   if (isPass) {
-    label += "_" + (jif.jugglers[toJuggler]?.label ?? "?");
+    label += `_{${jif.jugglers[toJuggler]?.label ?? "?"}}`;
   }
 
   return (
@@ -167,17 +225,17 @@ function ThrowCell({
   );
 }
 
-function processInput(value: string): {
+function processInput(jifInput: string): {
   error?: string;
   jif?: FullJIF;
   throwsTable?: ThrowsTableData;
 } {
   let jif: JIF;
   try {
-    if (value.startsWith("{")) {
-      jif = JSON.parse(value);
+    if (jifInput.startsWith("{")) {
+      jif = JSON.parse(jifInput);
     } else {
-      jif = prechacToJif(getPrechacLines(value));
+      jif = prechacToJif(getCleanedLines(jifInput));
     }
 
     const fullJif = loadWithDefaults(jif);
@@ -187,9 +245,55 @@ function processInput(value: string): {
   }
 }
 
-function getPrechacLines(value: string) {
+function processManipulationInput(
+  manipulationInput: string,
+  jif: FullJIF
+): {
+  error?: string;
+  manipulators?: ManipulatorInstruction[][];
+  formattedManipulators?: string[][];
+} {
+  const lines = getCleanedLines(manipulationInput);
+  try {
+    const manipulators = lines.map(parseManipulator);
+    const formattedManipulators = manipulators.map((spec) =>
+      formatManipulator(jif, spec)
+    );
+    return { manipulators, formattedManipulators };
+  } catch (e) {
+    return { error: String(e) };
+  }
+}
+
+export function formatManipulator(
+  jif: FullJIF,
+  spec: ManipulatorInstruction[]
+): string[] {
+  const period = inferPeriod(jif);
+  const result: string[] = Array(period).fill("-");
+  for (const { type, throwTime, throwFromJuggler } of spec) {
+    const thrw = getThrowFromJuggler(
+      jif,
+      throwFromJuggler,
+      throwTime
+    ) as FullThrow;
+    if (!thrw) {
+      throw new Error(
+        `Could not find throw for manipulation at beat ${throwTime + 1} from juggler ${throwFromJuggler}!`
+      );
+    }
+    const source = jif.jugglers[jif.limbs[thrw.from].juggler].label;
+    const destination = jif.jugglers[jif.limbs[thrw.to].juggler].label;
+    const letter =
+      type === "substitute" ? "S" : type === "intercept1b" ? "I" : "Ii";
+    result[throwTime] = `${letter}^{${source}}_{${destination}}`;
+  }
+  return result;
+}
+
+function getCleanedLines(value: string) {
   return value
     .split("\n")
-    .map((line) => line.trim().replace(/[^\w\s:]/g, ""))
+    .map((line) => line.trim().replace(/[^\w\s:-]/g, ""))
     .filter((line) => line.length > 0);
 }
