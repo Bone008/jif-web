@@ -1,4 +1,4 @@
-import { JIF, Throw } from "./jif";
+import { JIF, Juggler, Throw } from "./jif";
 
 export type PrechacNotation = string[];
 /**
@@ -10,8 +10,20 @@ export function prechacToJif(prechac: PrechacNotation): JIF {
   const jifThrows: Throw[] = [];
 
   const numJugglers = prechac.length;
+  const jifJugglers: Juggler[] = Array.from(
+    { length: prechac.length },
+    (_, j) => ({
+      becomes: (j + 1) % prechac.length,
+    })
+  );
+
   let period: number | null = null;
-  for (const [j, line] of prechac.entries()) {
+  for (let [j, line] of prechac.entries()) {
+    const colonIndex = line.indexOf(":");
+    if (colonIndex !== -1) {
+      jifJugglers[j].label = line.slice(0, colonIndex).trim();
+      line = line.slice(colonIndex + 1);
+    }
     const elements = line.trim().split(/\s+/);
 
     if (period && elements.length !== period) {
@@ -31,9 +43,7 @@ export function prechacToJif(prechac: PrechacNotation): JIF {
     }
   }
   return {
-    jugglers: Array.from({ length: prechac.length }, (_, j) => ({
-      becomes: (j + 1) % prechac.length,
-    })),
+    jugglers: jifJugglers,
     limbs: Array.from({ length: prechac.length * 2 }, (_, l) => ({
       juggler: Math.floor(l / 2),
       kind: l % 2 === 0 ? "right_hand" : "left_hand",
@@ -53,7 +63,7 @@ function parseInstruction(str: string): PrechacInstruction {
   const match = REGEX_INSTRUCTION.exec(str);
   if (!match) {
     throw new Error(
-      "throw must match (single-letter throw)(pass target)?(!manipulation)?",
+      "throw must match (single-letter throw)(pass target)?(!manipulation)?"
     );
   }
 
@@ -71,7 +81,7 @@ function parseInstruction(str: string): PrechacInstruction {
 function limbOfJuggler(
   jugglerIndex: number,
   limbIndex: number,
-  numJugglers: number,
+  numJugglers: number
 ): number {
   return 2 * jugglerIndex + limbIndex;
 }
