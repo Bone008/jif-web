@@ -80,7 +80,7 @@ function parseInstruction(str: string): PrechacInstruction {
 function limbOfJuggler(
   jugglerIndex: number,
   limbIndex: number,
-  numJugglers: number
+  _numJugglers: number
 ): number {
   return 2 * jugglerIndex + limbIndex;
 }
