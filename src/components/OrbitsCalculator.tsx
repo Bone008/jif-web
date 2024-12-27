@@ -42,7 +42,7 @@ const ALL_PRESET_STRINGS: [string, string][] = [
 export function OrbitsCalculator() {
   const [presetIndex, setPresetIndex] = useState(0);
   const [jifInput, setJifInput] = useState<string>(
-    ALL_PRESET_STRINGS[presetIndex][1]
+    ALL_PRESET_STRINGS[presetIndex][1],
   );
   const {
     error: jifError,
@@ -57,7 +57,7 @@ export function OrbitsCalculator() {
     formattedManipulators,
   } = useMemo(
     () => (jif ? processManipulationInput(manipulationInput, jif) : {}),
-    [jif, manipulationInput]
+    [jif, manipulationInput],
   );
 
   const {
@@ -66,7 +66,7 @@ export function OrbitsCalculator() {
     throwsTable: throwsTableWithManipulation,
   } = useMemo(
     () => (jif && manipulators ? applyManipulators(jif, manipulators) : {}),
-    [jif, manipulators]
+    [jif, manipulators],
   );
 
   function updatePreset(value: number) {
@@ -167,7 +167,7 @@ function processInput(jifInput: string): {
 
 function processManipulationInput(
   manipulationInput: string,
-  jif: FullJIF
+  jif: FullJIF,
 ): {
   error?: string;
   manipulators?: ManipulatorInstruction[][];
@@ -177,7 +177,7 @@ function processManipulationInput(
   try {
     const manipulators = lines.map(parseManipulator);
     const formattedManipulators = manipulators.map((spec) =>
-      formatManipulator(jif, spec)
+      formatManipulator(jif, spec),
     );
     return { manipulators, formattedManipulators };
   } catch (e) {
@@ -187,7 +187,7 @@ function processManipulationInput(
 
 function applyManipulators(
   jif: FullJIF,
-  manipulators: ManipulatorInstruction[][]
+  manipulators: ManipulatorInstruction[][],
 ): {
   error?: string;
   jif?: FullJIF;
@@ -210,7 +210,7 @@ function applyManipulators(
 
 function formatManipulator(
   jif: FullJIF,
-  spec: ManipulatorInstruction[]
+  spec: ManipulatorInstruction[],
 ): string[] {
   const period = inferPeriod(jif);
   const result: string[] = Array(period).fill("-");
@@ -218,11 +218,11 @@ function formatManipulator(
     const thrw = getThrowFromJuggler(
       jif,
       throwFromJuggler,
-      throwTime
+      throwTime,
     ) as FullThrow;
     if (!thrw) {
       throw new Error(
-        `Could not find throw for manipulation at beat ${throwTime + 1} from juggler ${throwFromJuggler}!`
+        `Could not find throw for manipulation at beat ${throwTime + 1} from juggler ${throwFromJuggler}!`,
       );
     }
     const source = jif.jugglers[jif.limbs[thrw.from].juggler].label;

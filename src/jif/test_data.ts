@@ -29,7 +29,7 @@ export const RAW_DATA_3_COUNT_PASSING_2X: string[] = [
   "3A 3  3  3A 3  3",
 ];
 export const DATA_3_COUNT_PASSING_2X: JIF = prechacToJif(
-  RAW_DATA_3_COUNT_PASSING_2X
+  RAW_DATA_3_COUNT_PASSING_2X,
 );
 
 export const RAW_DATA_4_COUNT_PASSING: string[] = [
@@ -43,7 +43,7 @@ export const RAW_DATA_4_COUNT_PASSING_2X: string[] = [
   "3A 3  3  3  3A 3  3  3",
 ];
 export const DATA_4_COUNT_PASSING_2X: JIF = prechacToJif(
-  RAW_DATA_4_COUNT_PASSING_2X
+  RAW_DATA_4_COUNT_PASSING_2X,
 );
 
 export const RAW_DATA_WEIRD_PASSING: string[] = [
@@ -66,7 +66,7 @@ export const RAW_DATA_WALKING_FEED_9C_2X: string[] = [
   "3  3  3A 3  3  3  3A 3  3B 3  3A 3",
 ];
 export const DATA_WALKING_FEED_9C_2X: JIF = prechacToJif(
-  RAW_DATA_WALKING_FEED_9C_2X
+  RAW_DATA_WALKING_FEED_9C_2X,
 );
 
 export const RAW_DATA_WALKING_FEED_10C: string[] = [
@@ -75,7 +75,7 @@ export const RAW_DATA_WALKING_FEED_10C: string[] = [
   "2  3  3  4A 3  3  3 ",
 ];
 export const DATA_WALKING_FEED_10C: JIF = prechacToJif(
-  RAW_DATA_WALKING_FEED_10C
+  RAW_DATA_WALKING_FEED_10C,
 );
 
 // ### Manipulations ###
