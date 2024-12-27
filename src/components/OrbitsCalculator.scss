@@ -1,3 +1,5 @@
+@import "../breakpoints.scss";
+
 .card {
   margin: 0.8em 0;
   padding: 1em;
@@ -6,11 +8,25 @@
   border: 1px solid var(--table-border);
   border-radius: 5px;
   background-color: var(--passingzone-color);
+  align-items: start;
+
+  &.stretch {
+    align-items: stretch;
+  }
+  &.center {
+    align-items: center;
+  }
 
   & :first-child {
     margin-top: 0;
   }
   & :last-child {
     margin-bottom: 0;
+  }
+
+  @include sm {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
 }
