@@ -1,3 +1,5 @@
+@import "breakpoints.scss";
+
 * {
   box-sizing: border-box;
 }
@@ -28,6 +30,10 @@ body {
 #root {
   padding: 0 2em;
   flex-grow: 1;
+
+  @include sm {
+    padding: 0;
+  }
 }
 
 .secondary {
@@ -50,6 +56,10 @@ a:hover {
 h1 {
   font-size: 2.2em;
   line-height: 1.1;
+
+  @include sm {
+    text-align: center;
+  }
 }
 
 button {

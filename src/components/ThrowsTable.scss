@@ -1,11 +1,18 @@
+@import "../breakpoints.scss";
+
 table.throws {
   margin: 1em 0;
   border-collapse: collapse;
   font-size: 130%;
 
+  @include sm {
+    font-size: 100%;
+    width: 100%;
+  }
+
   th,
   td {
-    width: 3.2em;
+    width: 3.5em;
     text-align: center;
     transition:
       opacity 200ms linear,
