@@ -77,3 +77,44 @@ export const RAW_DATA_WALKING_FEED_10C: string[] = [
 export const DATA_WALKING_FEED_10C: JIF = prechacToJif(
   RAW_DATA_WALKING_FEED_10C
 );
+
+// ### Manipulations ###
+
+// 3-count roundabout
+// manipulator = [
+//   { type: 'substitute', throwTime: 0, throwFromJuggler: 0 },
+//   { type: 'intercept1b', throwTime: 2, throwFromJuggler: 1 },
+// ];
+
+// 4-count roundabout
+// manipulator = [
+//   { type: 'substitute', throwTime: 0, throwFromJuggler: 0 },
+//   { type: 'substitute', throwTime: 2, throwFromJuggler: 1 },
+//   { type: 'intercept2b', throwTime: 4, throwFromJuggler: 0 },
+// ];
+
+// Scrambled B
+// manipulator = [
+//   { type: 'intercept2b', throwTime: 0, throwFromJuggler: 0 },
+//   { type: 'substitute', throwTime: 4, throwFromJuggler: 1 },
+// ];
+
+// // V
+// const m: ManipulatorInstruction[] = [
+//   { type: 'substitute', throwTime: 2, throwFromJuggler: 1 },
+//   { type: 'intercept2b', throwTime: 4, throwFromJuggler: 2 },
+// ];
+// console.log('Using manipulation:', formatManipulator(data, m, true));
+// manipulator = m);
+
+// // Ivy
+// manipulator = [
+//   { type: 'intercept2b', throwTime: 0, throwFromJuggler: 1 },
+//   { type: 'substitute', throwTime: 4, throwFromJuggler: 2 },
+// ];
+
+// Choptopus
+// manipulator = [
+//   { type: "substitute", throwTime: 1, throwFromJuggler: 1 },
+//   { type: "intercept2b", throwTime: 3, throwFromJuggler: 2 },
+// ];

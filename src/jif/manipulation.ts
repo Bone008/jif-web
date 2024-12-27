@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { JIF, Juggler, Limb, LimbKind, Throw } from "./jif";
+import { JIF, LimbKind, Throw } from "./jif";
 import {
   FullJIF,
   FullThrow,
