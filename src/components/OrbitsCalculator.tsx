@@ -77,7 +77,7 @@ export function OrbitsCalculator() {
   return (
     <>
       <h1>Orbits Calculator</h1>
-      <div className="card">
+      <div className="card stretch">
         <p>
           <label>
             Preset:&nbsp;&nbsp;
