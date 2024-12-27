@@ -15,7 +15,7 @@ export function prechacToJif(prechac: PrechacNotation): JIF {
     { length: prechac.length },
     (_, j) => ({
       becomes: (j + 1) % prechac.length,
-    })
+    }),
   );
 
   let period: number | null = null;
@@ -64,7 +64,7 @@ function parseInstruction(str: string): PrechacInstruction {
   const match = REGEX_INSTRUCTION.exec(str);
   if (!match) {
     throw new Error(
-      "throw must match (single-letter throw)(pass target)?(!manipulation)?"
+      "throw must match (single-letter throw)(pass target)?(!manipulation)?",
     );
   }
 
@@ -80,14 +80,14 @@ function parseInstruction(str: string): PrechacInstruction {
 function limbOfJuggler(
   jugglerIndex: number,
   limbIndex: number,
-  _numJugglers: number
+  _numJugglers: number,
 ): number {
   return 2 * jugglerIndex + limbIndex;
 }
 
 /** Parses text-based instructions for a single manipulator. */
 export function parseManipulator(
-  instructions: string
+  instructions: string,
 ): ManipulatorInstruction[] {
   const manipulator: ManipulatorInstruction[] = [];
   const parts = instructions.split(/\s+/);
@@ -99,7 +99,7 @@ export function parseManipulator(
     if (!match) {
       throw new Error(
         `Invalid manipulator instruction: ${part}\n` +
-          `Expected something like "sA", "iA", or "iiA", with - as placeholder.`
+          `Expected something like "sA", "iA", or "iiA", with - as placeholder.`,
       );
     }
     const type =

@@ -16,12 +16,12 @@ export function ThrowsTable({
   const isSynchronous = _.some(
     _.countBy(
       throws.flat().filter((thrw) => !!thrw),
-      (thrw) => thrw.time
+      (thrw) => thrw.time,
     ),
-    (count) => count > 1
+    (count) => count > 1,
   );
   const maxThrowHeight = _.max(
-    throws.flat().map((thrw) => thrw?.duration ?? 0)
+    throws.flat().map((thrw) => thrw?.duration ?? 0),
   );
   const useLetters = isSynchronous && maxThrowHeight == 3;
 

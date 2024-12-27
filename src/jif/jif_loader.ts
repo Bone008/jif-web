@@ -36,7 +36,7 @@ export function loadWithDefaults(jif: JIF): FullJIF {
         ? "right_hand"
         : i < jugglers.length * 2
           ? "left_hand"
-          : "other"
+          : "other",
     );
     return {
       juggler: def(limb.juggler, i % jugglers.length),
