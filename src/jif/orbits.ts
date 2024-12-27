@@ -123,15 +123,36 @@ export function orbits(data: FullJIF): FullThrow[][] {
     orbitsByBeat[j][t] = orbit;
 
     // Find out where to continue orbit.
-    let nextJ = data.limbs[thrw.to].juggler;
     let nextT = t + thrw.duration;
-    while (nextT >= period) {
-      nextT -= period;
-      // Follow relabeling.
-      nextJ = data.jugglers[nextJ].becomes;
-    }
+    let nextJ = data.limbs[thrw.to].juggler;
+    [nextT, nextJ] = wrapAround(nextT, nextJ, data, period);
     completeOrbit(nextJ, nextT, orbit);
   }
+}
+
+/** Wraps around period limits: [t, j] --> [t', j'] */
+export function wrapAround(
+  time: number,
+  jugglerIndex: number,
+  jif: FullJIF,
+  period?: number,
+): [number, number] {
+  if (typeof period === "undefined") {
+    period = inferPeriod(jif);
+  }
+  let nextT = time;
+  let nextJ = jugglerIndex;
+  while (nextT >= period) {
+    nextT -= period;
+    // Follow relabeling.
+    nextJ = jif.jugglers[nextJ].becomes;
+  }
+  while (nextT < 0) {
+    nextT += period;
+    // Reverse relabeling.
+    nextJ = jif.jugglers.findIndex((j) => j.becomes === nextJ);
+  }
+  return [nextT, nextJ];
 }
 
 function printThrowsTable(
