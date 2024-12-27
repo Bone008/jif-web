@@ -9,7 +9,7 @@ export function getThrowsTable(data: FullJIF): ThrowsTableData {
   // Indexed by [juggler][time].
   const throwsTable: Array<FullThrow | null>[] = Array.from(
     { length: data.jugglers.length },
-    () => Array(period).fill(null),
+    () => Array(period).fill(null)
   );
   for (const thrw of data.throws) {
     const juggler = data.limbs[thrw.from].juggler;
@@ -17,7 +17,7 @@ export function getThrowsTable(data: FullJIF): ThrowsTableData {
       console.warn(
         `\nWARNING: More than 1 throw detected by juggler ${
           data.jugglers[juggler].label
-        } at time ${thrw.time}!\n`,
+        } at time ${thrw.time}!\n`
       );
     }
     throwsTable[juggler][thrw.time] = thrw;
@@ -25,7 +25,7 @@ export function getThrowsTable(data: FullJIF): ThrowsTableData {
   return throwsTable;
 }
 
-export default function orbits(data: FullJIF, verbose: boolean): FullThrow[][] {
+export function orbits(data: FullJIF): FullThrow[][] {
   const throwsTable = getThrowsTable(data);
   const period = inferPeriod(data);
 
@@ -41,7 +41,7 @@ export default function orbits(data: FullJIF, verbose: boolean): FullThrow[][] {
   // Indexed by [juggler][time].
   const orbitsByBeat: Array<Orbit | undefined>[] = Array.from(
     { length: data.jugglers.length },
-    () => Array(period),
+    () => Array(period)
   );
   let startJ = 0;
   let startT = 0;
@@ -67,9 +67,9 @@ export default function orbits(data: FullJIF, verbose: boolean): FullThrow[][] {
       orbit
         .map(
           (thrw) =>
-            `${data.jugglers[data.limbs[thrw.from].juggler].label}${thrw.time}(${thrw.duration.toString(36)}${thrw.isManipulated ? ",m" : ""})`,
+            `${data.jugglers[data.limbs[thrw.from].juggler].label}${thrw.time}(${thrw.duration.toString(36)}${thrw.isManipulated ? ",m" : ""})`
         )
-        .join(" --> "),
+        .join(" --> ")
     );
   }
   // Alternative layout: A throws table with only this orbit filled in.
@@ -77,7 +77,7 @@ export default function orbits(data: FullJIF, verbose: boolean): FullThrow[][] {
   for (const [i, orbit] of allOrbits.entries()) {
     console.log(`Orbit #${i}:`);
     const orbitOnlyTable = throwsTable.map((row) =>
-      row.map((t) => (t && orbit.includes(t) ? t : null)),
+      row.map((t) => (t && orbit.includes(t) ? t : null))
     );
     printThrowsTable(data, orbitOnlyTable);
     console.log();
@@ -93,10 +93,10 @@ export default function orbits(data: FullJIF, verbose: boolean): FullThrow[][] {
           "debug error info:\ncurrent",
           orbit,
           "\nexisting:",
-          existingOrbit,
+          existingOrbit
         );
         throw new Error(
-          "Assertion violated: arrived at an orbit that is not the current one.",
+          "Assertion violated: arrived at an orbit that is not the current one."
         );
       }
       console.log(`(Found orbit with length ${orbit.length}.)`);
@@ -104,7 +104,7 @@ export default function orbits(data: FullJIF, verbose: boolean): FullThrow[][] {
       // Found a cycle, shift it so it starts at the minimum time.
       const firstThrow = _.minBy(
         orbit,
-        (t) => t.time * data.jugglers.length + data.limbs[t.from].juggler,
+        (t) => t.time * data.jugglers.length + data.limbs[t.from].juggler
       )!;
       const startIndex = orbit.indexOf(firstThrow);
       const deleted = orbit.splice(0, startIndex);
@@ -115,7 +115,7 @@ export default function orbits(data: FullJIF, verbose: boolean): FullThrow[][] {
     const thrw = throwsTable[j][t];
     if (!thrw) {
       throw new Error(
-        `Assertion violated: arrived at juggler ${t} at beat ${t} that has no outgoing throw!`,
+        `Assertion violated: arrived at juggler ${t} at beat ${t} that has no outgoing throw!`
       );
     }
     // Note down throw in orbit.
@@ -137,13 +137,13 @@ export default function orbits(data: FullJIF, verbose: boolean): FullThrow[][] {
 function printThrowsTable(
   data: FullJIF,
   throwsTable: Array<FullThrow | null>[],
-  limbsOnly = false,
+  limbsOnly = false
 ) {
   const period = inferPeriod(data);
   console.log(
     "t",
     "|",
-    Array.from({ length: period }, (_, i) => i).join("   "),
+    Array.from({ length: period }, (_, i) => i).join("   ")
   );
   console.log("-".repeat(3 + 4 * period));
   for (let j = 0; j < data.jugglers.length; j++) {
@@ -167,7 +167,7 @@ function printThrowsTable(
         })
         .join(" "),
       "->",
-      data.jugglers[data.jugglers[j].becomes].label,
+      data.jugglers[data.jugglers[j].becomes].label
     );
   }
 }

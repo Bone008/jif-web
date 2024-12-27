@@ -1,6 +1,6 @@
 import { MathJax } from "better-react-mathjax";
 import _ from "lodash";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { parseManipulator, prechacToJif } from "../jif/high_level_converter";
 import { JIF } from "../jif/jif";
 import {
