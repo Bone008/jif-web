@@ -10,6 +10,7 @@ import {
   loadWithDefaults,
 } from "../jif/jif_loader";
 import {
+  addManipulator,
   getThrowFromJuggler,
   ManipulatorInstruction,
 } from "../jif/manipulation";
@@ -60,6 +61,15 @@ export function OrbitsCalculator() {
     [jif, manipulationInput]
   );
 
+  const {
+    error: applyManipulatorsError,
+    jif: jifWithManipulation,
+    throwsTable: throwsTableWithManipulation,
+  } = useMemo(
+    () => (jif && manipulators ? applyManipulators(jif, manipulators) : {}),
+    [jif, manipulators]
+  );
+
   function updatePreset(value: number) {
     setPresetIndex(value);
     setJifInput(ALL_PRESET_STRINGS[value][1]);
@@ -68,51 +78,70 @@ export function OrbitsCalculator() {
   return (
     <>
       <h1>Orbits Calculator</h1>
-      <p>
+      <div className="card">
+        <p>
+          <label>
+            Preset:&nbsp;&nbsp;
+            <select
+              value={presetIndex}
+              onChange={(e) => updatePreset(Number(e.target.value))}
+            >
+              {ALL_PRESET_STRINGS.map(([label], i) => (
+                <option key={i} value={i}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </p>
         <label>
-          Preset:&nbsp;&nbsp;
-          <select
-            value={presetIndex}
-            onChange={(e) => updatePreset(Number(e.target.value))}
-          >
-            {ALL_PRESET_STRINGS.map(([label], i) => (
-              <option key={i} value={i}>
-                {label}
-              </option>
-            ))}
-          </select>
+          Enter social siteswap or JIF:
+          <textarea
+            value={jifInput}
+            onChange={(e) => setJifInput(e.target.value)}
+            placeholder=""
+            rows={6}
+            style={{ width: "100%", resize: "vertical" }}
+          ></textarea>
         </label>
-      </p>
-      <label>
-        Enter social siteswap or JIF:
-        <textarea
-          value={jifInput}
-          onChange={(e) => setJifInput(e.target.value)}
-          placeholder=""
-          rows={6}
-          style={{ width: "100%", resize: "vertical" }}
-        ></textarea>
-      </label>
-      <label>
-        Enter manipulator instructions (without carry):
-        <textarea
-          value={manipulationInput}
-          onChange={(e) => setManipulationInput(e.target.value)}
-          placeholder=""
-          rows={2}
-          style={{ width: "100%", resize: "vertical" }}
-        ></textarea>
-      </label>
+        <label>
+          Enter manipulator instructions (without carry):
+          <textarea
+            value={manipulationInput}
+            onChange={(e) => setManipulationInput(e.target.value)}
+            placeholder=""
+            rows={2}
+            style={{ width: "100%", resize: "vertical" }}
+          ></textarea>
+        </label>
+      </div>
 
-      {jifError && <p className="error">{jifError}</p>}
-      {manipulationError && <p className="error">{manipulationError}</p>}
-      {jif && throwsTable && (
-        <ThrowsTable
-          jif={jif}
-          throws={throwsTable}
-          formattedManipulators={formattedManipulators}
-        />
+      {jifError && <p className="card error">{jifError}</p>}
+      {manipulationError && <p className="card error">{manipulationError}</p>}
+      {applyManipulatorsError && (
+        <p className="card error">{applyManipulatorsError}</p>
       )}
+
+      {jif && throwsTable && (
+        <div className="card">
+          <ThrowsTable
+            jif={jif}
+            throws={throwsTable}
+            formattedManipulators={formattedManipulators}
+          />
+        </div>
+      )}
+      {manipulators?.length !== 0 &&
+        jifWithManipulation &&
+        throwsTableWithManipulation && (
+          <div className="card">
+            <h3>With Manipulation Applied</h3>
+            <ThrowsTable
+              jif={jifWithManipulation}
+              throws={throwsTableWithManipulation}
+            />
+          </div>
+        )}
     </>
   );
 }
@@ -265,7 +294,30 @@ function processManipulationInput(
   }
 }
 
-export function formatManipulator(
+function applyManipulators(
+  jif: FullJIF,
+  manipulators: ManipulatorInstruction[][]
+): {
+  error?: string;
+  jif?: FullJIF;
+  throwsTable?: ThrowsTableData;
+} {
+  try {
+    let jifWithManipulation = jif;
+    for (const manipulator of manipulators) {
+      jifWithManipulation = addManipulator(jifWithManipulation, manipulator);
+    }
+
+    return {
+      jif: jifWithManipulation,
+      throwsTable: getThrowsTable(jifWithManipulation),
+    };
+  } catch (e) {
+    return { error: String(e) };
+  }
+}
+
+function formatManipulator(
   jif: FullJIF,
   spec: ManipulatorInstruction[]
 ): string[] {

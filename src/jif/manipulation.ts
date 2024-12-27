@@ -13,6 +13,7 @@ export interface ManipulatorInstruction {
   throwFromJuggler: number;
 }
 
+/** Returns a copy of the input JIF with the given manipulator added. */
 export function addManipulator(
   inputJif: FullJIF,
   spec: ManipulatorInstruction[]
