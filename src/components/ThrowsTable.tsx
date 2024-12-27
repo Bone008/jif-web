@@ -1,9 +1,9 @@
-import arrowLine from "arrow-line";
+import arrowLine, { ArrowPosition } from "arrow-line";
 import { MathJax } from "better-react-mathjax";
 import _ from "lodash";
-import { useEffect, useRef } from "react";
+import { useEffect, useId } from "react";
 import { FullJIF, FullThrow } from "../jif/jif_loader";
-import { ThrowsTableData } from "../jif/orbits";
+import { ThrowsTableData, wrapAround } from "../jif/orbits";
 import "./ThrowsTable.scss";
 
 export function ThrowsTable({
@@ -15,6 +15,8 @@ export function ThrowsTable({
   throws: ThrowsTableData;
   formattedManipulators?: string[][];
 }) {
+  const containerId = useId();
+
   const isSynchronous = _.some(
     _.countBy(
       throws.flat().filter((thrw) => !!thrw),
@@ -34,7 +36,7 @@ export function ThrowsTable({
         []);
 
   return (
-    <div className="throws-container">
+    <div id={containerId} className="throws-container">
       <table>
         <thead>
           <tr className="line__underline">
@@ -45,17 +47,20 @@ export function ThrowsTable({
         </thead>
         <tbody>
           {throws.map((row, j) => (
-            <tr key={j}>
+            <tr key={j} data-juggler={j}>
               <td>{jif.jugglers[j].label}</td>
               {row.map((thrw, t) => (
-                <td key={t}>
-                  {thrw && (
+                <td key={t} data-time={t}>
+                  {thrw ? (
                     <ThrowCell
                       jif={jif}
                       thrw={thrw}
                       isSynchronous={isSynchronous}
                       useLetters={useLetters}
                     />
+                  ) : (
+                    // Placeholder for arrow selector safety.
+                    <div className="throw" />
                   )}
                 </td>
               ))}
@@ -77,10 +82,10 @@ export function ThrowsTable({
           ))}
         </tfoot>
       </table>
-      <ArrowOverlay
-        containerSelector=".throws-container"
-        fromSelector="tr:nth-child(1) td:nth-child(2) .throw"
-        toSelector="tr:nth-child(2) td:nth-child(3) .throw"
+      <ThrowsArrows
+        jif={jif}
+        throws={throws}
+        containerSelector={`#${CSS.escape(containerId)}`}
       />
     </div>
   );
@@ -121,28 +126,65 @@ function ThrowCell({
   );
 }
 
+function ThrowsArrows({
+  jif,
+  throws,
+  containerSelector,
+}: {
+  jif: FullJIF;
+  throws: ThrowsTableData;
+  containerSelector: string;
+}) {
+  if (throws.length === 0) {
+    return null;
+  }
+
+  return throws.flatMap((row, j1) =>
+    row.map((thrw, t1) => {
+      if (!thrw) return null;
+
+      let t2 = t1 + thrw.duration - 2;
+      let j2 = jif.limbs[thrw.to]?.juggler;
+      [t2, j2] = wrapAround(t2, j2, jif);
+      return (
+        <ArrowOverlay
+          key={`${j1}-${t1}`}
+          containerSelector={containerSelector}
+          j1={j1}
+          t1={t1}
+          j2={j2}
+          t2={t2}
+        />
+      );
+    }),
+  );
+}
+
 function ArrowOverlay({
   containerSelector,
-  fromSelector,
-  toSelector,
+  j1,
+  t1,
+  j2,
+  t2,
   color = "orange",
 }: {
   containerSelector: string;
-  fromSelector: string;
-  toSelector: string;
+  j1: number;
+  t1: number;
+  j2: number;
+  t2: number;
   color?: string;
 }) {
-  const svgRef = useRef<SVGSVGElement>(null);
+  const svgId = useId();
 
   useEffect(() => {
-    if (!svgRef.current) {
-      return;
-    }
     const throwsContainer = document.querySelector(containerSelector);
     if (!throwsContainer) {
       console.warn("Failed to render arrow: container not found!");
       return;
     }
+    const fromSelector = `tr[data-juggler="${j1}"] td[data-time="${t1}"] .throw`;
+    const toSelector = `tr[data-juggler="${j2}"] td[data-time="${t2}"] .throw`;
     if (!throwsContainer.querySelector(fromSelector)) {
       console.warn("Failed to render arrow: selector not found:", fromSelector);
       return;
@@ -152,15 +194,14 @@ function ArrowOverlay({
       return;
     }
 
-    svgRef.current.id = "svg-" + Math.random().toString(36).slice(2);
+    const [sourcePosition, destinationPosition] = getArrowPositions(t1, t2);
     const arrow = arrowLine({
-      svgParentSelector: `#${svgRef.current.id}`,
+      svgParentSelector: `#${CSS.escape(svgId)}`,
       source: `${containerSelector} ${fromSelector}`,
       destination: `${containerSelector} ${toSelector}`,
-      // TODO: handle backwards arrows
-      sourcePosition: "middleRight",
-      destinationPosition: "middleLeft",
-      thickness: 2,
+      sourcePosition,
+      destinationPosition,
+      thickness: 1.2,
       curvature: 0,
       color,
     });
@@ -175,11 +216,24 @@ function ArrowOverlay({
       resizeObserver.disconnect();
       arrow.remove();
     };
-  }, [svgRef, containerSelector, fromSelector, toSelector, color]);
+  }, [svgId, containerSelector, j1, t1, j2, t2, color]);
 
   return (
     <div className="svg-container">
-      <svg ref={svgRef} className="svg-arrows"></svg>
+      <svg id={svgId} className="svg-arrows"></svg>
     </div>
   );
+}
+
+function getArrowPositions(
+  t1: number,
+  t2: number,
+): [ArrowPosition, ArrowPosition] {
+  if (t2 > t1) {
+    return ["middleRight", "middleLeft"];
+  }
+  if (t2 < t1) {
+    return ["middleLeft", "middleRight"];
+  }
+  return ["middleRight", "middleRight"]; // TODO: improve
 }
