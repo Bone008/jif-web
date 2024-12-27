@@ -1,5 +1,22 @@
+.card {
+  margin: 0.8em 0;
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--table-border);
+  border-radius: 5px;
+  background-color: var(--passingzone-color);
+
+  & :first-child {
+    margin-top: 0;
+  }
+  & :last-child {
+    margin-bottom: 0;
+  }
+}
+
 table.throws {
-  margin-top: 2em;
+  margin: 1em 0;
   border-collapse: collapse;
   font-size: 130%;
 
