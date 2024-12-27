@@ -1,14 +1,19 @@
 @import "../breakpoints.scss";
 
-table.throws {
+.throws-container {
   margin: 1em 0;
-  border-collapse: collapse;
+  position: relative;
   font-size: 130%;
-
+  align-self: start;
   @include sm {
     font-size: 100%;
-    width: 100%;
+    align-self: stretch;
   }
+}
+
+.throws-container table {
+  width: 100%;
+  border-collapse: collapse;
 
   th,
   td {
@@ -59,38 +64,38 @@ table.throws {
 }
 
 /* Fancy hover */
-.table-container:has(.line__m .fancy-hover:hover)
+.throws-container:has(.line__m .fancy-hover:hover)
   tr:not(.line__m)
   td[data-beat],
-.table-container:has(.line__m .fancy-hover:hover) .svg-arrows {
+.throws-container:has(.line__m .fancy-hover:hover) .svg-arrows {
   opacity: 0.3;
 }
 
-.table-container:has(.line__m td[data-from="A"][data-beat="1"]:hover)
+.throws-container:has(.line__m td[data-from="A"][data-beat="1"]:hover)
   [data-juggler="A"]
   [data-beat="1"],
-.table-container:has(.line__m td[data-from="A"][data-beat="3"]:hover)
+.throws-container:has(.line__m td[data-from="A"][data-beat="3"]:hover)
   [data-juggler="A"]
   [data-beat="3"],
-.table-container:has(.line__m td[data-from="A"][data-beat="5"]:hover)
+.throws-container:has(.line__m td[data-from="A"][data-beat="5"]:hover)
   [data-juggler="A"]
   [data-beat="5"],
-.table-container:has(.line__m td[data-from="B"][data-beat="1"]:hover)
+.throws-container:has(.line__m td[data-from="B"][data-beat="1"]:hover)
   [data-juggler="B"]
   [data-beat="1"],
-.table-container:has(.line__m td[data-from="B"][data-beat="3"]:hover)
+.throws-container:has(.line__m td[data-from="B"][data-beat="3"]:hover)
   [data-juggler="B"]
   [data-beat="3"],
-.table-container:has(.line__m td[data-from="B"][data-beat="5"]:hover)
+.throws-container:has(.line__m td[data-from="B"][data-beat="5"]:hover)
   [data-juggler="B"]
   [data-beat="5"],
-.table-container:has(.line__m td[data-from="C"][data-beat="1"]:hover)
+.throws-container:has(.line__m td[data-from="C"][data-beat="1"]:hover)
   [data-juggler="C"]
   [data-beat="1"],
-.table-container:has(.line__m td[data-from="C"][data-beat="3"]:hover)
+.throws-container:has(.line__m td[data-from="C"][data-beat="3"]:hover)
   [data-juggler="C"]
   [data-beat="3"],
-.table-container:has(.line__m td[data-from="C"][data-beat="5"]:hover)
+.throws-container:has(.line__m td[data-from="C"][data-beat="5"]:hover)
   [data-juggler="C"]
   [data-beat="5"] {
   opacity: 1;
@@ -98,9 +103,6 @@ table.throws {
 }
 
 /* Arrows */
-.table-container {
-  position: relative;
-}
 .svg-arrows {
   position: absolute;
   top: 0;

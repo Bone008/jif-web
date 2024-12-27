@@ -8,19 +8,19 @@
   border: 1px solid var(--table-border);
   border-radius: 5px;
   background-color: var(--passingzone-color);
-  align-items: start;
+  align-items: stretch;
 
-  &.stretch {
-    align-items: stretch;
+  &.start {
+    align-items: start;
   }
   &.center {
     align-items: center;
   }
 
-  & :first-child {
+  & > :first-child {
     margin-top: 0;
   }
-  & :last-child {
+  & > :last-child {
     margin-bottom: 0;
   }
 
