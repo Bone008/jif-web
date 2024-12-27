@@ -77,7 +77,11 @@ export function ThrowsTable({
           ))}
         </tfoot>
       </table>
-      <ArrowOverlay />
+      <ArrowOverlay
+        containerSelector=".throws-container"
+        fromSelector="tr:nth-child(1) td:nth-child(2) .throw"
+        toSelector="tr:nth-child(2) td:nth-child(3) .throw"
+      />
     </div>
   );
 }
@@ -110,33 +114,58 @@ function ThrowCell({
   }
 
   return (
-    <div className="supsub" title={JSON.stringify(thrw)}>
+    <div className="throw" title={JSON.stringify(thrw)}>
       {/* key is needed to avoid caching issues */}
       <MathJax key={label}>$${label}$$</MathJax>
     </div>
   );
 }
 
-function ArrowOverlay() {
+function ArrowOverlay({
+  containerSelector,
+  fromSelector,
+  toSelector,
+  color = "orange",
+}: {
+  containerSelector: string;
+  fromSelector: string;
+  toSelector: string;
+  color?: string;
+}) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     if (!svgRef.current) {
       return;
     }
+    const throwsContainer = document.querySelector(containerSelector);
+    if (!throwsContainer) {
+      console.warn("Failed to render arrow: container not found!");
+      return;
+    }
+    if (!throwsContainer.querySelector(fromSelector)) {
+      console.warn("Failed to render arrow: selector not found:", fromSelector);
+      return;
+    }
+    if (!throwsContainer.querySelector(toSelector)) {
+      console.warn("Failed to render arrow: selector not found:", toSelector);
+      return;
+    }
 
     svgRef.current.id = "svg-" + Math.random().toString(36).slice(2);
     const arrow = arrowLine({
-      //svgParentSelector: `#${svgRef.current.id}`,
-      source: ".throws-container tr:nth-child(1) td:nth-child(2) mjx-math",
-      destination: ".throws-container tr:nth-child(2) td:nth-child(3) mjx-math",
+      svgParentSelector: `#${svgRef.current.id}`,
+      source: `${containerSelector} ${fromSelector}`,
+      destination: `${containerSelector} ${toSelector}`,
+      // TODO: handle backwards arrows
+      sourcePosition: "middleRight",
+      destinationPosition: "middleLeft",
       thickness: 2,
       curvature: 0,
-      color: "orange",
+      color,
     });
 
-    // Respond to layout changes of the table.
-    const throwsContainer = document.querySelector(".throws-container")!;
+    // Respond to layout changes of the container.
     const resizeObserver = new ResizeObserver(() => {
       arrow.update({});
     });
@@ -146,14 +175,11 @@ function ArrowOverlay() {
       resizeObserver.disconnect();
       arrow.remove();
     };
-  }, [svgRef]);
+  }, [svgRef, containerSelector, fromSelector, toSelector, color]);
 
   return (
-    <svg
-      ref={svgRef}
-      className="svg-arrows"
-      viewBox="0 0 1 1"
-      preserveAspectRatio="xMinyMin slice"
-    ></svg>
+    <div className="svg-container">
+      <svg ref={svgRef} className="svg-arrows"></svg>
+    </div>
   );
 }

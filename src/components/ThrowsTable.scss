@@ -2,7 +2,6 @@
 
 .throws-container {
   margin: 1em 0;
-  position: relative;
   font-size: 130%;
   align-self: start;
   @include sm {
@@ -60,6 +59,14 @@
     &__underline {
       border-bottom: 3px solid var(--table-border);
     }
+  }
+
+  .throw {
+    margin: auto;
+    max-width: 1.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
