@@ -1,10 +1,11 @@
 import arrowLine, { ArrowPosition } from "arrow-line";
 import { MathJax } from "better-react-mathjax";
 import _ from "lodash";
-import { useEffect, useId } from "react";
+import { useEffect, useId, useState } from "react";
 import { FullJIF, FullThrow } from "../jif/jif_loader";
-import { ThrowsTableData, wrapAround } from "../jif/orbits";
+import { orbits, ThrowsTableData, wrapAround } from "../jif/orbits";
 import "./ThrowsTable.scss";
+import { useViewSettings } from "./ViewSettings";
 
 export function ThrowsTable({
   jif,
@@ -16,6 +17,7 @@ export function ThrowsTable({
   formattedManipulators?: string[][];
 }) {
   const containerId = useId();
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
 
   const isSynchronous = _.some(
     _.countBy(
@@ -35,8 +37,18 @@ export function ThrowsTable({
       : (formattedManipulators?.map((_, i) => <sub key={i}>{i + 1}</sub>) ??
         []);
 
+  function onThrowMouseEnter(j: number, t: number) {
+    setHoveredKey(`${j}-${t}`);
+  }
+  function onThrowMouseOut(j: number, t: number) {
+    if (hoveredKey === `${j}-${t}`) {
+      setHoveredKey(null);
+    }
+  }
+
   return (
     <div id={containerId} className="throws-container">
+      hovering: {hoveredKey}
       <table>
         <thead>
           <tr className="line__underline">
@@ -50,7 +62,13 @@ export function ThrowsTable({
             <tr key={j} data-juggler={j}>
               <td>{jif.jugglers[j].label}</td>
               {row.map((thrw, t) => (
-                <td key={t} data-time={t}>
+                <td
+                  key={t}
+                  data-time={t}
+                  className={`throw-cell ${hoveredKey === `${j}-${t}` ? "hovered" : ""}`}
+                  onMouseEnter={() => onThrowMouseEnter(j, t)}
+                  onMouseLeave={() => onThrowMouseOut(j, t)}
+                >
                   {thrw ? (
                     <ThrowCell
                       jif={jif}
@@ -86,6 +104,8 @@ export function ThrowsTable({
         jif={jif}
         throws={throws}
         containerSelector={`#${CSS.escape(containerId)}`}
+        isSynchronous={isSynchronous}
+        hoveredKey={hoveredKey}
       />
     </div>
   );
@@ -130,22 +150,52 @@ function ThrowsArrows({
   jif,
   throws,
   containerSelector,
+  isSynchronous,
+  hoveredKey,
 }: {
   jif: FullJIF;
   throws: ThrowsTableData;
   containerSelector: string;
+  isSynchronous: boolean;
+  hoveredKey: string | null;
 }) {
-  if (throws.length === 0) {
-    return null;
+  const {
+    viewSettings: { arrowMode },
+  } = useViewSettings();
+
+  let throwsWithArrows: ThrowsTableData;
+  let arrowTimeDelta: number;
+  let colors: string[] = ["orange"];
+  switch (arrowMode) {
+    case "ladder":
+      throwsWithArrows = throws;
+      arrowTimeDelta = 0;
+      break;
+    case "causal":
+      throwsWithArrows = throws;
+      // TODO: more reliable causal time heuristic
+      arrowTimeDelta = isSynchronous ? 2 : 4;
+      break;
+    case "orbits":
+      throwsWithArrows = orbits(jif);
+      arrowTimeDelta = 0;
+      colors = ["orange", "aqua", "fuchsia", "lime", "white", "maroon"];
+      break;
+    default:
+      return null;
   }
 
-  return throws.flatMap((row, j1) =>
-    row.map((thrw, t1) => {
+  const allArrows = throwsWithArrows.flatMap((row, i) =>
+    row.map((thrw) => {
       if (!thrw) return null;
 
-      let t2 = t1 + thrw.duration - 2;
+      const t1 = thrw.time;
+      const j1 = jif.limbs[thrw.from]?.juggler;
+      let t2 = t1 + thrw.duration - arrowTimeDelta;
       let j2 = jif.limbs[thrw.to]?.juggler;
       [t2, j2] = wrapAround(t2, j2, jif);
+
+      const color = colors[i % colors.length];
       return (
         <ArrowOverlay
           key={`${j1}-${t1}`}
@@ -154,9 +204,19 @@ function ThrowsArrows({
           t1={t1}
           j2={j2}
           t2={t2}
+          color={color}
+          hovered={hoveredKey === `${j1}-${t1}`}
         />
       );
     }),
+  );
+
+  return (
+    <>
+      {allArrows}
+      {arrowMode === "orbits" &&
+        throwsWithArrows.map((_, i) => <span key={i}>{i}</span>)}
+    </>
   );
 }
 
@@ -167,6 +227,7 @@ function ArrowOverlay({
   j2,
   t2,
   color = "orange",
+  hovered,
 }: {
   containerSelector: string;
   j1: number;
@@ -174,6 +235,7 @@ function ArrowOverlay({
   j2: number;
   t2: number;
   color?: string;
+  hovered?: boolean;
 }) {
   const svgId = useId();
 
@@ -219,7 +281,7 @@ function ArrowOverlay({
   }, [svgId, containerSelector, j1, t1, j2, t2, color]);
 
   return (
-    <div className="svg-container">
+    <div className={`svg-container ${hovered ? "hovered" : ""}`}>
       <svg id={svgId} className="svg-arrows"></svg>
     </div>
   );
