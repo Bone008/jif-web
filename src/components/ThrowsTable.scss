@@ -71,38 +71,47 @@
 }
 
 /* Fancy hover */
-.throws-container:has(.line__m .fancy-hover:hover)
-  tr:not(.line__m)
-  td[data-beat],
-.throws-container:has(.line__m .fancy-hover:hover) .svg-arrows {
+.throws-container:has(.throw-cell:hover) {
+  .throw-cell,
+  .svg-container {
+    opacity: 0.3;
+
+    &.hovered {
+      opacity: 1;
+    }
+  }
+}
+
+.throws-container:has(.fancy-hover:hover) tr:not(.line__m) td[data-time],
+.throws-container:has(.fancy-hover:hover) .svg-container {
   opacity: 0.3;
 }
 
-.throws-container:has(.line__m td[data-from="A"][data-beat="1"]:hover)
+.throws-container:has(td[data-from="A"][data-beat="1"]:hover)
   [data-juggler="A"]
   [data-beat="1"],
-.throws-container:has(.line__m td[data-from="A"][data-beat="3"]:hover)
+.throws-container:has(td[data-from="A"][data-beat="3"]:hover)
   [data-juggler="A"]
   [data-beat="3"],
-.throws-container:has(.line__m td[data-from="A"][data-beat="5"]:hover)
+.throws-container:has(td[data-from="A"][data-beat="5"]:hover)
   [data-juggler="A"]
   [data-beat="5"],
-.throws-container:has(.line__m td[data-from="B"][data-beat="1"]:hover)
+.throws-container:has(td[data-from="B"][data-beat="1"]:hover)
   [data-juggler="B"]
   [data-beat="1"],
-.throws-container:has(.line__m td[data-from="B"][data-beat="3"]:hover)
+.throws-container:has(td[data-from="B"][data-beat="3"]:hover)
   [data-juggler="B"]
   [data-beat="3"],
-.throws-container:has(.line__m td[data-from="B"][data-beat="5"]:hover)
+.throws-container:has(td[data-from="B"][data-beat="5"]:hover)
   [data-juggler="B"]
   [data-beat="5"],
-.throws-container:has(.line__m td[data-from="C"][data-beat="1"]:hover)
+.throws-container:has(td[data-from="C"][data-beat="1"]:hover)
   [data-juggler="C"]
   [data-beat="1"],
-.throws-container:has(.line__m td[data-from="C"][data-beat="3"]:hover)
+.throws-container:has(td[data-from="C"][data-beat="3"]:hover)
   [data-juggler="C"]
   [data-beat="3"],
-.throws-container:has(.line__m td[data-from="C"][data-beat="5"]:hover)
+.throws-container:has(td[data-from="C"][data-beat="5"]:hover)
   [data-juggler="C"]
   [data-beat="5"] {
   opacity: 1;
