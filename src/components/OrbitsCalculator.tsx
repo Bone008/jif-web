@@ -26,6 +26,7 @@ import {
 } from "../jif/test_data";
 import "./OrbitsCalculator.scss";
 import { ThrowsTable } from "./ThrowsTable";
+import { ViewSettingsControls } from "./ViewSettings";
 
 const ALL_PRESET_STRINGS: [string, string][] = [
   ["3-count", RAW_DATA_3_COUNT_PASSING.join("\n")],
@@ -113,6 +114,7 @@ export function OrbitsCalculator() {
             style={{ width: "100%", resize: "vertical" }}
           ></textarea>
         </label>
+        <ViewSettingsControls />
       </div>
 
       {jifError && <p className="card error">{jifError}</p>}
