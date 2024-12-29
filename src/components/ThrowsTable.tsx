@@ -1,11 +1,25 @@
 import arrowLine, { ArrowPosition } from "arrow-line";
-import { MathJax } from "better-react-mathjax";
+import { MathJax as UncachedMathJax } from "better-react-mathjax";
 import _ from "lodash";
-import { useEffect, useId, useState } from "react";
+import { memo, useEffect, useId, useMemo, useState } from "react";
 import { FullJIF, FullThrow } from "../jif/jif_loader";
 import { orbits, ThrowsTableData, wrapAround } from "../jif/orbits";
 import "./ThrowsTable.scss";
 import { useViewSettings } from "./ViewSettings";
+
+// Avoid rexpensive re-typesetting of MathJax components when
+// their contents do not change.
+const MathJax = memo(UncachedMathJax);
+
+const ORBIT_COLORS = [
+  "orange",
+  "aqua",
+  "fuchsia",
+  "lime",
+  "white",
+  "red",
+  "blue",
+];
 
 export function ThrowsTable({
   jif,
@@ -17,19 +31,37 @@ export function ThrowsTable({
   formattedManipulators?: string[][];
 }) {
   const containerId = useId();
-  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const throwOrbits = useMemo(() => tryOrbits(jif), [jif]);
 
-  const isSynchronous = _.some(
-    _.countBy(
-      throws.flat().filter((thrw) => !!thrw),
-      (thrw) => thrw.time,
-    ),
-    (count) => count > 1,
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const { viewSettings } = useViewSettings();
+
+  function hoverKeyFn(j: number, t: number): string {
+    if (viewSettings.arrowMode === "orbits") {
+      const orbitIndex = throwOrbits.findIndex((orbit) =>
+        orbit.find(
+          (thrw) => thrw.time === t && jif.limbs[thrw.from]?.juggler === j,
+        ),
+      );
+      return `orbit-${orbitIndex}`;
+    }
+
+    return `${j}-${t}`;
+  }
+
+  const isSynchronous =
+    jif.jugglers.length < 2 ||
+    _.some(
+      _.countBy(
+        throws.flat().filter((thrw) => !!thrw),
+        (thrw) => thrw.time,
+      ),
+      (count) => count > 1,
+    );
+  const hasOnly3Throws = _.every(
+    throws.flat().map((thrw) => thrw?.duration === 3),
   );
-  const maxThrowHeight = _.max(
-    throws.flat().map((thrw) => thrw?.duration ?? 0),
-  );
-  const useLetters = isSynchronous && maxThrowHeight == 3;
+  const useLetters = isSynchronous && hasOnly3Throws;
 
   const manipulatorNameSuffixes =
     formattedManipulators?.length === 1
@@ -37,18 +69,36 @@ export function ThrowsTable({
       : (formattedManipulators?.map((_, i) => <sub key={i}>{i + 1}</sub>) ??
         []);
 
-  function onThrowMouseEnter(j: number, t: number) {
-    setHoveredKey(`${j}-${t}`);
+  function onThrowMouseEnter(hoverKey: string) {
+    setHoveredKey(hoverKey);
   }
-  function onThrowMouseOut(j: number, t: number) {
-    if (hoveredKey === `${j}-${t}`) {
+  function onThrowMouseOut(hoverKey: string) {
+    if (hoveredKey === hoverKey) {
       setHoveredKey(null);
     }
   }
 
   return (
     <div id={containerId} className="throws-container">
-      hovering: {hoveredKey}
+      {/* The Holy SVG Arrow Marker */}
+      <svg style={{ position: "absolute", width: 0, height: 0 }}>
+        <defs>
+          <marker
+            id="__the-holy-marker"
+            markerUnits="strokeWidth"
+            viewBox="-1 -1 12 12"
+            stroke="gray"
+            fill="gray"
+            orient="auto"
+            markerWidth="10"
+            markerHeight="10"
+            refX="10"
+            refY="5"
+          >
+            <polygon points="0,0 10,5 0,10"></polygon>
+          </marker>
+        </defs>
+      </svg>
       <table>
         <thead>
           <tr className="line__underline">
@@ -65,9 +115,9 @@ export function ThrowsTable({
                 <td
                   key={t}
                   data-time={t}
-                  className={`throw-cell ${hoveredKey === `${j}-${t}` ? "hovered" : ""}`}
-                  onMouseEnter={() => onThrowMouseEnter(j, t)}
-                  onMouseLeave={() => onThrowMouseOut(j, t)}
+                  className={`throw-cell ${hoveredKey === hoverKeyFn(j, t) ? "hovered" : ""}`}
+                  onMouseEnter={() => onThrowMouseEnter(hoverKeyFn(j, t))}
+                  onMouseLeave={() => onThrowMouseOut(hoverKeyFn(j, t))}
                 >
                   {thrw ? (
                     <ThrowCell
@@ -103,10 +153,28 @@ export function ThrowsTable({
       <ThrowsArrows
         jif={jif}
         throws={throws}
+        throwOrbits={throwOrbits}
         containerSelector={`#${CSS.escape(containerId)}`}
         isSynchronous={isSynchronous}
         hoveredKey={hoveredKey}
+        hoverKeyFn={hoverKeyFn}
       />
+      {viewSettings.arrowMode === "orbits" && (
+        <p>
+          Orbits:{" "}
+          {throwOrbits.map((_, i) => (
+            <button
+              key={i}
+              className={`orbit-button ${hoveredKey === `orbit-${i}` ? "hovered" : ""}`}
+              onMouseEnter={() => onThrowMouseEnter(`orbit-${i}`)}
+              onMouseLeave={() => onThrowMouseOut(`orbit-${i}`)}
+              style={{ backgroundColor: ORBIT_COLORS[i % ORBIT_COLORS.length] }}
+            >
+              {i}
+            </button>
+          ))}
+        </p>
+      )}
     </div>
   );
 }
@@ -122,6 +190,7 @@ function ThrowCell({
   isSynchronous: boolean;
   useLetters: boolean;
 }) {
+  const { viewSettings } = useViewSettings();
   const fromJuggler = jif.limbs[thrw.from]?.juggler;
   const toJuggler = jif.limbs[thrw.to]?.juggler;
   const isPass = fromJuggler !== toJuggler;
@@ -137,11 +206,19 @@ function ThrowCell({
   if (isPass) {
     label += `_{${jif.jugglers[toJuggler]?.label ?? "?"}}`;
   }
+  if (viewSettings.showHands) {
+    // TODO: colorize, for some reason \textcolor does not work
+    label += `^{${jif.limbs[thrw.from].label}}`;
+  }
+  if (thrw.isManipulated) {
+    label += "*";
+  }
 
   return (
-    <div className="throw" title={JSON.stringify(thrw)}>
-      {/* key is needed to avoid caching issues */}
-      <MathJax key={label}>$${label}$$</MathJax>
+    <div className="throw">
+      <MathJax inline dynamic>
+        {"$$" + label + "$$"}
+      </MathJax>
     </div>
   );
 }
@@ -149,18 +226,22 @@ function ThrowCell({
 function ThrowsArrows({
   jif,
   throws,
+  throwOrbits,
   containerSelector,
   isSynchronous,
   hoveredKey,
+  hoverKeyFn,
 }: {
   jif: FullJIF;
   throws: ThrowsTableData;
+  throwOrbits: FullThrow[][];
   containerSelector: string;
   isSynchronous: boolean;
   hoveredKey: string | null;
+  hoverKeyFn: (j: number, t: number) => string;
 }) {
   const {
-    viewSettings: { arrowMode },
+    viewSettings: { arrowMode, wrapArrows },
   } = useViewSettings();
 
   let throwsWithArrows: ThrowsTableData;
@@ -177,15 +258,15 @@ function ThrowsArrows({
       arrowTimeDelta = isSynchronous ? 2 : 4;
       break;
     case "orbits":
-      throwsWithArrows = orbits(jif);
+      throwsWithArrows = throwOrbits;
       arrowTimeDelta = 0;
-      colors = ["orange", "aqua", "fuchsia", "lime", "white", "maroon"];
+      colors = ORBIT_COLORS;
       break;
     default:
       return null;
   }
 
-  const allArrows = throwsWithArrows.flatMap((row, i) =>
+  return throwsWithArrows.flatMap((row, i) =>
     row.map((thrw) => {
       if (!thrw) return null;
 
@@ -193,6 +274,9 @@ function ThrowsArrows({
       const j1 = jif.limbs[thrw.from]?.juggler;
       let t2 = t1 + thrw.duration - arrowTimeDelta;
       let j2 = jif.limbs[thrw.to]?.juggler;
+      if (!wrapArrows && (t2 < 0 || t2 >= row.length)) {
+        return null;
+      }
       [t2, j2] = wrapAround(t2, j2, jif);
 
       const color = colors[i % colors.length];
@@ -205,18 +289,10 @@ function ThrowsArrows({
           j2={j2}
           t2={t2}
           color={color}
-          hovered={hoveredKey === `${j1}-${t1}`}
+          hovered={hoveredKey === hoverKeyFn(j1, t1)}
         />
       );
     }),
-  );
-
-  return (
-    <>
-      {allArrows}
-      {arrowMode === "orbits" &&
-        throwsWithArrows.map((_, i) => <span key={i}>{i}</span>)}
-    </>
   );
 }
 
@@ -237,7 +313,7 @@ function ArrowOverlay({
   color?: string;
   hovered?: boolean;
 }) {
-  const svgId = useId();
+  const svgId = useId().replace(/:/g, "x");
 
   useEffect(() => {
     const throwsContainer = document.querySelector(containerSelector);
@@ -266,6 +342,14 @@ function ArrowOverlay({
       thickness: 1.2,
       curvature: 0,
       color,
+      endpoint: {
+        // Ugly hack: arrow-line uses a marker cache that is non-local
+        // to the SVG container and gets sometimes deleted.
+        // Giving them different sizes bypasses the cache.
+        //size: 2 + 0.1 * Math.random(),
+        type: "custom",
+        markerIdentifier: "#__the-holy-marker",
+      },
     });
 
     // Respond to layout changes of the container.
@@ -295,7 +379,16 @@ function getArrowPositions(
     return ["middleRight", "middleLeft"];
   }
   if (t2 < t1) {
-    return ["middleLeft", "middleRight"];
+    return ["bottomLeft", "bottomRight"];
   }
   return ["middleRight", "middleRight"]; // TODO: improve
+}
+
+function tryOrbits(jif: FullJIF): FullThrow[][] {
+  try {
+    return orbits(jif);
+  } catch (e) {
+    console.warn("Failed to calculate orbits:", e);
+    return [];
+  }
 }

@@ -25,7 +25,7 @@ export function loadWithDefaults(jif: JIF): FullJIF {
   const jugglers = rawJugglers.map<FullJuggler>((juggler, j) => ({
     label: def(juggler.label, indexToJugglerName(j)),
     becomes: def(juggler.becomes, j),
-    position: def(juggler.position, [0, 0]),
+    //position: def(juggler.position, [0, 0]),
   }));
 
   const rawLimbs = jif.limbs || emptyObjects(jugglers.length * 2);
