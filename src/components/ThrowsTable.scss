@@ -62,7 +62,9 @@
   }
 
   .throw {
-    margin: auto;
+    margin: 0.75em auto;
+    /* limit size for SVG arrow alignment */
+    max-height: 1.5em;
     max-width: 1.5em;
     display: flex;
     align-items: center;
@@ -70,11 +72,19 @@
   }
 }
 
+.orbit-button {
+  background: white;
+  padding: 0.2em 1em;
+  margin: 0 0.1em;
+}
+
 /* Fancy hover */
-.throws-container:has(.throw-cell:hover) {
+.throws-container:has(.throw-cell:hover),
+.throws-container:has(.orbit-button:hover) {
   .throw-cell,
-  .svg-container {
-    opacity: 0.3;
+  .svg-container,
+  .orbit-button {
+    opacity: 0.15;
 
     &.hovered {
       opacity: 1;

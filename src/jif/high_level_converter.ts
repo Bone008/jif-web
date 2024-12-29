@@ -1,6 +1,22 @@
 import { JIF, Juggler, Throw } from "./jif";
 import { ManipulatorInstruction } from "./manipulation";
 
+export function siteswapToJIF(siteswap: string, numJugglers: number): JIF {
+  const throwStrings = siteswap
+    .toLowerCase()
+    .replace(/[^0-9a-z]/g, "")
+    .split("");
+  const period = throwStrings.length;
+  return {
+    jugglers: Array.from({ length: numJugglers }, (_, j) => ({
+      becomes: (j + period) % numJugglers,
+    })),
+    throws: throwStrings.map((str) => ({
+      duration: parseInt(str, 36),
+    })),
+  };
+}
+
 export type PrechacNotation = string[];
 /**
  * Converts prechac notation to JIF. The input should be given as 1 line per juggler, assuming
@@ -18,7 +34,7 @@ export function prechacToJif(prechac: PrechacNotation): JIF {
     }),
   );
 
-  let period: number | null = null;
+  // let period: number | null = null;
   for (let [j, line] of prechac.entries()) {
     const colonIndex = line.indexOf(":");
     if (colonIndex !== -1) {
@@ -27,10 +43,11 @@ export function prechacToJif(prechac: PrechacNotation): JIF {
     }
     const elements = line.trim().split(/\s+/);
 
-    if (period && elements.length !== period) {
-      throw new Error("instructions must be the same length!");
-    }
-    period = elements.length;
+    // Let's not be too strict on validation ...
+    // if (period && elements.length !== period) {
+    //   throw new Error("instructions must be the same length!");
+    // }
+    // period = elements.length;
     for (const [time, str] of elements.entries()) {
       const { duration, passTarget } = parseInstruction(str);
       const targetJuggler = passTarget === null ? j : passTarget;
