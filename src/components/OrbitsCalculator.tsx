@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { parseManipulator, prechacToJif } from "../jif/high_level_converter";
+import {
+  parseManipulator,
+  prechacToJif,
+  siteswapToJIF,
+} from "../jif/high_level_converter";
 import { JIF } from "../jif/jif";
 import {
   FullJIF,
@@ -28,17 +32,18 @@ import "./OrbitsCalculator.scss";
 import { ThrowsTable } from "./ThrowsTable";
 import { ViewSettingsControls } from "./ViewSettings";
 
-const ALL_PRESET_STRINGS: [string, string][] = [
-  ["3-count", RAW_DATA_3_COUNT_PASSING.join("\n")],
-  ["3-count 2x", RAW_DATA_3_COUNT_PASSING_2X.join("\n")],
-  ["4-count", RAW_DATA_4_COUNT_PASSING.join("\n")],
-  ["4-count 2x", RAW_DATA_4_COUNT_PASSING_2X.join("\n")],
-  ["Walking feed 9c", RAW_DATA_WALKING_FEED_9C.join("\n")],
-  ["Walking feed 9c 2x", RAW_DATA_WALKING_FEED_9C_2X.join("\n")],
-  ["Walking feed 10c", RAW_DATA_WALKING_FEED_10C.join("\n")],
-  ["5-count popcorn", JSON.stringify(DATA_5_COUNT_POPCORN, null, 2)],
-  ["Holy Grail", JSON.stringify(DATA_HOLY_GRAIL, null, 2)],
-];
+const ALL_PRESET_STRINGS: Array<[string, string] | [string, string, string[]]> =
+  [
+    ["3-count", RAW_DATA_3_COUNT_PASSING.join("\n")],
+    ["3-count 2x", RAW_DATA_3_COUNT_PASSING_2X.join("\n")],
+    ["4-count", RAW_DATA_4_COUNT_PASSING.join("\n")],
+    ["4-count 2x", RAW_DATA_4_COUNT_PASSING_2X.join("\n")],
+    ["Walking feed 9c", RAW_DATA_WALKING_FEED_9C.join("\n")],
+    ["Walking feed 9c 2x", RAW_DATA_WALKING_FEED_9C_2X.join("\n")],
+    ["Walking feed 10c", RAW_DATA_WALKING_FEED_10C.join("\n")],
+    ["5-count popcorn", JSON.stringify(DATA_5_COUNT_POPCORN, null, 2)],
+    ["Holy Grail", JSON.stringify(DATA_HOLY_GRAIL, null, 2)],
+  ];
 
 export function OrbitsCalculator() {
   const [presetIndex, setPresetIndex] = useState(0);
@@ -73,6 +78,7 @@ export function OrbitsCalculator() {
   function updatePreset(value: number) {
     setPresetIndex(value);
     setJifInput(ALL_PRESET_STRINGS[value][1]);
+    setManipulationInput(ALL_PRESET_STRINGS[value][2]?.join("\n") ?? "");
   }
 
   return (
@@ -94,16 +100,37 @@ export function OrbitsCalculator() {
             </select>
           </label>
         </p>
-        <label>
-          Enter social siteswap or JIF:
-          <textarea
-            value={jifInput}
-            onChange={(e) => setJifInput(e.target.value)}
-            placeholder=""
-            rows={6}
-            style={{ width: "100%", resize: "vertical" }}
-          ></textarea>
-        </label>
+        <div style={{ display: "flex", gap: "0.5em" }}>
+          <label style={{ flexGrow: 2 }}>
+            <div>Enter social siteswap or JIF:</div>
+            <textarea
+              value={jifInput}
+              onChange={(e) => setJifInput(e.target.value)}
+              placeholder=""
+              rows={6}
+              style={{ width: "100%", resize: "vertical" }}
+            ></textarea>
+          </label>
+          <label
+            style={{
+              flexGrow: 1,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div>Full JIF:</div>
+            <textarea
+              value={JSON.stringify(jif, null, 2)}
+              readOnly
+              style={{
+                width: "100%",
+                flexGrow: 1,
+                fontSize: "80%",
+                background: "lightgray",
+              }}
+            />
+          </label>
+        </div>
         <label>
           Enter manipulator instructions (without carry):
           <textarea
@@ -156,6 +183,8 @@ function processInput(jifInput: string): {
   try {
     if (jifInput.startsWith("{")) {
       jif = JSON.parse(jifInput);
+    } else if (!jifInput.match(/\s/)) {
+      jif = siteswapToJIF(jifInput, 2);
     } else {
       jif = prechacToJif(getCleanedLines(jifInput));
     }

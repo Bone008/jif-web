@@ -2,6 +2,8 @@ import { createContext, useContext, useState, ReactNode } from "react";
 
 export interface ViewSettings {
   arrowMode: "orbits" | "causal" | "ladder" | "none";
+  wrapArrows: boolean;
+  showHands: boolean;
 }
 
 const ViewSettingsContext = createContext<{
@@ -16,6 +18,8 @@ export function ViewSettingsContextProvider({
 }) {
   const [viewSettings, setViewSettings] = useState<ViewSettings>({
     arrowMode: "none",
+    wrapArrows: true,
+    showHands: false,
   });
 
   return (
@@ -41,23 +45,47 @@ export function useViewSettings(): {
 export function ViewSettingsControls() {
   const { viewSettings, setViewSettings } = useViewSettings();
 
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setViewSettings({
-      ...viewSettings,
-      arrowMode: event.target.value as ViewSettings["arrowMode"],
-    });
-  };
-
   return (
-    <p>
+    <p style={{ display: "flex", gap: "2em" }}>
       <label>
         Show arrows:&nbsp;&nbsp;
-        <select value={viewSettings.arrowMode} onChange={handleChange}>
-          <option value="orbits">Orbits</option>
-          <option value="causal">Causal</option>
-          <option value="ladder">Ladder</option>
+        <select
+          value={viewSettings.arrowMode}
+          onChange={(e) =>
+            setViewSettings({
+              ...viewSettings,
+              arrowMode: e.target.value as ViewSettings["arrowMode"],
+            })
+          }
+        >
           <option value="none">None</option>
+          <option value="orbits">Object orbits</option>
+          <option value="ladder">Objects</option>
+          <option value="causal">Causal</option>
         </select>
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={viewSettings.wrapArrows}
+          onChange={(e) =>
+            setViewSettings({ ...viewSettings, wrapArrows: e.target.checked })
+          }
+        />
+        Wrap arrows
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={viewSettings.showHands}
+          onChange={(e) =>
+            setViewSettings({
+              ...viewSettings,
+              showHands: e.target.checked,
+            })
+          }
+        />
+        Show hands
       </label>
     </p>
   );
