@@ -192,17 +192,24 @@ export function ThrowsTable({
       {viewSettings.arrowMode === "orbits" && (
         <p>
           Orbits:{" "}
-          {throwOrbits.map((_, i) => (
-            <button
-              key={i}
-              className={`orbit-button ${hoveredKey === `orbit-${i}` ? "hovered" : ""}`}
-              onMouseEnter={() => onThrowMouseEnter(`orbit-${i}`)}
-              onMouseLeave={() => onThrowMouseOut(`orbit-${i}`)}
-              style={{ backgroundColor: ORBIT_COLORS[i % ORBIT_COLORS.length] }}
-            >
-              {i}
-            </button>
-          ))}
+          {throwOrbits.map((orbit, i) => {
+            const isBeerable = orbit.every(
+              (thrw) => thrw.duration < 3 || thrw.isManipulated,
+            );
+            return (
+              <button
+                key={i}
+                className={`orbit-button ${hoveredKey === `orbit-${i}` ? "hovered" : ""} ${isBeerable ? "beerable" : ""}`}
+                onMouseEnter={() => onThrowMouseEnter(`orbit-${i}`)}
+                onMouseLeave={() => onThrowMouseOut(`orbit-${i}`)}
+                style={{
+                  backgroundColor: ORBIT_COLORS[i % ORBIT_COLORS.length],
+                }}
+              >
+                {i}
+              </button>
+            );
+          })}
         </p>
       )}
     </div>
