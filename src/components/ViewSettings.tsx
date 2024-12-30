@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
+import { useKeyboardShortcut } from "../useKeyboardShortcut";
 
 export interface ViewSettings {
   arrowMode: "orbits" | "causal" | "ladder" | "none";
@@ -44,6 +45,26 @@ export function useViewSettings(): {
 
 export function ViewSettingsControls() {
   const { viewSettings, setViewSettings } = useViewSettings();
+
+  useKeyboardShortcut({
+    key: "o",
+    onKeyPressed: () =>
+      setViewSettings({ ...viewSettings, arrowMode: "orbits" }),
+  });
+  useKeyboardShortcut({
+    key: "c",
+    onKeyPressed: () =>
+      setViewSettings({ ...viewSettings, arrowMode: "causal" }),
+  });
+  useKeyboardShortcut({
+    key: "l",
+    onKeyPressed: () =>
+      setViewSettings({ ...viewSettings, arrowMode: "ladder" }),
+  });
+  useKeyboardShortcut({
+    key: "n",
+    onKeyPressed: () => setViewSettings({ ...viewSettings, arrowMode: "none" }),
+  });
 
   return (
     <p style={{ display: "flex", gap: "2em" }}>

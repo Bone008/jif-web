@@ -21,6 +21,7 @@ declare module "arrow-line" {
     color?: string;
     thickness?: number;
     curvature?: number;
+    endpoint?: any; // TODO: Define this type.
     // Note: Not complete!
   }
 

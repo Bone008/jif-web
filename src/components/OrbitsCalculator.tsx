@@ -29,7 +29,7 @@ export function OrbitsCalculator() {
     ALL_PRESETS[presetIndex].instructions,
   );
   const [disabledInstructions, setDisabledInstructions] = useState<boolean[][]>(
-    [[true, true]],
+    [],
   );
   const {
     error: jifError,
@@ -66,6 +66,7 @@ export function OrbitsCalculator() {
     setPresetIndex(value);
     setJifInput(ALL_PRESETS[value].instructions);
     setManipulationInput(ALL_PRESETS[value].manipulators?.join("\n") ?? "");
+    setDisabledInstructions([]);
   }
 
   return (
@@ -89,7 +90,7 @@ export function OrbitsCalculator() {
         </p>
         <div style={{ display: "flex", gap: "0.5em" }}>
           <label style={{ flexGrow: 2 }}>
-            <div>Enter social siteswap or JIF:</div>
+            <div>Enter social siteswap, 4-handed siteswap, or JIF:</div>
             <textarea
               value={jifInput}
               onChange={(e) => setJifInput(e.target.value)}
@@ -107,7 +108,7 @@ export function OrbitsCalculator() {
           >
             <div>Full JIF:</div>
             <textarea
-              value={JSON.stringify(jif, null, 2)}
+              value={JSON.stringify(jifWithManipulation, null, 2)}
               readOnly
               style={{
                 width: "100%",
@@ -119,7 +120,8 @@ export function OrbitsCalculator() {
           </label>
         </div>
         <label>
-          Enter manipulator instructions (without carry):
+          Enter manipulator instructions (without carry, with <b>source</b>{" "}
+          juggler label):
           <textarea
             value={manipulationInput}
             onChange={(e) => setManipulationInput(e.target.value)}
