@@ -36,18 +36,8 @@
   }
 
   .line {
-    &__m {
-      &:first-child {
-        border-top: 3px solid var(--table-border);
-      }
-
-      &.fancy-hover {
-        cursor: default;
-
-        &:hover {
-          color: orange;
-        }
-      }
+    &__m:first-child {
+      border-top: 3px solid var(--table-border);
     }
     &__hands {
       th {
@@ -70,6 +60,11 @@
     align-items: center;
     justify-content: center;
   }
+
+  .disabled {
+    color: red;
+    box-shadow: 0 0 0 1px red;
+  }
 }
 
 .orbit-button {
@@ -90,42 +85,6 @@
       opacity: 1;
     }
   }
-}
-
-.throws-container:has(.fancy-hover:hover) tr:not(.line__m) td[data-time],
-.throws-container:has(.fancy-hover:hover) .svg-container {
-  opacity: 0.3;
-}
-
-.throws-container:has(td[data-from="A"][data-beat="1"]:hover)
-  [data-juggler="A"]
-  [data-beat="1"],
-.throws-container:has(td[data-from="A"][data-beat="3"]:hover)
-  [data-juggler="A"]
-  [data-beat="3"],
-.throws-container:has(td[data-from="A"][data-beat="5"]:hover)
-  [data-juggler="A"]
-  [data-beat="5"],
-.throws-container:has(td[data-from="B"][data-beat="1"]:hover)
-  [data-juggler="B"]
-  [data-beat="1"],
-.throws-container:has(td[data-from="B"][data-beat="3"]:hover)
-  [data-juggler="B"]
-  [data-beat="3"],
-.throws-container:has(td[data-from="B"][data-beat="5"]:hover)
-  [data-juggler="B"]
-  [data-beat="5"],
-.throws-container:has(td[data-from="C"][data-beat="1"]:hover)
-  [data-juggler="C"]
-  [data-beat="1"],
-.throws-container:has(td[data-from="C"][data-beat="3"]:hover)
-  [data-juggler="C"]
-  [data-beat="3"],
-.throws-container:has(td[data-from="C"][data-beat="5"]:hover)
-  [data-juggler="C"]
-  [data-beat="5"] {
-  opacity: 1;
-  color: orange;
 }
 
 /* Arrows */
