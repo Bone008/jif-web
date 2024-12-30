@@ -21,14 +21,28 @@ const ORBIT_COLORS = [
   "blue",
 ];
 
+export interface FormattedManipulatorInstruction {
+  label: string;
+  /** Index in the initial instructions array. */
+  originalIndex?: number;
+  disabled?: boolean;
+}
+
 export function ThrowsTable({
   jif,
   throws,
-  formattedManipulators,
+  manipulationOptions,
 }: {
   jif: FullJIF;
   throws: ThrowsTableData;
-  formattedManipulators?: string[][];
+  manipulationOptions?: {
+    formattedManipulators: FormattedManipulatorInstruction[][];
+    onSetInstructionDisabled: (
+      manipulatorIndex: number,
+      instructionIndex: number,
+      enabled: boolean,
+    ) => void;
+  };
 }) {
   const containerId = useId();
   const throwOrbits = useMemo(() => tryOrbits(jif), [jif]);
@@ -64,10 +78,11 @@ export function ThrowsTable({
   const useLetters = isSynchronous && hasOnly3Throws;
 
   const manipulatorNameSuffixes =
-    formattedManipulators?.length === 1
+    manipulationOptions?.formattedManipulators.length === 1
       ? [null]
-      : (formattedManipulators?.map((_, i) => <sub key={i}>{i + 1}</sub>) ??
-        []);
+      : (manipulationOptions?.formattedManipulators.map((_, i) => (
+          <sub key={i}>{i + 1}</sub>
+        )) ?? []);
 
   function onThrowMouseEnter(hoverKey: string) {
     setHoveredKey(hoverKey);
@@ -137,15 +152,30 @@ export function ThrowsTable({
           ))}
         </tbody>
         <tfoot>
-          {formattedManipulators?.map((manipulator, i) => (
-            <tr key={i} className="line__m">
-              <td>M{manipulatorNameSuffixes[i]}</td>
+          {manipulationOptions?.formattedManipulators.map((manipulator, m) => (
+            <tr key={m} className="line__m">
+              <td>M{manipulatorNameSuffixes[m]}</td>
               {manipulator.map((instruction, t) => (
-                <td key={t}>
-                  <MathJax key={instruction}>$${instruction}$$</MathJax>
+                <td
+                  key={t}
+                  className={instruction.disabled ? "disabled" : ""}
+                  onClick={
+                    instruction.originalIndex !== undefined
+                      ? () =>
+                          manipulationOptions.onSetInstructionDisabled(
+                            m,
+                            instruction.originalIndex!,
+                            !instruction.disabled,
+                          )
+                      : undefined
+                  }
+                >
+                  <MathJax key={instruction.label}>
+                    $${instruction.label}$$
+                  </MathJax>
                 </td>
               ))}
-              <td>&rarr; M{manipulatorNameSuffixes[i]}</td>
+              <td>&rarr; M{manipulatorNameSuffixes[m]}</td>
             </tr>
           ))}
         </tfoot>
@@ -354,7 +384,14 @@ function ArrowOverlay({
 
     // Respond to layout changes of the container.
     const resizeObserver = new ResizeObserver(() => {
-      arrow.update({});
+      // lol arrow-line
+      arrow.update({
+        endpoint: {
+          type: "custom",
+          markerIdentifier: "#__the-holy-marker",
+          fillColor: undefined,
+        },
+      });
     });
     resizeObserver.observe(throwsContainer);
 
