@@ -92,9 +92,19 @@ export function ThrowsTable({
       setHoveredKey(null);
     }
   }
+  function onThrowTouch(hoverKey: string) {
+    if (hoveredKey === hoverKey) {
+      setHoveredKey(null);
+    } else {
+      setHoveredKey(hoverKey);
+    }
+  }
 
   return (
-    <div id={containerId} className="throws-container">
+    <div
+      id={containerId}
+      className={`throws-container ${hoveredKey !== null ? "hovered" : ""}`}
+    >
       {/* The Holy SVG Arrow Marker */}
       <svg style={{ position: "absolute", width: 0, height: 0 }}>
         <defs>
@@ -133,6 +143,7 @@ export function ThrowsTable({
                   className={`throw-cell ${hoveredKey === hoverKeyFn(j, t) ? "hovered" : ""}`}
                   onMouseEnter={() => onThrowMouseEnter(hoverKeyFn(j, t))}
                   onMouseLeave={() => onThrowMouseOut(hoverKeyFn(j, t))}
+                  onTouchStart={() => onThrowTouch(hoverKeyFn(j, t))}
                 >
                   {thrw ? (
                     <ThrowCell
