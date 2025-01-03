@@ -1,4 +1,4 @@
-@import "../breakpoints.scss";
+@use "../breakpoints";
 
 .card {
   margin: 0.8em 0;
@@ -24,7 +24,7 @@
     margin-bottom: 0;
   }
 
-  @include sm {
+  @include breakpoints.sm {
     border-radius: 0;
     border-left: none;
     border-right: none;
