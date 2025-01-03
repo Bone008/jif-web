@@ -1,4 +1,4 @@
-@import "breakpoints.scss";
+@use "breakpoints";
 
 * {
   box-sizing: border-box;
@@ -31,7 +31,7 @@ body {
   padding: 0 2em;
   flex-grow: 1;
 
-  @include sm {
+  @include breakpoints.sm {
     padding: 0;
   }
 }
@@ -57,7 +57,7 @@ h1 {
   font-size: 2.2em;
   line-height: 1.1;
 
-  @include sm {
+  @include breakpoints.sm {
     text-align: center;
   }
 }
