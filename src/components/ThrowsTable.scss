@@ -86,8 +86,7 @@
 }
 
 /* Fancy hover */
-.throws-container:has(.throw-cell:hover),
-.throws-container:has(.orbit-button:hover) {
+.throws-container.hovered {
   .throw-cell,
   .svg-container,
   .orbit-button {
@@ -100,6 +99,9 @@
 }
 
 /* Arrows */
+.svg-container {
+  transition: opacity 200ms linear;
+}
 .svg-arrows {
   position: absolute;
   top: 0;
@@ -108,5 +110,4 @@
   height: 100%;
   overflow: visible; /* height does not go past scrolling */
   pointer-events: none;
-  transition: opacity 200ms linear;
 }
