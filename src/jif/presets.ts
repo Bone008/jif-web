@@ -33,17 +33,17 @@ export const ALL_PRESETS: Preset[] = [
       "3B 3  3  3B 3  3  3B 3  3  3B 3  3  3B 3  3",
       "3A 3  3  3A 3  3  3A 3  3  3A 3  3  3A 3  3",
     ].join("\n"),
-    manipulators: ["- - - ia"],
+    manipulators: ["- - - i1a"],
   },
   {
     name: "TODO: Dolby 5.1",
     instructions: ["3B 3  3  3  3", "3A 3  3  3  3"].join("\n"),
-    manipulators: ["sA iiB -  -  -"],
+    manipulators: ["sA i2B -  -  -"],
   },
   {
     name: "TODO: Dolby 5.1 with Doppelgänger",
     instructions: ["3B 3  3  3  3", "3A 3  3  3  3"].join("\n"),
-    manipulators: ["sA iiB -  -  -", "sB iiA -  -  -"],
+    manipulators: ["sA i2B -  -  -", "sB i2A -  -  -"],
   },
   { name: "4-count", instructions: RAW_DATA_4_COUNT_PASSING.join("\n") },
   { name: "4-count 2x", instructions: RAW_DATA_4_COUNT_PASSING_2X.join("\n") },
@@ -59,18 +59,18 @@ export const ALL_PRESETS: Preset[] = [
     name: "Scrambled - iB cB sA - B",
     instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
     // Standard notation: ["iB cB sA", "#2.4", "Unscrambled B"],
-    manipulators: ["iiA - - - sB"],
+    manipulators: ["i2A - - - sB"],
   },
   {
     name: "Scrambled - cB sC iC - Postmen",
     instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
     // Standard notation: ["cB sC iC", "#1.9", "Postmen"],
-    manipulators: ["- - sA - iiC"],
+    manipulators: ["- - sA - i2C"],
   },
   {
     name: "Scrambled - iA cC sC - Ivy",
     instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
-    manipulators: ["iiB - - - sC"],
+    manipulators: ["i2B - - - sC"],
   },
   {
     name: "Walking feed 10c",
@@ -79,7 +79,7 @@ export const ALL_PRESETS: Preset[] = [
   {
     name: "Ambled - Choptopus",
     instructions: RAW_DATA_WALKING_FEED_10C.join("\n"),
-    manipulators: ["- sB - iic - - -"],
+    manipulators: ["- sB - i2c - - -"],
   },
   {
     name: "5-count popcorn",
@@ -100,6 +100,6 @@ export const ALL_PRESETS: Preset[] = [
   {
     name: "TODO: Muckabout",
     instructions: ["3 3c 3 3 3b 3", "3 3 3 3 3a 3", "3 3a 3 3 3 3"].join("\n"),
-    manipulators: ["- sa - iic - -", "iib - - - sb -"],
+    manipulators: ["- sa - i2c - -", "i2b - - - sb -"],
   },
 ];

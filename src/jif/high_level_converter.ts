@@ -112,19 +112,28 @@ export function parseManipulator(
     if (part.match(/^-+$/)) {
       continue;
     }
-    const match = part.toLowerCase().match(/^(s|i|ii)([a-z])$/);
+    const match = part.toLowerCase().match(/^(s|i|i1|i2)([a-z])$/);
     if (!match) {
       throw new Error(
         `Invalid manipulator instruction: ${part}\n` +
-          `Expected something like "sA", "iA", or "iiA", with - as placeholder.`,
+        `Expected something like "sA", "iA", or "i1A", with "-" as placeholder.`,
       );
     }
-    const type =
-      match[1] === "s"
-        ? "substitute"
-        : match[1] === "i"
-          ? "intercept1b"
-          : "intercept2b";
+    let type: ManipulatorInstruction["type"];
+    switch (match[1]) {
+      case "s":
+        type = "substitute";
+        break;
+      case "i1":
+        type = "intercept1b";
+        break;
+      case "i":
+      case "i2":
+        type = "intercept2b";
+        break;
+      default:
+        throw new Error();
+    }
     manipulator.push({
       type,
       throwTime: beat,
