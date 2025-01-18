@@ -17,7 +17,7 @@ import {
   getThrowFromJuggler,
   ManipulatorInstruction,
 } from "../jif/manipulation";
-import { getThrowsTable, ThrowsTableData } from "../jif/orbits";
+import { getThrowsTable, ThrowsTableData, wrapAround } from "../jif/orbits";
 import { ALL_PRESETS } from "../jif/presets";
 import "./OrbitsCalculator.scss";
 import { FormattedManipulatorInstruction, ThrowsTable } from "./ThrowsTable";
@@ -121,7 +121,8 @@ export function OrbitsCalculator() {
         </div>
         <label>
           Enter manipulator instructions (with <b>source</b> juggler label,{" "}
-          <code>i</code> = intercept with 2-beat carry, <code>i1</code> = with 1-beat carry):
+          <code>i</code> = intercept with 2-beat carry, <code>i1</code> = with
+          1-beat carry):
           <textarea
             value={manipulationInput}
             onChange={(e) => setManipulationInput(e.target.value)}
@@ -263,7 +264,19 @@ function formatManipulator(
     { length: period },
     () => ({ label: "-" }),
   );
-  for (const [i, { type, throwTime, throwFromJuggler }] of spec.entries()) {
+
+  function markThrow(thrw: FullThrow, letter: string, i: number) {
+    const source = jif.jugglers[jif.limbs[thrw.from].juggler].label;
+    const destination = jif.jugglers[jif.limbs[thrw.to].juggler].label;
+    result[thrw.time] = {
+      label: `${letter}^{${source}}_{${destination}}`,
+      disabled: disabledInstructions[i],
+      originalIndex: i,
+    };
+  }
+
+  for (const [i, instruction] of spec.entries()) {
+    const { type, throwTime, throwFromJuggler } = instruction;
     const thrw = getThrowFromJuggler(
       jif,
       throwFromJuggler,
@@ -274,17 +287,44 @@ function formatManipulator(
         `Could not find throw for manipulation at beat ${throwTime + 1} from juggler ${throwFromJuggler}!`,
       );
     }
-    const source = jif.jugglers[jif.limbs[thrw.from].juggler].label;
-    const destination = jif.jugglers[jif.limbs[thrw.to].juggler].label;
-    const letter =
-      type === "substitute" ? "S" : type === "intercept1b" ? "I" : "Ii";
-    result[throwTime] = {
-      label: `${letter}^{${source}}_{${destination}}`,
-      disabled: disabledInstructions[i],
-      originalIndex: i,
-    };
+    const letter = type === "substitute" ? "S" : "I";
+    markThrow(thrw, letter, i);
+
+    if (type !== "substitute") {
+      const carryThrow = calculateTheCarry(jif, instruction);
+      markThrow(carryThrow, "C", i);
+    }
   }
   return result;
+}
+
+// TODO: Remove this hard-coded workaround once carries are generalized.
+function calculateTheCarry(
+  jif: FullJIF,
+  intercept: ManipulatorInstruction,
+): FullThrow {
+  const numThrowsLater = intercept.type === "intercept1b" ? 1 : 2;
+  const causalBeats = 2; // TODO: hardcoded assumption of sync pattern
+
+  const throwsTable = getThrowsTable(jif);
+  // Follow the causal chain of arrows to identify the throw that is being carried.
+  let time = intercept.throwTime;
+  let throwingJuggler = intercept.throwFromJuggler;
+  let thrw: FullThrow | null = null;
+  // Loop N+1 times, since N=0 just resolves the intercepted throw itself.
+  for (let i = 0; i <= numThrowsLater; i++) {
+    thrw = throwsTable[throwingJuggler][time];
+    if (!thrw) {
+      throw new Error(
+        `Could not find throw for manipulation at beat ${time + 1} from juggler ${throwingJuggler}!`,
+      );
+    }
+    time += thrw.duration - causalBeats;
+    throwingJuggler = jif.limbs[thrw.to].juggler;
+    [time, throwingJuggler] = wrapAround(time, throwingJuggler, jif);
+  }
+
+  return thrw!;
 }
 
 function getCleanedLines(value: string) {
