@@ -116,7 +116,7 @@ export function parseManipulator(
     if (!match) {
       throw new Error(
         `Invalid manipulator instruction: ${part}\n` +
-        `Expected something like "sA", "iA", or "i1A", with "-" as placeholder.`,
+          `Expected something like "sA", "iA", or "i1A", with "-" as placeholder.`,
       );
     }
     let type: ManipulatorInstruction["type"];
