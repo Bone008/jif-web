@@ -120,8 +120,8 @@ export function OrbitsCalculator() {
           </label>
         </div>
         <label>
-          Enter manipulator instructions (without carry, with <b>source</b>{" "}
-          juggler label):
+          Enter manipulator instructions (with <b>source</b> juggler label,{" "}
+          <code>i</code> = intercept with 2-beat carry, <code>i1</code> = with 1-beat carry):
           <textarea
             value={manipulationInput}
             onChange={(e) => setManipulationInput(e.target.value)}
