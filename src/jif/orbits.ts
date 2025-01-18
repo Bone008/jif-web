@@ -3,6 +3,7 @@ import { FullJIF, FullThrow, inferPeriod } from "./jif_loader";
 
 export type ThrowsTableData = Array<FullThrow | null>[];
 
+/** Returns a table of throws, first indexed by juggler, then by the beat/time. */
 export function getThrowsTable(data: FullJIF): ThrowsTableData {
   // Assumptions: integer throws, only 1 throw per juggler per beat
   const period = inferPeriod(data);
