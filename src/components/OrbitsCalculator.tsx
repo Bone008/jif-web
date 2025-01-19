@@ -330,6 +330,6 @@ function calculateTheCarry(
 function getCleanedLines(value: string) {
   return value
     .split("\n")
-    .map((line) => line.trim().replace(/[^\w\s:-]/g, ""))
+    .map((line) => line.trim().replace(/[^\w\s:\->]/g, ""))
     .filter((line) => line.length > 0);
 }
