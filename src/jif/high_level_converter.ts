@@ -1,4 +1,5 @@
 import { JIF, Juggler, Throw } from "./jif";
+import { indexToJugglerName } from "./jif_loader";
 import { ManipulatorInstruction } from "./manipulation";
 
 export function siteswapToJIF(siteswap: string, numJugglers: number): JIF {
@@ -30,17 +31,30 @@ export function prechacToJif(prechac: PrechacNotation): JIF {
   const jifJugglers: Juggler[] = Array.from(
     { length: prechac.length },
     (_, j) => ({
+      label: indexToJugglerName(j),
+      // Default relabeling: become next juggler in line.
       becomes: (j + 1) % prechac.length,
     }),
   );
 
+  const relabelTargets: string[] = [];
+
   // let period: number | null = null;
   for (let [j, line] of prechac.entries()) {
+    // Extract optional label.
     const colonIndex = line.indexOf(":");
     if (colonIndex !== -1) {
       jifJugglers[j].label = line.slice(0, colonIndex).trim();
       line = line.slice(colonIndex + 1);
     }
+
+    // Extract optional relabeling target.
+    const relabelingMatch = line.match(/(?:-|=)>\s*(\S+)$/);
+    if (relabelingMatch) {
+      relabelTargets[j] = relabelingMatch[1];
+      line = line.slice(0, relabelingMatch.index);
+    }
+
     const elements = line.trim().split(/\s+/);
 
     // Let's not be too strict on validation ...
@@ -60,6 +74,29 @@ export function prechacToJif(prechac: PrechacNotation): JIF {
       });
     }
   }
+
+  // Apply relabeling. If any relabeling is applied, the default value of "becomes" is
+  // changed to the identity function.
+  if (relabelTargets.length > 0) {
+    console.log("ra ra relabel", relabelTargets);
+    for (let j = 0; j < numJugglers; j++) {
+      const target = relabelTargets[j];
+      if (target) {
+        const targetIndex = jifJugglers.findIndex(
+          (j) => j.label?.toLowerCase() === target.toLowerCase(),
+        );
+        if (targetIndex === -1) {
+          throw new Error(
+            `Could not find target juggler with label: ${target}`,
+          );
+        }
+        jifJugglers[j].becomes = targetIndex;
+      } else {
+        jifJugglers[j].becomes = j;
+      }
+    }
+  }
+
   return {
     jugglers: jifJugglers,
     limbs: Array.from({ length: prechac.length * 2 }, (_, l) => ({
@@ -80,9 +117,7 @@ const REGEX_INSTRUCTION = /^([0-9a-z])([a-z])?$/i;
 function parseInstruction(str: string): PrechacInstruction {
   const match = REGEX_INSTRUCTION.exec(str);
   if (!match) {
-    throw new Error(
-      "throw must match (single-letter throw)(pass target)?(!manipulation)?",
-    );
+    throw new Error("throw must match (single-letter throw)(pass target)?");
   }
 
   const duration = parseInt(match[1], 36);
