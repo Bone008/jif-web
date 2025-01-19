@@ -120,6 +120,11 @@ export function addManipulator(
           const deltaToThreshold = nextThrow.time! - causalThreshold;
           const limbKind = jif.limbs[nextThrow.from!].kind!;
 
+          if (isLateCarry && deltaToThreshold === 1) {
+            // Late carry: This is the carry, mark it as such!
+            nextThrow.isManipulated = true;
+          }
+      
           // Early carry: All throws starting after the threshold are thrown BY the old manipulator.
           // Late carry: The first throw after the threshold is still thrown (carried) BY juggler.
           if (
@@ -132,7 +137,6 @@ export function addManipulator(
           // This is the crucial throw! Early carry: This is the carry and can stay as-is.
           // Late carry: This throw is delayed a beat and thrown by the old manipulator instead.
           else if (deltaToThreshold === 0) {
-            nextThrow.isManipulated = true;
             if (isLateCarry) {
               //console.log(`DEBUG: found throw to delay:`, nextThrow);
               // Insert a 2 here instead, which is the 1 from new manipulator's (t+1) thrown earlier.
@@ -147,6 +151,9 @@ export function addManipulator(
               nextThrow.from =
                 limbKind === "right_hand" ? manipAltLimb : manipLimb;
               // TODO Check if limb handedness is correct.
+            } else {
+              // Early carry: This is the carry!
+              nextThrow.isManipulated = true;
             }
           }
         }
