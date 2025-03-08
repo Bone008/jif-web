@@ -82,6 +82,14 @@ export const ALL_PRESETS: Preset[] = [
     manipulators: ["- sB - i2c - - -"],
   },
   {
+    name: "7-club PPS-about",
+    instructions: [
+      "4b 4b 3 4b 4b 3 4b 4b 3 4b 4b 3 -> A",
+      "3 3a 4a 3 3a 4a 3 3a 4a 3 3a 4a -> B",
+    ].join("\n"),
+    manipulators: ["- iA - - - - - iB"],
+  },
+  {
     name: "5-count popcorn",
     instructions: "a6667",
   },
