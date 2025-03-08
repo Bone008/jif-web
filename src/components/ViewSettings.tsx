@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-import { useKeyboardShortcut } from "../useKeyboardShortcut";
+import { useKeyboardShortcut } from "../hooks/useKeyboardShortcut";
 
 export interface ViewSettings {
   arrowMode: "orbits" | "causal" | "ladder" | "none";
