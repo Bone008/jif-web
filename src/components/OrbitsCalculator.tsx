@@ -1,11 +1,12 @@
+import _ from "lodash";
 import { useMemo, useState } from "react";
+import { useSearchParams } from "../hooks/useSearchParams";
 import {
   parseManipulator,
   prechacToJif,
   siteswapToJIF,
 } from "../jif/high_level_converter";
 import { JIF } from "../jif/jif";
-import _ from "lodash";
 import {
   FullJIF,
   FullThrow,
@@ -18,16 +19,65 @@ import {
   ManipulatorInstruction,
 } from "../jif/manipulation";
 import { getThrowsTable, ThrowsTableData, wrapAround } from "../jif/orbits";
-import { ALL_PRESETS } from "../jif/presets";
+import {
+  ALL_PRESETS,
+  findPresetByName,
+  Preset,
+  sanitizePresetName,
+} from "../jif/presets";
 import "./OrbitsCalculator.scss";
 import { FormattedManipulatorInstruction, ThrowsTable } from "./ThrowsTable";
 import { ViewSettingsControls } from "./ViewSettings";
 
+const PRESET_NAME_PARAM = "pattern";
+const INSTRUCTIONS_PARAM = "q";
+const MANIPULATION_PARAM = "m";
+
 export function OrbitsCalculator() {
-  const [presetIndex, setPresetIndex] = useState(0);
-  const [jifInput, setJifInput] = useState<string>(
-    ALL_PRESETS[presetIndex].instructions,
-  );
+  const search = useSearchParams();
+
+  const presetSearchName = search.get(PRESET_NAME_PARAM);
+  const preset = findPresetByName(presetSearchName ?? "");
+  const jifInput = search.get(INSTRUCTIONS_PARAM) ?? preset?.instructions ?? "";
+  const manipulationInput =
+    search.get(MANIPULATION_PARAM) ?? preset?.manipulators?.join("\n") ?? "";
+
+  function setPreset(newPreset: Preset | null) {
+    if (newPreset === preset) {
+      return;
+    }
+
+    if (newPreset) {
+      search.setAll({
+        [PRESET_NAME_PARAM]: sanitizePresetName(newPreset.name),
+      });
+    } else {
+      // When setting to "custom", fill in the inputs with the preset values.
+      search.setAll({
+        [INSTRUCTIONS_PARAM]: preset!.instructions,
+        [MANIPULATION_PARAM]: preset!.manipulators?.join("\n") ?? null,
+      });
+    }
+  }
+
+  function setJifInput(value: string | null) {
+    if (value) {
+      setPreset(null);
+      search.set(INSTRUCTIONS_PARAM, value, true);
+    } else {
+      search.delete(INSTRUCTIONS_PARAM);
+    }
+  }
+
+  function setManipulationInput(value: string | null) {
+    if (value) {
+      setPreset(null);
+      search.set(MANIPULATION_PARAM, value, true);
+    } else {
+      search.delete(MANIPULATION_PARAM);
+    }
+  }
+
   const [disabledInstructions, setDisabledInstructions] = useState<boolean[][]>(
     [],
   );
@@ -37,7 +87,6 @@ export function OrbitsCalculator() {
     throwsTable,
   } = useMemo(() => processInput(jifInput), [jifInput]);
 
-  const [manipulationInput, setManipulationInput] = useState<string>("");
   const {
     error: manipulationError,
     manipulators,
@@ -62,29 +111,29 @@ export function OrbitsCalculator() {
     [jif, manipulators, disabledInstructions],
   );
 
-  function updatePreset(value: number) {
-    setPresetIndex(value);
-    setJifInput(ALL_PRESETS[value].instructions);
-    setManipulationInput(ALL_PRESETS[value].manipulators?.join("\n") ?? "");
+  function updatePreset(name: string) {
+    const newPreset = findPresetByName(name);
+    setPreset(newPreset);
     setDisabledInstructions([]);
   }
 
   return (
     <>
-      <h1>Orbits Calculator</h1>
+      <h1>Passing Pattern Notations</h1>
       <div className="card stretch">
         <p>
           <label>
             Preset:&nbsp;&nbsp;
             <select
-              value={presetIndex}
-              onChange={(e) => updatePreset(Number(e.target.value))}
+              value={preset ? sanitizePresetName(preset.name) : "custom"}
+              onChange={(e) => updatePreset(e.target.value)}
             >
               {ALL_PRESETS.map((preset, i) => (
-                <option key={i} value={i}>
+                <option key={i} value={sanitizePresetName(preset.name)}>
                   {preset.name}
                 </option>
               ))}
+              <option value="custom">Custom</option>
             </select>
           </label>
         </p>
@@ -328,6 +377,7 @@ function calculateTheCarry(
 }
 
 function getCleanedLines(value: string) {
+  // Split by newline, trim whitespace, remove non-alphanumeric characters.
   return value
     .split("\n")
     .map((line) => line.trim().replace(/[^\w\s:\->]/g, ""))

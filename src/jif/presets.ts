@@ -8,7 +8,7 @@ import {
   RAW_DATA_WALKING_FEED_9C_2X,
 } from "./test_data";
 
-interface Preset {
+export interface Preset {
   name: string;
   instructions: string;
   manipulators?: string[];
@@ -103,3 +103,14 @@ export const ALL_PRESETS: Preset[] = [
     manipulators: ["- sa - i2c - -", "i2b - - - sb -"],
   },
 ];
+
+export function sanitizePresetName(name: string) {
+  return name.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+}
+
+export function findPresetByName(name: string): Preset | null {
+  return (
+    ALL_PRESETS.find((preset) => sanitizePresetName(preset.name) === name) ??
+    null
+  );
+}
