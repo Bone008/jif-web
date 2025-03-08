@@ -117,69 +117,88 @@ export function OrbitsCalculator() {
     setDisabledInstructions([]);
   }
 
+  // TODO: move to a separate component
+  const [inputCardExpanded, setInputCardExpanded] = useState(preset === null);
+
   return (
     <>
       <h1>Passing Pattern Notations</h1>
       <div className="card stretch">
-        <p>
-          <label>
-            Preset:&nbsp;&nbsp;
-            <select
-              value={preset ? sanitizePresetName(preset.name) : "custom"}
-              onChange={(e) => updatePreset(e.target.value)}
-            >
-              {ALL_PRESETS.map((preset, i) => (
-                <option key={i} value={sanitizePresetName(preset.name)}>
-                  {preset.name}
-                </option>
-              ))}
-              <option value="custom">Custom</option>
-            </select>
-          </label>
-        </p>
-        <div style={{ display: "flex", gap: "0.5em" }}>
-          <label style={{ flexGrow: 2 }}>
-            <div>Enter social siteswap, 4-handed siteswap, or JIF:</div>
-            <textarea
-              value={jifInput}
-              onChange={(e) => setJifInput(e.target.value)}
-              placeholder=""
-              rows={6}
-              style={{ width: "100%", resize: "vertical" }}
-            ></textarea>
-          </label>
-          <label
-            style={{
-              flexGrow: 1,
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div>Full JIF:</div>
-            <textarea
-              value={JSON.stringify(jifWithManipulation, null, 2)}
-              readOnly
-              style={{
-                width: "100%",
-                flexGrow: 1,
-                fontSize: "80%",
-                background: "lightgray",
-              }}
-            />
-          </label>
-        </div>
-        <label>
-          Enter manipulator instructions (with <b>source</b> juggler label,{" "}
-          <code>i</code> = intercept with 2-beat carry, <code>i1</code> = with
-          1-beat carry):
-          <textarea
-            value={manipulationInput}
-            onChange={(e) => setManipulationInput(e.target.value)}
-            placeholder=""
-            rows={2}
-            style={{ width: "100%", resize: "vertical" }}
-          ></textarea>
-        </label>
+        {inputCardExpanded ? (
+          <>
+            {" "}
+            <p style={{ display: "flex" }}>
+              <label style={{ flexGrow: 1 }}>
+                Select preset:&nbsp;&nbsp;
+                <select
+                  value={preset ? sanitizePresetName(preset.name) : "custom"}
+                  onChange={(e) => updatePreset(e.target.value)}
+                >
+                  {ALL_PRESETS.map((preset, i) => (
+                    <option key={i} value={sanitizePresetName(preset.name)}>
+                      {preset.name}
+                    </option>
+                  ))}
+                  <option value="custom">Custom</option>
+                </select>
+              </label>
+
+              <button type="button" onClick={() => setInputCardExpanded(false)}>
+                Hide
+              </button>
+            </p>
+            <div style={{ display: "flex", gap: "0.5em" }}>
+              <label style={{ flexGrow: 2 }}>
+                <div>Enter social siteswap, 4-handed siteswap, or JIF:</div>
+                <textarea
+                  value={jifInput}
+                  onChange={(e) => setJifInput(e.target.value)}
+                  placeholder=""
+                  rows={6}
+                  style={{ width: "100%", resize: "vertical" }}
+                ></textarea>
+              </label>
+              <label
+                style={{
+                  flexGrow: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <div>Full JIF:</div>
+                <textarea
+                  value={JSON.stringify(jifWithManipulation, null, 2)}
+                  readOnly
+                  style={{
+                    width: "100%",
+                    flexGrow: 1,
+                    fontSize: "80%",
+                    background: "lightgray",
+                  }}
+                />
+              </label>
+            </div>
+            <label>
+              Enter manipulator instructions (with <b>source</b> juggler label,{" "}
+              <code>i</code> = intercept with 2-beat carry, <code>i1</code> =
+              with 1-beat carry):
+              <textarea
+                value={manipulationInput}
+                onChange={(e) => setManipulationInput(e.target.value)}
+                placeholder=""
+                rows={2}
+                style={{ width: "100%", resize: "vertical" }}
+              ></textarea>
+            </label>
+          </>
+        ) : (
+          <div style={{ display: "flex", gap: "2em" }}>
+            <h2 style={{ margin: 0 }}>{preset?.name ?? "Unnamed pattern"}</h2>
+            <button type="button" onClick={() => setInputCardExpanded(true)}>
+              Edit
+            </button>
+          </div>
+        )}
         <ViewSettingsControls />
       </div>
 

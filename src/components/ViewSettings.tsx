@@ -88,16 +88,6 @@ export function ViewSettingsControls() {
       <label>
         <input
           type="checkbox"
-          checked={viewSettings.wrapArrows}
-          onChange={(e) =>
-            setViewSettings({ ...viewSettings, wrapArrows: e.target.checked })
-          }
-        />
-        Wrap arrows
-      </label>
-      <label>
-        <input
-          type="checkbox"
           checked={viewSettings.showHands}
           onChange={(e) =>
             setViewSettings({
@@ -107,6 +97,20 @@ export function ViewSettingsControls() {
           }
         />
         Show hands
+      </label>
+      <label
+        style={{
+          display: viewSettings.arrowMode === "none" ? "none" : undefined,
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={viewSettings.wrapArrows}
+          onChange={(e) =>
+            setViewSettings({ ...viewSettings, wrapArrows: e.target.checked })
+          }
+        />
+        Wrap arrows
       </label>
     </p>
   );
