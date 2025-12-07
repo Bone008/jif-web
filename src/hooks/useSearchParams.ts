@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { createContainer } from "unstated-next";
 
-export function useSearchParams() {
+export const SearchParamsContainer = createContainer(() => {
   const [params, setParams] = useState(
     new URLSearchParams(window.location.search),
   );
@@ -37,9 +38,11 @@ export function useSearchParams() {
     values: Record<string, string | null>,
     replace: boolean = false,
   ) {
-    const newParams = new URLSearchParams();
+    const newParams = new URLSearchParams(window.location.search);
     for (const [key, value] of Object.entries(values)) {
-      if (value !== null && value !== undefined) {
+      if (value === null || value === undefined) {
+        newParams.delete(key);
+      } else {
         newParams.set(key, value);
       }
     }
@@ -53,4 +56,6 @@ export function useSearchParams() {
   }
 
   return { get, set, setAll, delete: delete_ };
-}
+});
+
+export const useSearchParams = SearchParamsContainer.useContainer;
