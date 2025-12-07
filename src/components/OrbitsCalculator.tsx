@@ -30,6 +30,7 @@ import { FormattedManipulatorInstruction, ThrowsTable } from "./ThrowsTable";
 import { ViewSettingsControls } from "./ViewSettings";
 import { useEmbedMode } from "../hooks/useEmbedMode";
 import { CollapsibleTile } from "./CollapsibleTile";
+import { EmbedLink } from "./EmbedLink";
 
 const PRESET_NAME_PARAM = "pattern";
 const INSTRUCTIONS_PARAM = "q";
@@ -130,7 +131,10 @@ export function OrbitsCalculator() {
 
   return (
     <>
-      <h1 className="pageTitle">Passing Pattern Notations</h1>
+      <div className="pageHeader">
+        <h1>Passing Pattern Notations</h1>
+        <EmbedLink />
+      </div>
       {headerDisplayState === "embed" && (
         <CollapsibleTile>
           <ViewSettingsControls />
