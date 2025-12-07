@@ -37,6 +37,13 @@
   }
 }
 
-.embed .pageTitle {
-  display: none;
+.pageHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  .embed & {
+    display: none;
+  }
 }
