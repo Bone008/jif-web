@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { useMemo, useState } from "react";
+import { useEmbedMode } from "../hooks/useEmbedMode";
 import { useSearchParams } from "../hooks/useSearchParams";
 import {
   parseManipulator,
@@ -25,12 +26,11 @@ import {
   Preset,
   sanitizePresetName,
 } from "../jif/presets";
+import { CollapsibleTile } from "./CollapsibleTile";
+import { EmbedLink } from "./EmbedLink";
 import "./OrbitsCalculator.scss";
 import { FormattedManipulatorInstruction, ThrowsTable } from "./ThrowsTable";
 import { ViewSettingsControls } from "./ViewSettings";
-import { useEmbedMode } from "../hooks/useEmbedMode";
-import { CollapsibleTile } from "./CollapsibleTile";
-import { EmbedLink } from "./EmbedLink";
 
 const PRESET_NAME_PARAM = "pattern";
 const INSTRUCTIONS_PARAM = "q";

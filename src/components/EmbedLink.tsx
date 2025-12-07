@@ -1,8 +1,9 @@
 import { MouseEvent, useState } from "react";
 import "./EmbedLink.scss";
+import { getUrlWithEmbedMode } from "../hooks/useEmbedMode";
 
 export function EmbedLink() {
-  const embedUrl = location.href + (location.search ? "&" : "?") + "embed=1";
+  const embedUrl = getUrlWithEmbedMode();
   const [isCopied, setIsCopied] = useState(false);
 
   function handleClick(e: MouseEvent) {

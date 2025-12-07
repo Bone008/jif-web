@@ -1,18 +1,23 @@
 import React, { useState } from "react";
+import { getUrlWithoutEmbedMode } from "../hooks/useEmbedMode";
 import "./CollapsibleTile.scss";
 
-interface CollapsibleTileProps {
-  children: React.ReactNode;
-}
-
-export const CollapsibleTile: React.FC<CollapsibleTileProps> = ({
-  children,
-}) => {
+export function CollapsibleTile({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className={`collapsible-tile ${isOpen ? "open" : ""}`}>
-      <div className="collapsible-tile__panel">{children}</div>
+      <div className="collapsible-tile__panel">
+        {children}
+        <a
+          className="showMoreButton"
+          href={getUrlWithoutEmbedMode()}
+          target="_blank"
+          title="Show more details"
+        >
+          ↗️
+        </a>
+      </div>
       <button
         className="collapsible-tile__settings"
         onClick={() => setIsOpen(!isOpen)}
@@ -22,4 +27,4 @@ export const CollapsibleTile: React.FC<CollapsibleTileProps> = ({
       </button>
     </div>
   );
-};
+}
