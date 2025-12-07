@@ -1,19 +1,41 @@
-import { HTMLAttributes, useState } from "react";
+import { HTMLAttributes, useMemo } from "react";
 import { createContainer } from "unstated-next";
 import { useKeyboardShortcut } from "../hooks/useKeyboardShortcut";
+import { useSearchParams } from "../hooks/useSearchParams";
+
+const ARROW_MODES = ["orbits", "causal", "ladder", "none"] as const;
+type ArrowMode = (typeof ARROW_MODES)[number];
 
 export interface ViewSettings {
-  arrowMode: "orbits" | "causal" | "ladder" | "none";
+  arrowMode: ArrowMode;
   wrapArrows: boolean;
   showHands: boolean;
 }
 
 export const ViewSettingsContainer = createContainer(() => {
-  const [viewSettings, setViewSettings] = useState<ViewSettings>({
-    arrowMode: "none",
-    wrapArrows: true,
-    showHands: false,
-  });
+  const searchParams = useSearchParams();
+
+  const viewSettings: ViewSettings = useMemo(() => {
+    const arrowModeParam = searchParams.get("arrowMode");
+    const wrapArrowsParam = searchParams.get("wrapArrows");
+    const showHandsParam = searchParams.get("showHands");
+
+    return {
+      arrowMode: ARROW_MODES.includes(arrowModeParam as any)
+        ? (arrowModeParam as ArrowMode)
+        : "none",
+      wrapArrows: wrapArrowsParam === "0" ? false : true,
+      showHands: showHandsParam === "1" ? true : false,
+    };
+  }, [searchParams]);
+
+  const setViewSettings = (newSettings: ViewSettings) => {
+    searchParams.setAll({
+      arrowMode: newSettings.arrowMode,
+      wrapArrows: newSettings.wrapArrows ? "1" : "0",
+      showHands: newSettings.showHands ? "1" : "0",
+    });
+  };
 
   return { viewSettings, setViewSettings };
 });
