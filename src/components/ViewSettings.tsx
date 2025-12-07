@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  HTMLAttributes,
+  ReactNode,
+  useContext,
+  useState,
+} from "react";
 import { useKeyboardShortcut } from "../hooks/useKeyboardShortcut";
 
 export interface ViewSettings {
@@ -43,7 +49,10 @@ export function useViewSettings(): {
   return context;
 }
 
-export function ViewSettingsControls() {
+export function ViewSettingsControls({
+  style,
+  ...other
+}: HTMLAttributes<HTMLDivElement>) {
   const { viewSettings, setViewSettings } = useViewSettings();
 
   useKeyboardShortcut({
@@ -67,7 +76,7 @@ export function ViewSettingsControls() {
   });
 
   return (
-    <p style={{ display: "flex", gap: "2em" }}>
+    <div style={{ display: "flex", gap: "2em", ...style }} {...other}>
       <label>
         Show arrows:&nbsp;&nbsp;
         <select
@@ -112,6 +121,6 @@ export function ViewSettingsControls() {
         />
         Wrap arrows
       </label>
-    </p>
+    </div>
   );
 }
