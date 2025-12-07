@@ -1,7 +1,7 @@
 import { MathJaxContext } from "better-react-mathjax";
-import { OrbitsCalculator } from "./components/OrbitsCalculator";
-import { ViewSettingsContextProvider } from "./components/ViewSettings";
 import { useEffect } from "react";
+import { OrbitsCalculator } from "./components/OrbitsCalculator";
+import { ViewSettingsContainer } from "./components/ViewSettings";
 import { useEmbedMode } from "./hooks/useEmbedMode";
 
 export function App() {
@@ -17,9 +17,9 @@ export function App() {
 
   return (
     <MathJaxContext>
-      <ViewSettingsContextProvider>
+      <ViewSettingsContainer.Provider>
         <OrbitsCalculator />
-      </ViewSettingsContextProvider>
+      </ViewSettingsContainer.Provider>
     </MathJaxContext>
   );
 }
