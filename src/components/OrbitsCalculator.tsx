@@ -28,13 +28,18 @@ import {
 import "./OrbitsCalculator.scss";
 import { FormattedManipulatorInstruction, ThrowsTable } from "./ThrowsTable";
 import { ViewSettingsControls } from "./ViewSettings";
+import { useEmbedMode } from "../hooks/useEmbedMode";
+import { CollapsibleTile } from "./CollapsibleTile";
 
 const PRESET_NAME_PARAM = "pattern";
 const INSTRUCTIONS_PARAM = "q";
 const MANIPULATION_PARAM = "m";
 
+type HeaderDisplayState = "embed" | "compact" | "full";
+
 export function OrbitsCalculator() {
   const search = useSearchParams();
+  const isEmbed = useEmbedMode();
 
   const presetSearchName = search.get(PRESET_NAME_PARAM);
   const preset = findPresetByName(presetSearchName ?? "");
@@ -117,90 +122,102 @@ export function OrbitsCalculator() {
     setDisabledInstructions([]);
   }
 
-  // TODO: move to a separate component
-  const [inputCardExpanded, setInputCardExpanded] = useState(preset === null);
+  // TODO: move header to a separate component
+  const [headerDisplayState, setHeaderDisplayState] =
+    useState<HeaderDisplayState>(
+      isEmbed ? "embed" : preset !== null ? "compact" : "full",
+    );
 
   return (
     <>
-      <h1>Passing Pattern Notations</h1>
-      <div className="card stretch">
-        {inputCardExpanded ? (
-          <>
-            {" "}
-            <p style={{ display: "flex" }}>
-              <label style={{ flexGrow: 1 }}>
-                Select preset:&nbsp;&nbsp;
-                <select
-                  value={preset ? sanitizePresetName(preset.name) : "custom"}
-                  onChange={(e) => updatePreset(e.target.value)}
-                >
-                  {ALL_PRESETS.map((preset, i) => (
-                    <option key={i} value={sanitizePresetName(preset.name)}>
-                      {preset.name}
-                    </option>
-                  ))}
-                  <option value="custom">Custom</option>
-                </select>
-              </label>
-
-              <button type="button" onClick={() => setInputCardExpanded(false)}>
-                Hide
-              </button>
-            </p>
-            <div style={{ display: "flex", gap: "0.5em" }}>
-              <label style={{ flexGrow: 2 }}>
-                <div>Enter social siteswap, 4-handed siteswap, or JIF:</div>
-                <textarea
-                  value={jifInput}
-                  onChange={(e) => setJifInput(e.target.value)}
-                  placeholder=""
-                  rows={6}
-                  style={{ width: "100%", resize: "vertical" }}
-                ></textarea>
-              </label>
-              <label
-                style={{
-                  flexGrow: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <div>Full JIF:</div>
-                <textarea
-                  value={JSON.stringify(jifWithManipulation, null, 2)}
-                  readOnly
-                  style={{
-                    width: "100%",
-                    flexGrow: 1,
-                    fontSize: "80%",
-                    background: "lightgray",
-                  }}
-                />
-              </label>
-            </div>
-            <label>
-              Enter manipulator instructions (with <b>source</b> juggler label,{" "}
-              <code>i</code> = intercept with 2-beat carry, <code>i1</code> =
-              with 1-beat carry):
-              <textarea
-                value={manipulationInput}
-                onChange={(e) => setManipulationInput(e.target.value)}
-                placeholder=""
-                rows={2}
-                style={{ width: "100%", resize: "vertical" }}
-              ></textarea>
-            </label>
-          </>
-        ) : (
+      <h1 className="pageTitle">Passing Pattern Notations</h1>
+      {headerDisplayState === "embed" && (
+        <CollapsibleTile>
+          <ViewSettingsControls />
+        </CollapsibleTile>
+      )}
+      {headerDisplayState === "compact" && (
+        <div className="card stretch">
           <div style={{ display: "flex", gap: "2em" }}>
             <h2 style={{ margin: 0 }}>{preset?.name ?? "Unnamed pattern"}</h2>
-            <button type="button" onClick={() => setInputCardExpanded(true)}>
+            <button type="button" onClick={() => setHeaderDisplayState("full")}>
               Edit
             </button>
           </div>
-        )}
-        <ViewSettingsControls />
-      </div>
+          <ViewSettingsControls style={{ marginTop: "1rem" }} />
+        </div>
+      )}
+      {headerDisplayState === "full" && (
+        <div className="card stretch">
+          <p style={{ display: "flex" }}>
+            <label style={{ flexGrow: 1 }}>
+              Select preset:&nbsp;&nbsp;
+              <select
+                value={preset ? sanitizePresetName(preset.name) : "custom"}
+                onChange={(e) => updatePreset(e.target.value)}
+              >
+                {ALL_PRESETS.map((preset, i) => (
+                  <option key={i} value={sanitizePresetName(preset.name)}>
+                    {preset.name}
+                  </option>
+                ))}
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+
+            <button
+              type="button"
+              onClick={() => setHeaderDisplayState("compact")}
+            >
+              Hide
+            </button>
+          </p>
+          <div style={{ display: "flex", gap: "0.5em" }}>
+            <label style={{ flexGrow: 2 }}>
+              <div>Enter social siteswap, 4-handed siteswap, or JIF:</div>
+              <textarea
+                value={jifInput}
+                onChange={(e) => setJifInput(e.target.value)}
+                placeholder=""
+                rows={6}
+                style={{ width: "100%", resize: "vertical" }}
+              ></textarea>
+            </label>
+            <label
+              style={{
+                flexGrow: 1,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <div>Full JIF:</div>
+              <textarea
+                value={JSON.stringify(jifWithManipulation, null, 2)}
+                readOnly
+                style={{
+                  width: "100%",
+                  flexGrow: 1,
+                  fontSize: "80%",
+                  background: "lightgray",
+                }}
+              />
+            </label>
+          </div>
+          <label>
+            Enter manipulator instructions (with <b>source</b> juggler label,{" "}
+            <code>i</code> = intercept with 2-beat carry, <code>i1</code> = with
+            1-beat carry):
+            <textarea
+              value={manipulationInput}
+              onChange={(e) => setManipulationInput(e.target.value)}
+              placeholder=""
+              rows={2}
+              style={{ width: "100%", resize: "vertical" }}
+            ></textarea>
+          </label>
+          <ViewSettingsControls style={{ marginTop: "1.5rem" }} />
+        </div>
+      )}
 
       {jifError && <p className="card error">{jifError}</p>}
       {manipulationError && <p className="card error">{manipulationError}</p>}
@@ -209,7 +226,7 @@ export function OrbitsCalculator() {
       )}
 
       {jif && throwsTable && (
-        <div className="card">
+        <div className="card start">
           <ThrowsTable
             jif={jif}
             throws={throwsTable}
@@ -234,7 +251,7 @@ export function OrbitsCalculator() {
       {manipulators?.length !== 0 &&
         jifWithManipulation &&
         throwsTableWithManipulation && (
-          <div className="card">
+          <div className="card start">
             <h3>With Manipulation Applied</h3>
             <ThrowsTable
               jif={jifWithManipulation}

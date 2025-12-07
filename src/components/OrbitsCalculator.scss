@@ -29,4 +29,14 @@
     border-left: none;
     border-right: none;
   }
+
+  .embed & {
+    margin: 0;
+    border: none;
+    align-items: center;
+  }
+}
+
+.embed .pageTitle {
+  display: none;
 }

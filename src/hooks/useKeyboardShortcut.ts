@@ -19,6 +19,11 @@ export function useKeyboardShortcut({
       ) {
         return;
       }
+      // Ignore Ctrl or Meta key combinations to avoid breaking browser
+      // shortcuts.
+      if (e.ctrlKey || e.metaKey) {
+        return;
+      }
       if (e.key === key) {
         e.preventDefault();
         onKeyPressed();

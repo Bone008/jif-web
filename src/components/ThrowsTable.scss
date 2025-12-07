@@ -3,7 +3,6 @@
 .throws-container {
   margin: 1em 0;
   font-size: 130%;
-  align-self: start;
   @include breakpoints.sm {
     font-size: 100%;
     align-self: stretch;
