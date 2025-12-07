@@ -1,13 +1,14 @@
 import { MathJaxContext } from "better-react-mathjax";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { OrbitsCalculator } from "./components/OrbitsCalculator";
 import { ViewSettingsContainer } from "./components/ViewSettings";
 import { useEmbedMode } from "./hooks/useEmbedMode";
+import { SearchParamsContainer } from "./hooks/useSearchParams";
 
 export function App() {
   const isEmbed = useEmbedMode();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isEmbed) {
       document.body.classList.add("embed");
     } else {
@@ -17,9 +18,11 @@ export function App() {
 
   return (
     <MathJaxContext>
-      <ViewSettingsContainer.Provider>
-        <OrbitsCalculator />
-      </ViewSettingsContainer.Provider>
+      <SearchParamsContainer.Provider>
+        <ViewSettingsContainer.Provider>
+          <OrbitsCalculator />
+        </ViewSettingsContainer.Provider>
+      </SearchParamsContainer.Provider>
     </MathJaxContext>
   );
 }

@@ -56,10 +56,13 @@ export function OrbitsCalculator() {
     if (newPreset) {
       search.setAll({
         [PRESET_NAME_PARAM]: sanitizePresetName(newPreset.name),
+        [INSTRUCTIONS_PARAM]: null,
+        [MANIPULATION_PARAM]: null,
       });
     } else {
       // When setting to "custom", fill in the inputs with the preset values.
       search.setAll({
+        [PRESET_NAME_PARAM]: null,
         [INSTRUCTIONS_PARAM]: preset!.instructions,
         [MANIPULATION_PARAM]: preset!.manipulators?.join("\n") ?? null,
       });
