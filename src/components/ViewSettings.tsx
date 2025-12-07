@@ -1,10 +1,5 @@
-import {
-  createContext,
-  HTMLAttributes,
-  ReactNode,
-  useContext,
-  useState,
-} from "react";
+import { HTMLAttributes, useState } from "react";
+import { createContainer } from "unstated-next";
 import { useKeyboardShortcut } from "../hooks/useKeyboardShortcut";
 
 export interface ViewSettings {
@@ -13,41 +8,17 @@ export interface ViewSettings {
   showHands: boolean;
 }
 
-const ViewSettingsContext = createContext<{
-  viewSettings: ViewSettings;
-  setViewSettings: (newSettings: ViewSettings) => void;
-} | null>(null);
-
-export function ViewSettingsContextProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export const ViewSettingsContainer = createContainer(() => {
   const [viewSettings, setViewSettings] = useState<ViewSettings>({
     arrowMode: "none",
     wrapArrows: true,
     showHands: false,
   });
 
-  return (
-    <ViewSettingsContext.Provider value={{ viewSettings, setViewSettings }}>
-      {children}
-    </ViewSettingsContext.Provider>
-  );
-}
+  return { viewSettings, setViewSettings };
+});
 
-export function useViewSettings(): {
-  viewSettings: ViewSettings;
-  setViewSettings: (newSettings: ViewSettings) => void;
-} {
-  const context = useContext(ViewSettingsContext);
-  if (!context) {
-    throw new Error(
-      "useViewSettings must be used within a ViewSettingsProvider",
-    );
-  }
-  return context;
-}
+export const useViewSettings = ViewSettingsContainer.useContainer;
 
 export function ViewSettingsControls({
   style,
