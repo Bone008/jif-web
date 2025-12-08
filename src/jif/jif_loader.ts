@@ -6,7 +6,6 @@ import {
   Throw,
   LimbKind,
   PassistLimbType,
-  PassistRepetition,
 } from "./jif";
 
 const LIMB_LABELS_BY_KIND: Record<LimbKind, string> = {
