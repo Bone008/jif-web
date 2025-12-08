@@ -5,19 +5,30 @@ export interface JIF {
   limbs?: Limb[];
   objects?: JifObject[];
   throws?: Throw[];
+  repetition?: PassistRepetition;
 }
 
 export interface Juggler {
   label?: string;
+
+  /** Relabelling that happens at the end of a period, used by this project. */
   becomes?: number;
+
+  // Used by Passist, but not implemented here.
   //position?: [number, number];
 }
 
 export type LimbKind = "right_hand" | "left_hand" | "other";
+export type PassistLimbType = "right hand" | "left hand" | "other";
 export interface Limb {
   juggler?: number;
   label?: string;
+
+  /** The kind of limb as used by this project. */
   kind?: LimbKind;
+
+  /** The kind of limb as required by Passist. */
+  type?: PassistLimbType;
 }
 
 export interface JifObject {
@@ -31,4 +42,10 @@ export interface Throw {
   from?: number;
   to?: number;
   isManipulated?: boolean;
+}
+
+/** Repetition block as needed by Passist */
+export interface PassistRepetition {
+  period?: number;
+  limbPermutation?: number[];
 }

@@ -1,9 +1,24 @@
-import { JifObject, Juggler, Limb, JIF, Throw, LimbKind } from "./jif";
+import {
+  JifObject,
+  Juggler,
+  Limb,
+  JIF,
+  Throw,
+  LimbKind,
+  PassistLimbType,
+  PassistRepetition,
+} from "./jif";
 
-const LIMB_NAMES_BY_KIND: Record<LimbKind, string> = {
+const LIMB_LABELS_BY_KIND: Record<LimbKind, string> = {
   right_hand: "R",
   left_hand: "L",
   other: "O",
+};
+
+const LIMB_TYPES_BY_KIND: Record<LimbKind, PassistLimbType> = {
+  right_hand: "right hand",
+  left_hand: "left hand",
+  other: "other",
 };
 
 type RequiredRecursive<T> = {
@@ -41,7 +56,8 @@ export function loadWithDefaults(jif: JIF): FullJIF {
     return {
       juggler: def(limb.juggler, i % jugglers.length),
       kind,
-      label: def(limb.label, LIMB_NAMES_BY_KIND[kind]),
+      label: def(limb.label, LIMB_LABELS_BY_KIND[kind]),
+      type: LIMB_TYPES_BY_KIND[kind],
     };
   });
 
@@ -58,10 +74,37 @@ export function loadWithDefaults(jif: JIF): FullJIF {
     };
   });
 
+  // Compute data for the repetition block for Passist
+  const rawRepetition = jif.repetition || {};
+  const period = def(rawRepetition.period, inferPeriod({ throws }));
+  if (jif.repetition?.limbPermutation) {
+    console.warn(
+      "setting limbPermutations is not supported, use juggler[].becomes!",
+    );
+  }
+  const limbsSwitchHandedness = period % 2 === 1;
+  const limbPermutation = limbs.map((limb) =>
+    limbs.findIndex(
+      (other) =>
+        // Find the limb belonging to the juggler who this limb's juggler becomes.
+        other.juggler === jugglers[limb.juggler].becomes &&
+        // If the period is odd, right hands become left hands and vice versa.
+        // If the period is even, handedness stays the same.
+        (other.kind === limb.kind) === !limbsSwitchHandedness,
+    ),
+  );
+  const repetition = { period, limbPermutation };
+
   const objects: FullObject[] = [
     /* TODO */
   ];
-  return { jugglers, limbs, throws, objects };
+  return {
+    jugglers,
+    limbs,
+    throws,
+    objects,
+    repetition,
+  };
 }
 
 export function inferPeriod(jif: JIF): number {
