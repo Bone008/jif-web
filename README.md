@@ -1,50 +1,21 @@
-# React + TypeScript + Vite
+# Passing Pattern Notations
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repo contains a React app that can visualize the siteswap notations of passing patterns.
 
-Currently, two official plugins are available:
+The deployed tool is available at [notations.bonauer.me](https://notations.bonauer.me/).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Adding a named pattern
 
-## Expanding the ESLint configuration
+Some juggling patterns are available as "presets" in the code, allowing the user to select it from a dropdown, and allowing a more compact deeplink to the pattern.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+The presets are listed in this file: [src/jif/presets.ts](/src/jif/presets.ts)
 
-- Configure the top-level `parserOptions` property like this:
+The `instructions` and `manipulators` fields must be given in the same format accepted by the corresponding web app's text fields.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
-```
+## Development
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+This app is based on TypeScript + React + Vite. To get started:
 
-```js
-// eslint.config.js
-import react from "eslint-plugin-react";
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: "18.3" } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs["jsx-runtime"].rules,
-  },
-});
-```
+1. Install dependencies with `npm install`.
+2. Run a development server with `npm run dev`.
+3. Build with `npm run build`.
