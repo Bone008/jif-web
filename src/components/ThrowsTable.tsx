@@ -142,7 +142,9 @@ export function ThrowsTable({
         <thead>
           <tr className="line__underline">
             <th>Beat</th>
-            {throws[0]?.map((_, i) => <th key={i}>{i + 1}</th>)}
+            {throws[0]?.map((_, i) => (
+              <th key={i}>{isLimbsTable ? i : i + 1}</th>
+            ))}
             <th></th>
           </tr>
         </thead>
