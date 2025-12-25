@@ -6,6 +6,7 @@ import { FullJIF, FullThrow } from "../jif/jif_loader";
 import { orbits, ThrowsTableData, wrapAround } from "../jif/orbits";
 import "./ThrowsTable.scss";
 import { useViewSettings } from "./ViewSettings";
+import { orbitsLimbs, wrapAroundLimbs } from "../jif/orbits_limbs";
 
 // Avoid rexpensive re-typesetting of MathJax components when
 // their contents do not change.
@@ -32,6 +33,7 @@ export function ThrowsTable({
   jif,
   throws,
   manipulationOptions,
+  isLimbsTable = false,
 }: {
   jif: FullJIF;
   throws: ThrowsTableData;
@@ -43,24 +45,32 @@ export function ThrowsTable({
       enabled: boolean,
     ) => void;
   };
+  isLimbsTable?: boolean;
 }) {
   const containerId = useId();
-  const throwOrbits = useMemo(() => tryOrbits(jif), [jif]);
+  const throwOrbits = useMemo(
+    () => tryOrbits(jif, isLimbsTable),
+    [jif, isLimbsTable],
+  );
 
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const { viewSettings } = useViewSettings();
 
-  function hoverKeyFn(j: number, t: number): string {
+  function hoverKeyFn(index: number, t: number): string {
     if (viewSettings.arrowMode === "orbits") {
       const orbitIndex = throwOrbits.findIndex((orbit) =>
         orbit.find(
-          (thrw) => thrw.time === t && jif.limbs[thrw.from]?.juggler === j,
+          (thrw) =>
+            thrw.time === t &&
+            (isLimbsTable
+              ? thrw.from === index
+              : jif.limbs[thrw.from]?.juggler === index),
         ),
       );
       return `orbit-${orbitIndex}`;
     }
 
-    return `${j}-${t}`;
+    return `${index}-${t}`;
   }
 
   const isSynchronous =
@@ -100,6 +110,13 @@ export function ThrowsTable({
     }
   }
 
+  const labelFn = isLimbsTable
+    ? (limbIndex: number) => limbIndex
+    : (jugglerIndex: number) => jif.jugglers[jugglerIndex]?.label ?? "?";
+  const becomesFn = isLimbsTable
+    ? (limbIndex: number) => jif.repetition.limbPermutation[limbIndex]
+    : (jugglerIndex: number) => jif.jugglers[jugglerIndex].becomes;
+
   return (
     <div
       id={containerId}
@@ -133,17 +150,17 @@ export function ThrowsTable({
           </tr>
         </thead>
         <tbody>
-          {throws.map((row, j) => (
-            <tr key={j} data-juggler={j}>
-              <td>{jif.jugglers[j].label}</td>
+          {throws.map((row, index) => (
+            <tr key={index} data-juggler={index}>
+              <td>{labelFn(index)}</td>
               {row.map((thrw, t) => (
                 <td
                   key={t}
                   data-time={t}
-                  className={`throw-cell ${hoveredKey === hoverKeyFn(j, t) ? "hovered" : ""}`}
-                  onMouseEnter={() => onThrowMouseEnter(hoverKeyFn(j, t))}
-                  onMouseLeave={() => onThrowMouseOut(hoverKeyFn(j, t))}
-                  onTouchStart={() => onThrowTouch(hoverKeyFn(j, t))}
+                  className={`throw-cell ${hoveredKey === hoverKeyFn(index, t) ? "hovered" : ""}`}
+                  onMouseEnter={() => onThrowMouseEnter(hoverKeyFn(index, t))}
+                  onMouseLeave={() => onThrowMouseOut(hoverKeyFn(index, t))}
+                  onTouchStart={() => onThrowTouch(hoverKeyFn(index, t))}
                 >
                   {thrw ? (
                     <ThrowCell
@@ -158,7 +175,7 @@ export function ThrowsTable({
                   )}
                 </td>
               ))}
-              <td>&rarr; {jif.jugglers[jif.jugglers[j].becomes].label}</td>
+              <td>&rarr; {labelFn(becomesFn(index))}</td>
             </tr>
           ))}
         </tbody>
@@ -288,6 +305,9 @@ function ThrowsArrows({
   hoveredKey: string | null;
   hoverKeyFn: (j: number, t: number) => string;
 }) {
+  // TODO: remove length-based heuristic
+  const isLimbsTable = jif.limbs.length === throws.length;
+
   const {
     viewSettings: { arrowMode, wrapArrows },
   } = useViewSettings();
@@ -318,14 +338,22 @@ function ThrowsArrows({
     row.map((thrw) => {
       if (!thrw) return null;
 
-      const t1 = thrw.time;
-      const j1 = jif.limbs[thrw.from]?.juggler;
-      let t2 = t1 + thrw.duration - arrowTimeDelta;
-      let j2 = jif.limbs[thrw.to]?.juggler;
+      let t1: number, j1: number, t2: number, j2: number;
+      t1 = thrw.time;
+      t2 = t1 + thrw.duration - arrowTimeDelta;
       if (!wrapArrows && (t2 < 0 || t2 >= row.length)) {
         return null;
       }
-      [t2, j2] = wrapAround(t2, j2, jif);
+
+      if (isLimbsTable) {
+        j1 = thrw.from;
+        j2 = thrw.to;
+        [t2, j2] = wrapAroundLimbs(t2, j2, jif);
+      } else {
+        j1 = jif.limbs[thrw.from]?.juggler;
+        j2 = jif.limbs[thrw.to]?.juggler;
+        [t2, j2] = wrapAround(t2, j2, jif);
+      }
 
       const color = colors[i % colors.length];
       return (
@@ -439,9 +467,9 @@ function getArrowPositions(
   return ["middleRight", "middleRight"]; // TODO: improve
 }
 
-function tryOrbits(jif: FullJIF): FullThrow[][] {
+function tryOrbits(jif: FullJIF, isLimbsTable: boolean): FullThrow[][] {
   try {
-    return orbits(jif);
+    return isLimbsTable ? orbitsLimbs(jif) : orbits(jif);
   } catch (e) {
     console.warn("Failed to calculate orbits:", e);
     return [];

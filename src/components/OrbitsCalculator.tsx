@@ -20,6 +20,7 @@ import {
   ManipulatorInstruction,
 } from "../jif/manipulation";
 import { getThrowsTable, ThrowsTableData, wrapAround } from "../jif/orbits";
+import { getThrowsTableByLimb } from "../jif/orbits_limbs";
 import {
   ALL_PRESETS,
   findPresetByName,
@@ -30,7 +31,7 @@ import { CollapsibleTile } from "./CollapsibleTile";
 import { EmbedLink } from "./EmbedLink";
 import "./OrbitsCalculator.scss";
 import { FormattedManipulatorInstruction, ThrowsTable } from "./ThrowsTable";
-import { ViewSettingsControls } from "./ViewSettings";
+import { useViewSettings, ViewSettingsControls } from "./ViewSettings";
 
 const PRESET_NAME_PARAM = "pattern";
 const INSTRUCTIONS_PARAM = "q";
@@ -41,6 +42,7 @@ type HeaderDisplayState = "embed" | "compact" | "full";
 export function OrbitsCalculator() {
   const search = useSearchParams();
   const isEmbed = useEmbedMode();
+  const { viewSettings } = useViewSettings();
 
   const presetSearchName = search.get(PRESET_NAME_PARAM);
   const preset = findPresetByName(presetSearchName ?? "");
@@ -94,7 +96,10 @@ export function OrbitsCalculator() {
     error: jifError,
     jif,
     throwsTable,
-  } = useMemo(() => processInput(jifInput), [jifInput]);
+  } = useMemo(
+    () => processInput(jifInput, viewSettings.isLimbsTable),
+    [jifInput, viewSettings.isLimbsTable],
+  );
 
   const {
     error: manipulationError,
@@ -115,9 +120,14 @@ export function OrbitsCalculator() {
   } = useMemo(
     () =>
       jif && manipulators
-        ? applyManipulators(jif, manipulators, disabledInstructions)
+        ? applyManipulators(
+            jif,
+            manipulators,
+            disabledInstructions,
+            viewSettings.isLimbsTable,
+          )
         : {},
-    [jif, manipulators, disabledInstructions],
+    [jif, manipulators, disabledInstructions, viewSettings.isLimbsTable],
   );
 
   function updatePreset(name: string) {
@@ -236,6 +246,7 @@ export function OrbitsCalculator() {
         <div className="card start">
           <ThrowsTable
             jif={jif}
+            isLimbsTable={viewSettings.isLimbsTable}
             throws={throwsTable}
             manipulationOptions={
               formattedManipulators
@@ -263,6 +274,7 @@ export function OrbitsCalculator() {
             <ThrowsTable
               jif={jifWithManipulation}
               throws={throwsTableWithManipulation}
+              isLimbsTable={viewSettings.isLimbsTable}
             />
           </div>
         )}
@@ -270,7 +282,10 @@ export function OrbitsCalculator() {
   );
 }
 
-function processInput(jifInput: string): {
+function processInput(
+  jifInput: string,
+  isLimbsTable: boolean,
+): {
   error?: string;
   jif?: FullJIF;
   throwsTable?: ThrowsTableData;
@@ -286,7 +301,10 @@ function processInput(jifInput: string): {
     }
 
     const fullJif = loadWithDefaults(jif);
-    return { jif: fullJif, throwsTable: getThrowsTable(fullJif) };
+    const throwsTable = isLimbsTable
+      ? getThrowsTableByLimb(fullJif)
+      : getThrowsTable(fullJif);
+    return { jif: fullJif, throwsTable };
   } catch (e) {
     return { error: String(e) };
   }
@@ -318,6 +336,7 @@ function applyManipulators(
   jif: FullJIF,
   manipulators: ManipulatorInstruction[][],
   disabledInstructions: boolean[][],
+  isLimbsTable: boolean,
 ): {
   error?: string;
   jif?: FullJIF;
@@ -337,9 +356,12 @@ function applyManipulators(
       );
     }
 
+    const throwsTable = isLimbsTable
+      ? getThrowsTableByLimb(jifWithManipulation)
+      : getThrowsTable(jifWithManipulation);
     return {
       jif: jifWithManipulation,
-      throwsTable: getThrowsTable(jifWithManipulation),
+      throwsTable,
     };
   } catch (e) {
     return { error: String(e) };

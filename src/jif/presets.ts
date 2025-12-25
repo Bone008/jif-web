@@ -73,6 +73,11 @@ export const ALL_PRESETS: Preset[] = [
     manipulators: ["i2B - - - sC"],
   },
   {
+    name: "Scrambled - cB sB iC - V",
+    instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
+    manipulators: ["- - sB - i2C"],
+  },
+  {
     name: "Walking feed 10c",
     instructions: RAW_DATA_WALKING_FEED_10C.join("\n"),
   },
