@@ -1,10 +1,10 @@
-import arrowLine, { ArrowPosition } from "arrow-line";
 import { MathJax as UncachedMathJax } from "better-react-mathjax";
 import _ from "lodash";
-import { memo, useEffect, useId, useMemo, useState } from "react";
+import { memo, useId, useMemo, useState } from "react";
 import { FullJIF, FullThrow } from "../jif/jif_loader";
 import { ThrowsTableData, calculateOrbits } from "../jif/orbits";
 import { wrapJuggler, wrapLimb } from "../jif/util";
+import { ArrowOverlay } from "./ArrowOverlay";
 import "./ThrowsTable.scss";
 import { useViewSettings } from "./ViewSettings";
 
@@ -119,25 +119,6 @@ export function ThrowsTable({
       id={containerId}
       className={`throws-container ${hoveredKey !== null ? "hovered" : ""}`}
     >
-      {/* The Holy SVG Arrow Marker */}
-      <svg style={{ position: "absolute", width: 0, height: 0 }}>
-        <defs>
-          <marker
-            id="__the-holy-marker"
-            markerUnits="strokeWidth"
-            viewBox="-1 -1 12 12"
-            stroke="gray"
-            fill="gray"
-            orient="auto"
-            markerWidth="10"
-            markerHeight="10"
-            refX="10"
-            refY="5"
-          >
-            <polygon points="0,0 10,5 0,10"></polygon>
-          </marker>
-        </defs>
-      </svg>
       <table>
         <thead>
           <tr className="line__underline">
@@ -207,14 +188,18 @@ export function ThrowsTable({
           ))}
         </tfoot>
       </table>
-      <ThrowsArrows
-        jif={jif}
-        throws={throws}
-        throwOrbits={throwOrbits}
+      <ArrowOverlay
         containerSelector={`#${CSS.escape(containerId)}`}
-        isSynchronous={isSynchronous}
-        hoveredKey={hoveredKey}
-        hoverKeyFn={hoverKeyFn}
+        arrows={getArrows(
+          jif,
+          throws,
+          throwOrbits,
+          viewSettings.arrowMode,
+          viewSettings.wrapArrows,
+          isSynchronous,
+          hoveredKey,
+          hoverKeyFn,
+        )}
       />
       {viewSettings.arrowMode === "orbits" && (
         <p>
@@ -287,33 +272,23 @@ function ThrowCell({
   );
 }
 
-function ThrowsArrows({
-  jif,
-  throws,
-  throwOrbits,
-  containerSelector,
-  isSynchronous,
-  hoveredKey,
-  hoverKeyFn,
-}: {
-  jif: FullJIF;
-  throws: ThrowsTableData;
-  throwOrbits: FullThrow[][];
-  containerSelector: string;
-  isSynchronous: boolean;
-  hoveredKey: string | null;
-  hoverKeyFn: (j: number, t: number) => string;
-}) {
+function getArrows(
+  jif: FullJIF,
+  throws: ThrowsTableData,
+  throwOrbits: FullThrow[][],
+  arrowMode: string,
+  wrapArrows: boolean,
+  isSynchronous: boolean,
+  hoveredKey: string | null,
+  hoverKeyFn: (j: number, t: number) => string,
+) {
   // TODO: remove length-based heuristic
   const isLimbsTable = jif.limbs.length === throws.length;
-
-  const {
-    viewSettings: { arrowMode, wrapArrows },
-  } = useViewSettings();
 
   let throwsWithArrows: ThrowsTableData;
   let arrowTimeDelta: number;
   let colors: string[] = ["orange"];
+
   switch (arrowMode) {
     case "ladder":
       throwsWithArrows = throws;
@@ -330,18 +305,27 @@ function ThrowsArrows({
       colors = ORBIT_COLORS;
       break;
     default:
-      return null;
+      return [];
   }
 
-  return throwsWithArrows.flatMap((row, i) =>
-    row.map((thrw) => {
-      if (!thrw) return null;
+  const arrows: Array<{
+    j1: number;
+    t1: number;
+    j2: number;
+    t2: number;
+    color: string;
+    hovered: boolean;
+  }> = [];
+
+  throwsWithArrows.forEach((row, i) => {
+    row.forEach((thrw) => {
+      if (!thrw) return;
 
       let t1: number, j1: number, t2: number, j2: number;
       t1 = thrw.time;
       t2 = t1 + thrw.duration - arrowTimeDelta;
       if (!wrapArrows && (t2 < 0 || t2 >= row.length)) {
-        return null;
+        return;
       }
 
       if (isLimbsTable) {
@@ -355,115 +339,18 @@ function ThrowsArrows({
       }
 
       const color = colors[i % colors.length];
-      return (
-        <ArrowOverlay
-          key={`${j1}-${t1}`}
-          containerSelector={containerSelector}
-          j1={j1}
-          t1={t1}
-          j2={j2}
-          t2={t2}
-          color={color}
-          hovered={hoveredKey === hoverKeyFn(j1, t1)}
-        />
-      );
-    }),
-  );
-}
-
-function ArrowOverlay({
-  containerSelector,
-  j1,
-  t1,
-  j2,
-  t2,
-  color = "orange",
-  hovered,
-}: {
-  containerSelector: string;
-  j1: number;
-  t1: number;
-  j2: number;
-  t2: number;
-  color?: string;
-  hovered?: boolean;
-}) {
-  const svgId = useId().replace(/:/g, "x");
-
-  useEffect(() => {
-    const throwsContainer = document.querySelector(containerSelector);
-    if (!throwsContainer) {
-      console.warn("Failed to render arrow: container not found!");
-      return;
-    }
-    const fromSelector = `tr[data-juggler="${j1}"] td[data-time="${t1}"] .throw`;
-    const toSelector = `tr[data-juggler="${j2}"] td[data-time="${t2}"] .throw`;
-    if (!throwsContainer.querySelector(fromSelector)) {
-      console.warn("Failed to render arrow: selector not found:", fromSelector);
-      return;
-    }
-    if (!throwsContainer.querySelector(toSelector)) {
-      console.warn("Failed to render arrow: selector not found:", toSelector);
-      return;
-    }
-
-    const [sourcePosition, destinationPosition] = getArrowPositions(t1, t2);
-    const arrow = arrowLine({
-      svgParentSelector: `#${CSS.escape(svgId)}`,
-      source: `${containerSelector} ${fromSelector}`,
-      destination: `${containerSelector} ${toSelector}`,
-      sourcePosition,
-      destinationPosition,
-      thickness: 1.2,
-      curvature: 0,
-      color,
-      endpoint: {
-        // Ugly hack: arrow-line uses a marker cache that is non-local
-        // to the SVG container and gets sometimes deleted.
-        // Giving them different sizes bypasses the cache.
-        //size: 2 + 0.1 * Math.random(),
-        type: "custom",
-        markerIdentifier: "#__the-holy-marker",
-      },
-    });
-
-    // Respond to layout changes of the container.
-    const resizeObserver = new ResizeObserver(() => {
-      // lol arrow-line
-      arrow.update({
-        endpoint: {
-          type: "custom",
-          markerIdentifier: "#__the-holy-marker",
-          fillColor: undefined,
-        },
+      arrows.push({
+        j1,
+        t1,
+        j2,
+        t2,
+        color,
+        hovered: hoveredKey === hoverKeyFn(j1, t1),
       });
     });
-    resizeObserver.observe(throwsContainer);
+  });
 
-    return () => {
-      resizeObserver.disconnect();
-      arrow.remove();
-    };
-  }, [svgId, containerSelector, j1, t1, j2, t2, color]);
-
-  return (
-    <div className={`svg-container ${hovered ? "hovered" : ""}`}>
-      <svg id={svgId} className="svg-arrows"></svg>
-    </div>
-  );
-}
-
-function getArrowPositions(
-  t1: number,
-  t2: number,
-): [ArrowPosition, ArrowPosition] {
-  if (t2 > t1) {
-    return ["middleRight", "middleLeft"];
-  }
-  if (t2 < t1) {
-    return ["bottomLeft", "bottomRight"];
-  }
-  return ["middleRight", "middleRight"]; // TODO: improve
+  return arrows;
 }
 
 function tryOrbits(jif: FullJIF): FullThrow[][] {
