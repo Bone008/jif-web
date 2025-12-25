@@ -10,6 +10,7 @@ export interface ViewSettings {
   arrowMode: ArrowMode;
   wrapArrows: boolean;
   showHands: boolean;
+  isLimbsTable: boolean;
 }
 
 export const ViewSettingsContainer = createContainer(() => {
@@ -19,6 +20,7 @@ export const ViewSettingsContainer = createContainer(() => {
     const arrowModeParam = searchParams.get("arrowMode");
     const wrapArrowsParam = searchParams.get("wrapArrows");
     const showHandsParam = searchParams.get("showHands");
+    const isLimbsTableParam = searchParams.get("isLimbsTable");
 
     return {
       arrowMode: ARROW_MODES.includes(arrowModeParam as any)
@@ -26,6 +28,7 @@ export const ViewSettingsContainer = createContainer(() => {
         : "none",
       wrapArrows: wrapArrowsParam === "0" ? false : true,
       showHands: showHandsParam === "1" ? true : false,
+      isLimbsTable: isLimbsTableParam === "1" ? true : false,
     };
   }, [searchParams]);
 
@@ -34,6 +37,7 @@ export const ViewSettingsContainer = createContainer(() => {
       arrowMode: newSettings.arrowMode,
       wrapArrows: newSettings.wrapArrows ? "1" : "0",
       showHands: newSettings.showHands ? "1" : "0",
+      isLimbsTable: newSettings.isLimbsTable ? "1" : null,
     });
   };
 
@@ -113,6 +117,16 @@ export function ViewSettingsControls({
           }
         />
         Wrap arrows
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={viewSettings.isLimbsTable}
+          onChange={(e) =>
+            setViewSettings({ ...viewSettings, isLimbsTable: e.target.checked })
+          }
+        />
+        Limbs table
       </label>
     </div>
   );
