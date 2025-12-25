@@ -1,11 +1,12 @@
 import _ from "lodash";
-import { JIF, LimbKind, Throw } from "./jif";
+import { JIF, Limb, LimbKind, Throw } from "./jif";
 import {
   FullJIF,
   FullThrow,
   inferPeriod,
   loadWithDefaults,
 } from "./jif_loader";
+import { wrapAroundLimbs } from "./orbits_limbs";
 
 export interface ManipulatorInstruction {
   type: "substitute" | "intercept1b" | "intercept2b";
@@ -13,13 +14,21 @@ export interface ManipulatorInstruction {
   throwFromJuggler: number;
 }
 
+type AlmostFullJIF = FullJIF & {
+  limbs: Limb[];
+  throws: Throw[];
+};
+
 /** Returns a copy of the input JIF with the given manipulator added. */
 export function addManipulator(
   inputJif: FullJIF,
   spec: ManipulatorInstruction[],
 ): FullJIF {
-  // Drop the recursive completeness constraint.
-  const jif: Required<JIF> = _.cloneDeep(inputJif);
+  // Drop some of the recursive completeness constraints.
+  const jif: AlmostFullJIF = _.cloneDeep(inputJif);
+  const period = jif.repetition.period;
+  const limbsSwitchHandedness = period % 2 === 1;
+
   // Add the manipulator.
   let manipIndex = jif.jugglers.length;
   let manipLimb = jif.limbs.length;
@@ -29,8 +38,13 @@ export function addManipulator(
     becomes: manipIndex,
   });
   jif.limbs.push({ kind: "right_hand", juggler: manipIndex });
+  jif.repetition.limbPermutation.push(
+    limbsSwitchHandedness ? manipAltLimb : manipLimb,
+  );
   jif.limbs.push({ kind: "left_hand", juggler: manipIndex });
-  const period = inferPeriod(inputJif);
+  jif.repetition.limbPermutation.push(
+    limbsSwitchHandedness ? manipLimb : manipAltLimb,
+  );
 
   // Temporarily shift the entire pattern in time to make sure the intercept/carry does not cross
   // the relabeling boundary. Demons lie in that edge case.
@@ -86,7 +100,6 @@ export function addManipulator(
 
     if (type === "substitute") {
       const fromLimbKind = jif.limbs[thrw.from!].kind!;
-      const toLimbKind = jif.limbs[thrw.to!].kind!;
       // Insert a new throw from M to the original destination.
       const manipThrow: Throw = {
         time: throwTime,
@@ -98,7 +111,10 @@ export function addManipulator(
       jif.throws.push(manipThrow);
 
       // Change destination of original throw to M.
-      thrw.to = toLimbKind === "right_hand" ? manipLimb : manipAltLimb;
+      // The target hand is the *opposite* one than `manipThrow.from` since it
+      // throws 1 beat later. It is NOT related to `thrw.to`, which can be even
+      // or odd.
+      thrw.to = fromLimbKind === "right_hand" ? manipAltLimb : manipLimb;
       thrw.duration = 1;
 
       lastManipTime = throwTime;
@@ -183,7 +199,25 @@ export function addManipulator(
       jif.jugglers[manipIndex].becomes =
         jif.jugglers[interceptedJuggler].becomes;
       jif.jugglers[interceptedJuggler].becomes = manipBecomes;
-      // Swap who we think about as M.
+      // Swap limbPermutation entries.
+      const rep = jif.repetition.limbPermutation!;
+      const manipLimbPerm = rep[manipLimb];
+      const manipAltLimbPerm = rep[manipAltLimb];
+      const interceptedLimb = getLimbOfJuggler(
+        jif,
+        interceptedJuggler,
+        "right_hand",
+      );
+      const interceptedAltLimb = getLimbOfJuggler(
+        jif,
+        interceptedJuggler,
+        "left_hand",
+      );
+      rep[manipLimb] = rep[interceptedLimb];
+      rep[manipAltLimb] = rep[interceptedAltLimb];
+      rep[interceptedLimb] = manipLimbPerm;
+      rep[interceptedAltLimb] = manipAltLimbPerm;
+      // Swap who we think about as M in future manipulator instructions.
       for (const nextInstruction of sortedSpec.slice(specIndex + 1)) {
         if (nextInstruction.throwFromJuggler === interceptedJuggler) {
           nextInstruction.throwFromJuggler = manipIndex;
@@ -210,14 +244,10 @@ export function addManipulator(
     nShiftedBeats,
   );
 
-  if (isFinite(firstInterceptTime)) {
+  if (nShiftedBeats > 0) {
     // Undo shift.
-    shiftPatternBy(jif, firstInterceptTime);
+    shiftPatternBy(jif, nShiftedBeats);
   }
-
-  // Drop the out-of-date limbPermutations derived input, loadWithDefaults will
-  // recalculate it.
-  delete jif.repetition.limbPermutation;
 
   return loadWithDefaults(jif);
 }
@@ -261,47 +291,13 @@ function fillManipulatorThrows(
 /**
  * Shifts a pattern in time, respecting relabelings. Operates in-place.
  * @param jif Mostly complete JIF of the pattern to change.
- * @param delta Time shift, must not be greater than total period, but may be negative.
+ * @param delta Time shift, may be negative.
  */
-export function shiftPatternBy(jif: Required<JIF>, delta: number) {
-  const period = inferPeriod(jif);
-  const relabelingForward = jif.jugglers.map((juggler) => juggler.becomes!);
-  const relabelingBackward = Array<number>(jif.jugglers.length);
-  relabelingForward.forEach((new_, old) => {
-    relabelingBackward[new_] = old;
-  });
-
+export function shiftPatternBy(jif: AlmostFullJIF, delta: number) {
   for (const thrw of jif.throws) {
-    const newTime = thrw.time! + delta;
-    const limbFrom = jif.limbs[thrw.from!];
-    const limbTo = jif.limbs[thrw.to!];
-    if (newTime < 0) {
-      thrw.time = newTime + period;
-      thrw.from = getLimbOfJuggler(
-        jif,
-        relabelingBackward[limbFrom.juggler!],
-        limbFrom.kind!,
-      );
-      thrw.to = getLimbOfJuggler(
-        jif,
-        relabelingBackward[limbTo.juggler!],
-        limbTo.kind!,
-      );
-    } else if (newTime >= period) {
-      thrw.time = newTime - period;
-      thrw.from = getLimbOfJuggler(
-        jif,
-        relabelingForward[limbFrom.juggler!],
-        limbFrom.kind!,
-      );
-      thrw.to = getLimbOfJuggler(
-        jif,
-        relabelingForward[limbTo.juggler!],
-        limbTo.kind!,
-      );
-    } else {
-      thrw.time = newTime;
-    }
+    const newTime = thrw.time + delta;
+    [thrw.time, thrw.from] = wrapAroundLimbs(newTime, thrw.from, jif);
+    [, thrw.to] = wrapAroundLimbs(newTime, thrw.to, jif);
   }
 }
 
