@@ -42,8 +42,10 @@ export function addManipulator(
       .map((instruction) => instruction.throwTime),
   );
 
+  let nShiftedBeats = 0;
   if (isFinite(firstInterceptTime)) {
-    shiftPatternBy(jif, -firstInterceptTime);
+    nShiftedBeats = firstInterceptTime;
+    shiftPatternBy(jif, -nShiftedBeats);
 
     spec = spec.map((instruction) => ({
       ...instruction,
@@ -65,7 +67,12 @@ export function addManipulator(
     { type, throwTime, throwFromJuggler },
   ] of sortedSpec.entries()) {
     // TODO error handling: validate that throwTime does not overlap with previous manipulation
-    fillManipulatorThrows(jif, [lastManipTime + 1, throwTime], manipIndex);
+    fillManipulatorThrows(
+      jif,
+      [lastManipTime + 1, throwTime],
+      manipIndex,
+      nShiftedBeats,
+    );
 
     const thrw = getThrowFromJuggler(jif, throwFromJuggler, throwTime);
     if (!thrw) {
@@ -164,7 +171,12 @@ export function addManipulator(
       }
 
       // Fill in time where M still waits for their intercept to arrive.
-      fillManipulatorThrows(jif, [throwTime, causalThreshold + 1], manipIndex);
+      fillManipulatorThrows(
+        jif,
+        [throwTime, causalThreshold + 1],
+        manipIndex,
+        nShiftedBeats,
+      );
 
       // Swap relabeling.
       const manipBecomes = jif.jugglers[manipIndex].becomes;
@@ -191,7 +203,12 @@ export function addManipulator(
     }
   }
 
-  fillManipulatorThrows(jif, [lastManipTime + 1, period], manipIndex);
+  fillManipulatorThrows(
+    jif,
+    [lastManipTime + 1, period],
+    manipIndex,
+    nShiftedBeats,
+  );
 
   if (isFinite(firstInterceptTime)) {
     // Undo shift.
@@ -210,6 +227,7 @@ function fillManipulatorThrows(
   jif: Required<JIF>,
   timeInterval: [number, number],
   manipIndex: number,
+  nShiftedBeats: number,
 ) {
   for (let time = timeInterval[0]; time < timeInterval[1]; time++) {
     // Validation: Does a throw already exist?
@@ -226,12 +244,15 @@ function fillManipulatorThrows(
       from: getLimbOfJuggler(
         jif,
         manipIndex,
-        time % 2 === 0 ? "right_hand" : "left_hand",
+        // Have to offset by shifted beats here to account for patterns where
+        // everyone starts with the left hand.
+        // TODO: this still makes a lot of assumptions about handedness ...
+        (time + nShiftedBeats) % 2 === 0 ? "right_hand" : "left_hand",
       ),
       to: getLimbOfJuggler(
         jif,
         manipIndex,
-        time % 2 === 0 ? "left_hand" : "right_hand",
+        (time + nShiftedBeats) % 2 === 0 ? "left_hand" : "right_hand",
       ),
     });
   }
