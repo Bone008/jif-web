@@ -3,10 +3,10 @@ import { MathJax as UncachedMathJax } from "better-react-mathjax";
 import _ from "lodash";
 import { memo, useEffect, useId, useMemo, useState } from "react";
 import { FullJIF, FullThrow } from "../jif/jif_loader";
-import { orbits, ThrowsTableData, wrapAround } from "../jif/orbits";
+import { ThrowsTableData, calculateOrbits } from "../jif/orbits";
+import { wrapJuggler, wrapLimb } from "../jif/util";
 import "./ThrowsTable.scss";
 import { useViewSettings } from "./ViewSettings";
-import { orbitsLimbs, wrapAroundLimbs } from "../jif/orbits_limbs";
 
 // Avoid rexpensive re-typesetting of MathJax components when
 // their contents do not change.
@@ -48,10 +48,7 @@ export function ThrowsTable({
   isLimbsTable?: boolean;
 }) {
   const containerId = useId();
-  const throwOrbits = useMemo(
-    () => tryOrbits(jif, isLimbsTable),
-    [jif, isLimbsTable],
-  );
+  const throwOrbits = useMemo(() => tryOrbits(jif), [jif]);
 
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const { viewSettings } = useViewSettings();
@@ -348,11 +345,11 @@ function ThrowsArrows({
       if (isLimbsTable) {
         j1 = thrw.from;
         j2 = thrw.to;
-        [t2, j2] = wrapAroundLimbs(t2, j2, jif);
+        [t2, j2] = wrapLimb(t2, j2, jif);
       } else {
         j1 = jif.limbs[thrw.from]?.juggler;
         j2 = jif.limbs[thrw.to]?.juggler;
-        [t2, j2] = wrapAround(t2, j2, jif);
+        [t2, j2] = wrapJuggler(t2, j2, jif);
       }
 
       const color = colors[i % colors.length];
@@ -467,9 +464,9 @@ function getArrowPositions(
   return ["middleRight", "middleRight"]; // TODO: improve
 }
 
-function tryOrbits(jif: FullJIF, isLimbsTable: boolean): FullThrow[][] {
+function tryOrbits(jif: FullJIF): FullThrow[][] {
   try {
-    return isLimbsTable ? orbitsLimbs(jif) : orbits(jif);
+    return calculateOrbits(jif);
   } catch (e) {
     console.warn("Failed to calculate orbits:", e);
     return [];

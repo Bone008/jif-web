@@ -8,19 +8,17 @@ import {
   siteswapToJIF,
 } from "../jif/high_level_converter";
 import { JIF } from "../jif/jif";
-import {
-  FullJIF,
-  FullThrow,
-  inferPeriod,
-  loadWithDefaults,
-} from "../jif/jif_loader";
+import { FullJIF, FullThrow, loadWithDefaults } from "../jif/jif_loader";
 import {
   addManipulator,
   getThrowFromJuggler,
   ManipulatorInstruction,
 } from "../jif/manipulation";
-import { getThrowsTable, ThrowsTableData, wrapAround } from "../jif/orbits";
-import { getThrowsTableByLimb } from "../jif/orbits_limbs";
+import {
+  getThrowsTableByJuggler,
+  getThrowsTableByLimb,
+  ThrowsTableData,
+} from "../jif/orbits";
 import {
   ALL_PRESETS,
   findPresetByName,
@@ -32,6 +30,7 @@ import { EmbedLink } from "./EmbedLink";
 import "./OrbitsCalculator.scss";
 import { FormattedManipulatorInstruction, ThrowsTable } from "./ThrowsTable";
 import { useViewSettings, ViewSettingsControls } from "./ViewSettings";
+import { wrapJuggler } from "../jif/util";
 
 const PRESET_NAME_PARAM = "pattern";
 const INSTRUCTIONS_PARAM = "q";
@@ -303,7 +302,7 @@ function processInput(
     const fullJif = loadWithDefaults(jif);
     const throwsTable = isLimbsTable
       ? getThrowsTableByLimb(fullJif)
-      : getThrowsTable(fullJif);
+      : getThrowsTableByJuggler(fullJif);
     return { jif: fullJif, throwsTable };
   } catch (e) {
     return { error: String(e) };
@@ -358,7 +357,7 @@ function applyManipulators(
 
     const throwsTable = isLimbsTable
       ? getThrowsTableByLimb(jifWithManipulation)
-      : getThrowsTable(jifWithManipulation);
+      : getThrowsTableByJuggler(jifWithManipulation);
     return {
       jif: jifWithManipulation,
       throwsTable,
@@ -373,9 +372,8 @@ function formatManipulator(
   spec: ManipulatorInstruction[],
   disabledInstructions: boolean[],
 ): FormattedManipulatorInstruction[] {
-  const period = inferPeriod(jif);
   const result: FormattedManipulatorInstruction[] = Array.from(
-    { length: period },
+    { length: jif.repetition.period },
     () => ({ label: "-" }),
   );
 
@@ -420,7 +418,7 @@ function calculateTheCarry(
   const numThrowsLater = intercept.type === "intercept1b" ? 1 : 2;
   const causalBeats = 2; // TODO: hardcoded assumption of sync pattern
 
-  const throwsTable = getThrowsTable(jif);
+  const throwsTable = getThrowsTableByJuggler(jif);
   // Follow the causal chain of arrows to identify the throw that is being carried.
   let time = intercept.throwTime;
   let throwingJuggler = intercept.throwFromJuggler;
@@ -435,7 +433,7 @@ function calculateTheCarry(
     }
     time += thrw.duration - causalBeats;
     throwingJuggler = jif.limbs[thrw.to].juggler;
-    [time, throwingJuggler] = wrapAround(time, throwingJuggler, jif);
+    [time, throwingJuggler] = wrapJuggler(time, throwingJuggler, jif);
   }
 
   return thrw!;
