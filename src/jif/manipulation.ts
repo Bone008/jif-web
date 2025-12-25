@@ -78,16 +78,20 @@ export function addManipulator(
     thrw.isManipulated = true;
 
     if (type === "substitute") {
-      // Change destination to M, and insert a new throw from M to the original destination.
+      const fromLimbKind = jif.limbs[thrw.from!].kind!;
+      const toLimbKind = jif.limbs[thrw.to!].kind!;
+      // Insert a new throw from M to the original destination.
       const manipThrow: Throw = {
         time: throwTime,
         duration: thrw.duration,
-        from: manipLimb,
+        from: fromLimbKind === "right_hand" ? manipLimb : manipAltLimb,
         to: thrw.to,
         isManipulated: true,
       };
       jif.throws.push(manipThrow);
-      thrw.to = manipAltLimb;
+
+      // Change destination of original throw to M.
+      thrw.to = toLimbKind === "right_hand" ? manipLimb : manipAltLimb;
       thrw.duration = 1;
 
       lastManipTime = throwTime;
@@ -124,7 +128,7 @@ export function addManipulator(
             // Late carry: This is the carry, mark it as such!
             nextThrow.isManipulated = true;
           }
-      
+
           // Early carry: All throws starting after the threshold are thrown BY the old manipulator.
           // Late carry: The first throw after the threshold is still thrown (carried) BY juggler.
           if (
@@ -193,6 +197,10 @@ export function addManipulator(
     // Undo shift.
     shiftPatternBy(jif, firstInterceptTime);
   }
+
+  // Drop the out-of-date limbPermutations derived input, loadWithDefaults will
+  // recalculate it.
+  delete jif.repetition.limbPermutation;
 
   return loadWithDefaults(jif);
 }
