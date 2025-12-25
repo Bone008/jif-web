@@ -106,20 +106,16 @@ export function loadWithDefaults(jif: JIF): FullJIF {
   };
 }
 
-export function inferPeriod(jif: JIF): number {
+// Util
+
+function inferPeriod(jif: JIF): number {
   return jif.throws?.length
     ? Math.max(...jif.throws.map((t, i) => def(t.time, i))) + 1
     : 0;
 }
 
-// Util
-
-export function emptyObjects<T extends {}>(num: number): Array<Partial<T>> {
-  const result = Array<Partial<T>>(num);
-  for (let i = 0; i < num; i++) {
-    result[i] = {};
-  }
-  return result;
+function emptyObjects<T extends {}>(num: number): Array<Partial<T>> {
+  return Array.from({ length: num }, () => ({}));
 }
 
 export function indexToJugglerName(index: number): string {
