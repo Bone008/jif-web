@@ -73,7 +73,10 @@ export function ViewSettingsControls({
   });
 
   return (
-    <div style={{ display: "flex", gap: "2em", ...style }} {...other}>
+    <div
+      style={{ display: "flex", gap: "2em", flexWrap: "wrap", ...style }}
+      {...other}
+    >
       <label>
         Show arrows:&nbsp;&nbsp;
         <select
