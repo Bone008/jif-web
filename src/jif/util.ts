@@ -1,4 +1,21 @@
+import _ from "lodash";
 import { FullJIF } from "./jif_loader";
+
+/** Heuristic that infers whether this is a (semi-)synchronous pattern. */
+export function inferIsSynchronousPattern(
+  jif: Pick<FullJIF, "jugglers" | "throws">,
+): boolean {
+  return (
+    jif.jugglers.length < 2 ||
+    _.some(
+      _.countBy(
+        jif.throws.filter((thrw) => !!thrw),
+        (thrw) => thrw.time,
+      ),
+      (count) => count > 1,
+    )
+  );
+}
 
 /** Wraps around period limits: [t, limbIndex] --> [t', limbIndex'] */
 export function wrapLimb(
