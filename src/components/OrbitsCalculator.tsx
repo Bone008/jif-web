@@ -31,6 +31,7 @@ import "./OrbitsCalculator.scss";
 import { FormattedManipulatorInstruction, ThrowsTable } from "./ThrowsTable";
 import { useViewSettings, ViewSettingsControls } from "./ViewSettings";
 import { wrapJuggler } from "../jif/util";
+import { InterfaceJaggedPiece } from "./InterfaceJaggedPiece";
 
 const PRESET_NAME_PARAM = "pattern";
 const INSTRUCTIONS_PARAM = "q";
@@ -275,6 +276,20 @@ export function OrbitsCalculator() {
               throws={throwsTableWithManipulation}
               isLimbsTable={viewSettings.isLimbsTable}
             />
+          </div>
+        )}
+
+      {jif?.jugglers.length === 2 &&
+        jif.jugglers[0].becomes === 0 &&
+        jif.jugglers[1].becomes === 1 &&
+        !manipulators?.length &&
+        throwsTable && (
+          <div className="card start">
+            <h3>Interface Puzzle Pieces</h3>
+            <div>
+              <InterfaceJaggedPiece jif={jif} juggler={0} />
+              <InterfaceJaggedPiece jif={jif} juggler={1} />
+            </div>
           </div>
         )}
     </>

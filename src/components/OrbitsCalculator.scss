@@ -16,6 +16,9 @@
   &.center {
     align-items: center;
   }
+  &:last-child {
+    margin-bottom: 5em;
+  }
 
   & > :first-child {
     margin-top: 0;

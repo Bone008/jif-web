@@ -7,6 +7,7 @@ import {
   LimbKind,
   PassistLimbType,
 } from "./jif";
+import { inferIsSynchronousPattern } from "./util";
 
 const LIMB_LABELS_BY_KIND: Record<LimbKind, string> = {
   right_hand: "R",
@@ -73,7 +74,7 @@ export function loadWithDefaults(jif: JIF): FullJIF {
     };
   });
 
-  // Compute data for the repetition block for Passist
+  // Compute data for the repetition block.
   const rawRepetition = jif.repetition || {};
   const period = def(rawRepetition.period, inferPeriod({ throws }));
   if (jif.repetition?.limbPermutation) {
@@ -81,17 +82,27 @@ export function loadWithDefaults(jif: JIF): FullJIF {
       "setting limbPermutations is not supported, use juggler[].becomes!",
     );
   }
-  const limbsSwitchHandedness = period % 2 === 1;
-  const limbPermutation = limbs.map((limb) =>
-    limbs.findIndex(
-      (other) =>
-        // Find the limb belonging to the juggler who this limb's juggler becomes.
-        other.juggler === jugglers[limb.juggler].becomes &&
-        // If the period is odd, right hands become left hands and vice versa.
-        // If the period is even, handedness stays the same.
-        (other.kind === limb.kind) === !limbsSwitchHandedness,
-    ),
-  );
+
+  const isSynchronous = inferIsSynchronousPattern({ jugglers, throws });
+  let limbPermutation: number[];
+  if (isSynchronous) {
+    const limbsSwitchHandedness = period % 2 === 1;
+    limbPermutation = limbs.map((limb) =>
+      limbs.findIndex(
+        (other) =>
+          // Find the limb belonging to the juggler who this limb's juggler becomes.
+          other.juggler === jugglers[limb.juggler].becomes &&
+          // If the period is odd, right hands become left hands and vice versa.
+          // If the period is even, handedness stays the same.
+          (other.kind === limb.kind) === !limbsSwitchHandedness,
+      ),
+    );
+  } else {
+    // Asynchronous patterns: We assume all limbs throw in ordered sequence, so the
+    // relabelling just happens "forward" according to modulo class of period.
+    const forwardShift = limbs.length - (period % limbs.length);
+    limbPermutation = limbs.map((_, l) => (l + forwardShift) % limbs.length);
+  }
   const repetition = { period, limbPermutation };
 
   const objects: FullObject[] = [

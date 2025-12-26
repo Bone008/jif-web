@@ -3,7 +3,7 @@ import _ from "lodash";
 import { memo, useId, useMemo, useState } from "react";
 import { FullJIF, FullThrow } from "../jif/jif_loader";
 import { ThrowsTableData, calculateOrbits } from "../jif/orbits";
-import { wrapJuggler, wrapLimb } from "../jif/util";
+import { inferIsSynchronousPattern, wrapJuggler, wrapLimb } from "../jif/util";
 import { ArrowOverlay } from "./ArrowOverlay";
 import "./ThrowsTable.scss";
 import { useViewSettings } from "./ViewSettings";
@@ -70,15 +70,7 @@ export function ThrowsTable({
     return `${index}-${t}`;
   }
 
-  const isSynchronous =
-    jif.jugglers.length < 2 ||
-    _.some(
-      _.countBy(
-        throws.flat().filter((thrw) => !!thrw),
-        (thrw) => thrw.time,
-      ),
-      (count) => count > 1,
-    );
+  const isSynchronous = inferIsSynchronousPattern(jif);
   const hasOnly3Throws = _.every(
     throws.flat().map((thrw) => thrw?.duration === 3),
   );
