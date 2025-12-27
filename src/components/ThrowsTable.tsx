@@ -4,7 +4,7 @@ import { memo, useId, useMemo, useState } from "react";
 import { FullJIF, FullThrow } from "../jif/jif_loader";
 import { ThrowsTableData, calculateOrbits } from "../jif/orbits";
 import { inferIsSynchronousPattern, wrapJuggler, wrapLimb } from "../jif/util";
-import { ArrowOverlay } from "./ArrowOverlay";
+import { ArrowData, ArrowOverlay } from "./ArrowOverlay";
 import "./ThrowsTable.scss";
 import { useViewSettings } from "./ViewSettings";
 
@@ -106,6 +106,22 @@ export function ThrowsTable({
     ? (limbIndex: number) => jif.repetition.limbPermutation[limbIndex]
     : (jugglerIndex: number) => jif.jugglers[jugglerIndex].becomes;
 
+  let arrows: ArrowData[] = [];
+  try {
+    arrows = getArrows(
+      jif,
+      throws,
+      throwOrbits,
+      viewSettings.arrowMode,
+      viewSettings.wrapArrows,
+      isSynchronous,
+      hoveredKey,
+      hoverKeyFn,
+    );
+  } catch (e) {
+    console.warn("Failed to calculate arrows:", e);
+  }
+
   return (
     <div
       id={containerId}
@@ -182,16 +198,7 @@ export function ThrowsTable({
       </table>
       <ArrowOverlay
         containerSelector={`#${CSS.escape(containerId)}`}
-        arrows={getArrows(
-          jif,
-          throws,
-          throwOrbits,
-          viewSettings.arrowMode,
-          viewSettings.wrapArrows,
-          isSynchronous,
-          hoveredKey,
-          hoverKeyFn,
-        )}
+        arrows={arrows}
       />
       {viewSettings.arrowMode === "orbits" && (
         <p>
@@ -273,7 +280,7 @@ function getArrows(
   isSynchronous: boolean,
   hoveredKey: string | null,
   hoverKeyFn: (j: number, t: number) => string,
-) {
+): ArrowData[] {
   // TODO: remove length-based heuristic
   const isLimbsTable = jif.limbs.length === throws.length;
 
