@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { FullJIF } from "../jif/jif_loader";
 import { getThrowsTableByJuggler } from "../jif/orbits";
 import { inferIsSynchronousPattern, wrapLimb } from "../jif/util";
@@ -15,10 +15,7 @@ export function InterfaceJaggedPiece({
   juggler: number;
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const interfaceShapes = useMemo(
-    () => computeInterfaceShapes(jif, juggler),
-    [jif, juggler],
-  );
+  const interfaceShapes = computeInterfaceShapes(jif, juggler);
 
   const isSynchronous = inferIsSynchronousPattern(jif);
   // These are chosen to make them compatible with Excalidraw's grid.
@@ -28,17 +25,23 @@ export function InterfaceJaggedPiece({
   const strokeWidth = 2;
 
   const throwsTable = getThrowsTableByJuggler(jif);
-  const throws = throwsTable[juggler];
-  const numBeats = jif.repetition.period;
-  const width = numBeats * beatWidth;
+  const throws = throwsTable[juggler].slice();
 
-  // Check if first and last beats are occupied
-  const firstBeatOccupied = throws[0] != null;
-  const lastBeatOccupied = throws[numBeats - 1] != null;
-  // Calculate padding
-  const leftPadding = firstBeatOccupied ? beatWidth : 0;
-  const rightPadding = lastBeatOccupied ? beatWidth : 0;
+  // Calculate padding to avoid numbers on the edge of the card.
+  // The line shape of the padding should match the opposite end.
+  const firstBeatOccupied = throws[0] !== null;
+  const lastBeatOccupied = _.last(throws) !== null;
+  if (firstBeatOccupied) {
+    throws.unshift(null);
+    interfaceShapes.unshift(_.last(interfaceShapes)!);
+  } else if (lastBeatOccupied) {
+    throws.push(null);
+    interfaceShapes.push(interfaceShapes[0]);
+  }
+  // How far to offset the card to match it up with its counterpart.
   const leftMargin = firstBeatOccupied ? 0 : beatWidth;
+
+  const width = throws.length * beatWidth;
 
   // Generate path for the outline with jagged edges
   const pathData = generateJaggedPath(
@@ -46,8 +49,6 @@ export function InterfaceJaggedPiece({
     beatWidth,
     height,
     jagHeight,
-    leftPadding,
-    rightPadding,
   );
 
   const copyToClipboard = useCallback(() => {
@@ -72,7 +73,7 @@ export function InterfaceJaggedPiece({
     <div className="jagged-piece" style={{ marginLeft: leftMargin }}>
       <svg
         ref={svgRef}
-        width={width + leftPadding + rightPadding + strokeWidth * 2}
+        width={width + strokeWidth * 2}
         height={height + jagHeight * 2 + strokeWidth * 2}
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -87,10 +88,7 @@ export function InterfaceJaggedPiece({
           />
 
           {/* Draw vertical grid lines */}
-          {_.range(
-            1,
-            numBeats + Math.sign(leftPadding) + Math.sign(rightPadding),
-          ).map((beat) => (
+          {_.range(1, throws.length).map((beat) => (
             <line
               key={`grid-${beat}`}
               x1={beat * beatWidth}
@@ -109,7 +107,7 @@ export function InterfaceJaggedPiece({
               return (
                 <text
                   key={beat}
-                  x={leftPadding + beat * beatWidth + beatWidth / 2}
+                  x={beat * beatWidth + beatWidth / 2}
                   y={height / 2}
                   textAnchor="middle"
                   dominantBaseline="middle"
@@ -136,8 +134,6 @@ function generateJaggedPath(
   beatWidth: number,
   height: number,
   jagHeight: number,
-  leftPadding: number,
-  rightPadding: number,
 ): string {
   const numBeats = shapes.length;
   const width = numBeats * beatWidth;
@@ -146,15 +142,10 @@ function generateJaggedPath(
   // Start at top left (accounting for left padding)
   parts.push(`M 0,0`);
 
-  // Add left padding as straight line if needed
-  if (leftPadding > 0) {
-    parts.push(`L ${leftPadding},0`);
-  }
-
   // Draw top edge (left to right) with jags
   for (let i = 0; i < numBeats; i++) {
-    const x1 = leftPadding + i * beatWidth;
-    const x2 = leftPadding + (i + 1) * beatWidth;
+    const x1 = i * beatWidth;
+    const x2 = (i + 1) * beatWidth;
     const xMid = (x1 + x2) / 2;
 
     if (shapes[i] === "straight") {
@@ -170,23 +161,13 @@ function generateJaggedPath(
     }
   }
 
-  // Add right padding as straight line if needed
-  if (rightPadding > 0) {
-    parts.push(`L ${leftPadding + width + rightPadding},0`);
-  }
-
   // Draw right edge (top to bottom)
-  parts.push(`L ${leftPadding + width + rightPadding},${height}`);
-
-  // Add right padding at bottom if needed
-  if (rightPadding > 0) {
-    parts.push(`L ${leftPadding + width},${height}`);
-  }
+  parts.push(`L ${width},${height}`);
 
   // Draw bottom edge (right to left) with jags
   for (let i = numBeats - 1; i >= 0; i--) {
-    const x1 = leftPadding + i * beatWidth;
-    const x2 = leftPadding + (i + 1) * beatWidth;
+    const x1 = i * beatWidth;
+    const x2 = (i + 1) * beatWidth;
     const xMid = (x1 + x2) / 2;
 
     if (shapes[i] === "straight") {
@@ -200,11 +181,6 @@ function generateJaggedPath(
       parts.push(`L ${xMid},${height - jagHeight}`);
       parts.push(`L ${x1},${height}`);
     }
-  }
-
-  // Add left padding at bottom if needed
-  if (leftPadding > 0) {
-    parts.push(`L 0,${height}`);
   }
 
   // Draw left edge (bottom to top) - close the path
