@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
-interface ArrowData {
+export interface ArrowData {
   j1: number;
   t1: number;
   j2: number;
