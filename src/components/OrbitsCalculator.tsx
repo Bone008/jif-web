@@ -282,6 +282,7 @@ export function OrbitsCalculator() {
       {jif?.jugglers.length === 2 &&
         jif.jugglers[0].becomes === 0 &&
         jif.jugglers[1].becomes === 1 &&
+        jif.throws.length > 0 &&
         !manipulators?.length &&
         throwsTable && (
           <div className="card start">
