@@ -57,10 +57,12 @@ export const ALL_PRESETS: Preset[] = [
   },
   {
     name: "Ronjabout",
-    instructions: ["4B 3  3  3  3B 3  3  3", "3  4A 3  3  3  3A 3  3  3"].join(
-      "\n",
-    ),
-    manipulators: ["sa - sb - ia -"],
+    instructions: [
+      "4B 3  5  3  4B 3  5  3  4B",
+      "3  4A 3  3  3  4A 3  3  3",
+      // !
+    ].join("\n"),
+    manipulators: ["sa - - sb - ia - - -"],
   },
   {
     name: "Walking feed 9c",
