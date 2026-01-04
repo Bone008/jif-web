@@ -193,8 +193,30 @@ export function OrbitsCalculator() {
             </button>
           </p>
           <div style={{ display: "flex", gap: "0.5em" }}>
-            <label style={{ flexGrow: 2 }}>
-              <div>Enter social siteswap, 4-handed siteswap, or JIF:</div>
+            <div style={{ flexGrow: 2 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span>Enter social siteswap, 4-handed siteswap, or JIF:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const lines = jifInput.split("\n");
+                    const separator = isSiteswap(jifInput) ? "" : " ";
+                    const duplicated = lines
+                      .map((line) => `${line}${separator}${line}`)
+                      .join("\n");
+                    setJifInput(duplicated);
+                  }}
+                  title="Repeat the pattern twice"
+                >
+                  2×
+                </button>
+              </div>
               <textarea
                 value={jifInput}
                 onChange={(e) => setJifInput(e.target.value)}
@@ -202,7 +224,7 @@ export function OrbitsCalculator() {
                 rows={6}
                 style={{ width: "100%", resize: "vertical" }}
               ></textarea>
-            </label>
+            </div>
             <label
               style={{
                 flexGrow: 1,
@@ -317,7 +339,7 @@ function processInput(
   try {
     if (jifInput.startsWith("{")) {
       jif = JSON.parse(jifInput);
-    } else if (!jifInput.match(/\s/)) {
+    } else if (isSiteswap(jifInput)) {
       jif = siteswapToJIF(jifInput, 2);
     } else {
       jif = prechacToJif(getCleanedLines(jifInput));
@@ -469,4 +491,9 @@ function getCleanedLines(value: string) {
     .split("\n")
     .map((line) => line.trim().replace(/[^\w\s:\->]/g, ""))
     .filter((line) => line.length > 0);
+}
+
+function isSiteswap(jifInput: string): boolean {
+  // We assume that spaces indicate multi-juggler input, e.g. "3b 3" vs "756".
+  return !jifInput.match(/\s/);
 }
