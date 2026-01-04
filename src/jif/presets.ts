@@ -29,15 +29,39 @@ export const ALL_PRESETS: Preset[] = [
   { name: "3-count", instructions: RAW_DATA_3_COUNT_PASSING.join("\n") },
   { name: "3-count 2x", instructions: RAW_DATA_3_COUNT_PASSING_2X.join("\n") },
   {
-    name: "3-count 5x with pass intercept",
+    name: "Phoenician Waltz",
     instructions: [
-      "3B 3  3  3B 3  3  3B 3  3  3B 3  3  3B 3  3",
-      "3A 3  3  3A 3  3  3A 3  3  3A 3  3  3A 3  3",
+      "3B 3B  3  3B 3B  3  3B 3B  3",
+      "3A 3A  3  3A 3A  3  3A 3A  3",
     ].join("\n"),
-    manipulators: ["- - - i1a"],
+    manipulators: ["sA - - sA - - i1A - -"],
+  },
+  {
+    name: "Göttinger Opernball",
+    instructions: [
+      "3B 3B  3  3B 3B  3  3B 3B  3",
+      "3A 3A  3  3A 3A  3  3A 3A  3",
+    ].join("\n"),
+    manipulators: [
+      "sA - - sA - - i1A - -",
+      "sB - - i1B - - sA - -",
+      "i1A - - sB - - sB - -",
+    ],
   },
   { name: "4-count", instructions: RAW_DATA_4_COUNT_PASSING.join("\n") },
   { name: "4-count 2x", instructions: RAW_DATA_4_COUNT_PASSING_2X.join("\n") },
+  {
+    name: "4-count Roundabout",
+    instructions: RAW_DATA_4_COUNT_PASSING_2X.join("\n"),
+    manipulators: ["sa - sb - ia -"],
+  },
+  {
+    name: "Ronjabout",
+    instructions: ["4B 3  3  3  3B 3  3  3", "3  4A 3  3  3  3A 3  3  3"].join(
+      "\n",
+    ),
+    manipulators: ["sa - sb - ia -"],
+  },
   {
     name: "Walking feed 9c",
     instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
@@ -50,23 +74,28 @@ export const ALL_PRESETS: Preset[] = [
     name: "Scrambled - iB cB sA - B",
     instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
     // Standard notation: ["iB cB sA", "#2.4", "Unscrambled B"],
-    manipulators: ["i2A - - - sB"],
+    manipulators: ["i2A - - - sB -"],
+  },
+  {
+    name: "Scrambled - iA cC sC - Ivy",
+    instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
+    manipulators: ["i2B - - - sC -"],
   },
   {
     name: "Scrambled - cB sC iC - Postmen",
     instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
     // Standard notation: ["cB sC iC", "#1.9", "Postmen"],
-    manipulators: ["- - sA - i2C"],
+    manipulators: ["- - sA - i2C -"],
   },
   {
-    name: "Scrambled - iA cC sC - Ivy",
+    name: "Scrambled - cB sB iC - Toast",
     instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
-    manipulators: ["i2B - - - sC"],
+    manipulators: ["sA - i2A - - -"],
   },
   {
     name: "Scrambled - cB sB iC - V",
     instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
-    manipulators: ["- - sB - i2C"],
+    manipulators: ["- - sB - i2C -"],
   },
   {
     name: "Walking feed 10c",
@@ -87,7 +116,7 @@ export const ALL_PRESETS: Preset[] = [
   },
   {
     name: "5-count popcorn",
-    instructions: "a6667",
+    instructions: "7a666",
   },
   {
     name: "7-club one-count",
@@ -96,6 +125,14 @@ export const ALL_PRESETS: Preset[] = [
   {
     name: "786 - French 3-count",
     instructions: "786786786",
+  },
+  {
+    name: "975 - Holy Grail",
+    instructions: "975975975",
+  },
+  {
+    name: "777786 - Example of Period 6",
+    instructions: "777786777786",
   },
   {
     name: "975 - Holy Grail",
