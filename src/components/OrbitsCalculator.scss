@@ -50,3 +50,14 @@
     display: none;
   }
 }
+
+.warningNote {
+  margin-top: 1em;
+  color: rgba(255, 200, 0, 0.9);
+  font-size: 80%;
+  white-space: pre-wrap;
+
+  &::before {
+    content: "⚠️ ";
+  }
+}
