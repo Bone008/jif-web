@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { useCallback, useRef } from "react";
-import { FullJIF } from "../jif/jif_loader";
+import { FullJIF, FullThrow } from "../jif/jif_loader";
 import { getThrowsTableByJuggler } from "../jif/orbits";
 import { inferIsSynchronousPattern, wrapLimb } from "../jif/util";
 import "./InterfaceJaggedPiece.scss";
@@ -22,10 +22,12 @@ export function InterfaceJaggedPiece({
   const beatWidth = 20;
   const height = 80;
   const jagHeight = 10;
-  const strokeWidth = 2;
+  const strokeWidth = 3;
+  const labelWidth = 70; // Width for the label section on the left
 
   const throwsTable = getThrowsTableByJuggler(jif);
   const throws = throwsTable[juggler].slice();
+  const label = generateLabel(throws);
 
   // Calculate padding to avoid numbers on the edge of the card.
   // The line shape of the padding should match the opposite end.
@@ -73,53 +75,90 @@ export function InterfaceJaggedPiece({
     <div className="jagged-piece" style={{ marginLeft: leftMargin }}>
       <svg
         ref={svgRef}
-        width={width + strokeWidth * 2}
+        width={width + strokeWidth * 2 + labelWidth}
         height={height + jagHeight * 2 + strokeWidth * 2}
         xmlns="http://www.w3.org/2000/svg"
       >
         <g transform={`translate(${strokeWidth}, ${strokeWidth + jagHeight})`}>
-          {/* Draw the jagged outline */}
-          <path
-            d={pathData}
-            fill="none"
-            stroke="white"
-            strokeWidth={strokeWidth}
-            strokeLinejoin="miter"
-          />
-
-          {/* Draw vertical grid lines */}
-          {_.range(1, throws.length).map((beat) => (
-            <line
-              key={`grid-${beat}`}
-              x1={beat * beatWidth}
-              y1={0}
-              x2={beat * beatWidth}
-              y2={height}
-              stroke="white"
-              strokeWidth={0.5}
-              opacity={0.5}
+          {/* Layer 1: Filled surface */}
+          <g className="base">
+            {/* Label rectangle background */}
+            <rect
+              x={0}
+              y={jagHeight}
+              width={labelWidth}
+              height={height - jagHeight * 2}
+              fill="#4b3673"
+              stroke="none"
             />
-          ))}
+            {/* Main puzzle piece filled surface */}
+            <g transform={`translate(${labelWidth}, 0)`}>
+              <path d={pathData} fill="#4b3673" stroke="none" />
+            </g>
+          </g>
 
-          {/* Draw throw durations */}
-          {throws.map((thrw, beat) => {
-            if (thrw) {
-              return (
-                <text
-                  key={beat}
-                  x={beat * beatWidth + beatWidth / 2}
-                  y={height / 2}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="30"
-                  fill="white"
-                >
-                  {thrw.duration.toString(36)}
-                </text>
-              );
-            }
-            return null;
-          })}
+          {/* Layer 2: Outline and vertical grid lines */}
+          <g className="outline" transform={`translate(${labelWidth}, 0)`}>
+            <path
+              d={pathData}
+              fill="none"
+              stroke="white"
+              strokeWidth={strokeWidth}
+              strokeLinejoin="miter"
+            />
+
+            {_.range(1, throws.length).map((beat) => (
+              <line
+                key={`grid-${beat}`}
+                x1={beat * beatWidth}
+                y1={0}
+                x2={beat * beatWidth}
+                y2={height}
+                stroke="white"
+                strokeWidth={0.5}
+                opacity={0.5}
+              />
+            ))}
+          </g>
+
+          {/* Layer 3: Text */}
+          <g className="text">
+            {/* Label text */}
+            <text
+              x={labelWidth / 2}
+              y={height / 2}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize="18"
+              fontWeight="bold"
+              fill="white"
+            >
+              {label}
+            </text>
+
+            {/* Throw duration numbers */}
+            <g transform={`translate(${labelWidth}, 0)`}>
+              {throws.map((thrw, beat) => {
+                if (thrw) {
+                  return (
+                    <text
+                      key={beat}
+                      x={beat * beatWidth + beatWidth / 2}
+                      y={height / 2}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize="30"
+                      fontWeight="bold"
+                      fill="white"
+                    >
+                      {thrw.duration.toString(36)}
+                    </text>
+                  );
+                }
+                return null;
+              })}
+            </g>
+          </g>
         </g>
       </svg>
       <button onClick={copyToClipboard} title="Copy SVG to clipboard">
@@ -231,4 +270,17 @@ function computeInterfaceShapes(
     }
   });
   return interfaceShapes;
+}
+
+/** Formats the label of a jagged piece. */
+function generateLabel(throws: (FullThrow | null)[]): string {
+  const sum = throws
+    .map((thrw) => (thrw ? thrw.duration : 0))
+    .reduce((a, b) => a + b, 0);
+  const numObjects = sum / throws.length;
+  return (
+    (Number.isInteger(numObjects)
+      ? numObjects.toString()
+      : numObjects.toFixed(1)) + " C"
+  );
 }
