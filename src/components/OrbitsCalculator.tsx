@@ -161,6 +161,9 @@ export function OrbitsCalculator() {
               Edit
             </button>
           </div>
+          {preset?.warningNote && (
+            <div className="warningNote">{preset.warningNote}</div>
+          )}
           <ViewSettingsControls style={{ marginTop: "1rem" }} />
         </div>
       )}
@@ -236,6 +239,11 @@ export function OrbitsCalculator() {
         </div>
       )}
 
+      {preset?.warningNote && headerDisplayState === "full" && (
+        <div className="card">
+          <div className="warningNote">{preset.warningNote}</div>
+        </div>
+      )}
       {jifError && <p className="card error">{jifError}</p>}
       {manipulationError && <p className="card error">{manipulationError}</p>}
       {applyManipulatorsError && (

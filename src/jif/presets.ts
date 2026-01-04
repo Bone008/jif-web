@@ -13,6 +13,7 @@ export interface Preset {
   instructions: string;
   manipulators?: string[];
   category?: string;
+  warningNote?: string;
 }
 
 export const ALL_PRESETS: Preset[] = [
@@ -34,16 +35,6 @@ export const ALL_PRESETS: Preset[] = [
       "3A 3  3  3A 3  3  3A 3  3  3A 3  3  3A 3  3",
     ].join("\n"),
     manipulators: ["- - - i1a"],
-  },
-  {
-    name: "TODO: Dolby 5.1",
-    instructions: ["3B 3  3  3  3", "3A 3  3  3  3"].join("\n"),
-    manipulators: ["sA i2B -  -  -"],
-  },
-  {
-    name: "TODO: Dolby 5.1 with Doppelgänger",
-    instructions: ["3B 3  3  3  3", "3A 3  3  3  3"].join("\n"),
-    manipulators: ["sA i2B -  -  -", "sB i2A -  -  -"],
   },
   { name: "4-count", instructions: RAW_DATA_4_COUNT_PASSING.join("\n") },
   { name: "4-count 2x", instructions: RAW_DATA_4_COUNT_PASSING_2X.join("\n") },
@@ -114,6 +105,20 @@ export const ALL_PRESETS: Preset[] = [
     name: "TODO: Muckabout",
     instructions: ["3 3c 3 3 3b 3", "3 3 3 3 3a 3", "3 3a 3 3 3 3"].join("\n"),
     manipulators: ["- sa - i2c - -", "i2b - - - sb -"],
+  },
+  {
+    name: "Dolby 5.1",
+    instructions: ["3B 3  3  3  3", "3A 3  3  3  3"].join("\n"),
+    manipulators: ["sA i2B -  -  -"],
+    warningNote:
+      "The carry is crossing, which the orbits calculation does not handle yet!",
+  },
+  {
+    name: "Dolby 5.1 with Doppelgänger",
+    instructions: ["3B 3  3  3  3", "3A 3  3  3  3"].join("\n"),
+    manipulators: ["sA i2B -  -  -", "sB i2A -  -  -"],
+    warningNote:
+      "The carry is crossing, which the orbits calculation does not handle yet!",
   },
 ];
 
