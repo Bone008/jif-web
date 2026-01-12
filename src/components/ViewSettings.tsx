@@ -94,19 +94,6 @@ export function ViewSettingsControls({
           <option value="causal">Causal</option>
         </select>
       </label>
-      <label>
-        <input
-          type="checkbox"
-          checked={viewSettings.showHands}
-          onChange={(e) =>
-            setViewSettings({
-              ...viewSettings,
-              showHands: e.target.checked,
-            })
-          }
-        />
-        Show hands
-      </label>
       <label
         style={{
           display: viewSettings.arrowMode === "none" ? "none" : undefined,
@@ -120,6 +107,19 @@ export function ViewSettingsControls({
           }
         />
         Wrap arrows
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={viewSettings.showHands}
+          onChange={(e) =>
+            setViewSettings({
+              ...viewSettings,
+              showHands: e.target.checked,
+            })
+          }
+        />
+        Show hands
       </label>
       <label>
         <input

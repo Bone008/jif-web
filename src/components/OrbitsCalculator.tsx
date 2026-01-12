@@ -46,14 +46,15 @@ type HeaderDisplayState = "embed" | "compact" | "full";
 function PresetSelector({
   selectedPreset,
   categoryFilter,
-  onChange,
+  onSelectPreset,
   allowCustom,
+  ...props
 }: {
   selectedPreset: Preset | null;
   categoryFilter: Category | null;
-  onChange: (presetSlug: string) => void;
+  onSelectPreset: (presetSlug: string) => void;
   allowCustom: boolean;
-}) {
+} & React.HTMLAttributes<HTMLLabelElement>) {
   const value = selectedPreset ? getPresetSlug(selectedPreset) : "";
 
   function renderPresets(presets: Preset[]) {
@@ -65,25 +66,31 @@ function PresetSelector({
   }
 
   return (
-    <select
-      value={allowCustom && !selectedPreset ? "custom" : value}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      {allowCustom ? (
-        <option value="custom">Custom</option>
-      ) : (
-        <option value="" disabled>
-          Choose a pattern ...
-        </option>
-      )}
-      {categoryFilter
-        ? renderPresets(categoryFilter.presets)
-        : Object.entries(ALL_PRESETS_BY_CATEGORY).map(([category, presets]) => (
-            <optgroup key={category} label={category}>
-              {renderPresets(presets)}
-            </optgroup>
-          ))}
-    </select>
+    <label {...props}>
+      {categoryFilter ? `Select ${categoryFilter.name}:` : "Select preset:"}
+      &nbsp;&nbsp;
+      <select
+        value={allowCustom && !selectedPreset ? "custom" : value}
+        onChange={(e) => onSelectPreset(e.target.value)}
+      >
+        {allowCustom ? (
+          <option value="custom">Custom</option>
+        ) : (
+          <option value="" disabled>
+            Choose a pattern ...
+          </option>
+        )}
+        {categoryFilter
+          ? renderPresets(categoryFilter.presets)
+          : Object.entries(ALL_PRESETS_BY_CATEGORY).map(
+              ([category, presets]) => (
+                <optgroup key={category} label={category}>
+                  {renderPresets(presets)}
+                </optgroup>
+              ),
+            )}
+      </select>
+    </label>
   );
 }
 
@@ -205,22 +212,21 @@ export function OrbitsCalculator() {
         <EmbedLink />
       </div>
       {headerDisplayState === "embed" && (
-        <CollapsibleTile>
-          <ViewSettingsControls />
-        </CollapsibleTile>
-      )}
-      {categoryFilter !== null && (
-        <div className="card stretch">
-          <label>
-            Select {categoryFilter.name} pattern:&nbsp;&nbsp;
-            <PresetSelector
-              selectedPreset={preset}
-              categoryFilter={categoryFilter}
-              onChange={updatePreset}
-              allowCustom={false}
-            />
-          </label>
-        </div>
+        <>
+          <CollapsibleTile>
+            <ViewSettingsControls />
+          </CollapsibleTile>
+          {categoryFilter !== null && (
+            <div className="card stretch">
+              <PresetSelector
+                selectedPreset={preset}
+                categoryFilter={categoryFilter}
+                onSelectPreset={updatePreset}
+                allowCustom={false}
+              />
+            </div>
+          )}
+        </>
       )}
       {headerDisplayState === "compact" && (
         <div className="card stretch">
@@ -239,18 +245,13 @@ export function OrbitsCalculator() {
       {headerDisplayState === "full" && (
         <div className="card stretch">
           <p style={{ display: "flex" }}>
-            <label style={{ flexGrow: 1 }}>
-              {categoryFilter
-                ? `Select ${categoryFilter.name} pattern:`
-                : "Select preset:"}
-              &nbsp;&nbsp;
-              <PresetSelector
-                selectedPreset={preset}
-                categoryFilter={categoryFilter}
-                onChange={updatePreset}
-                allowCustom={true}
-              />
-            </label>
+            <PresetSelector
+              selectedPreset={preset}
+              categoryFilter={categoryFilter}
+              onSelectPreset={updatePreset}
+              allowCustom={true}
+              style={{ flexGrow: 1 }}
+            />
 
             <button
               type="button"
