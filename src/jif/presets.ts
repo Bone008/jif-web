@@ -159,6 +159,15 @@ export const ALL_PRESETS: Preset[] = [
     warningNote:
       "The carry is crossing, which the orbits calculation does not handle yet!",
   },
+  {
+    name: "Dumb ways to die",
+    instructions: [
+      "3B 3C 3 3B 3C 3 3C 3B 3 3C 3B 3 -> A",
+      "3A 3  3 3A 3  3 3  3A 3 3  3A 3 -> B",
+      "3  3A 3 3  3A 3 3A 3  3 3A 3  3 -> C",
+    ].join("\n"),
+    manipulators: ["- i1A - - - i2B - - - i1C - -"],
+  },
 ];
 
 export function sanitizePresetName(name: string) {
