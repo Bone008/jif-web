@@ -691,7 +691,7 @@ describe("addManipulator", () => {
   });
 
   it("adds manipulator to Scrambled B", () => {
-    const result = loadPresetBySlug("b");
+    const result = loadPresetBySlug("unscrambled-b");
     expect(result).toMatchInlineSnapshot(`
       {
         "jugglers": [
