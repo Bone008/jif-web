@@ -3,10 +3,10 @@ import { getJugglerCycle } from "./cycles";
 import { loadWithDefaults } from "./jif_loader";
 import { prechacToJif, parseManipulator } from "./high_level_converter";
 import { addManipulator } from "./manipulation";
-import { findPresetByName, sanitizePresetName } from "./presets";
+import { findPresetByName, sanitizeName } from "./presets";
 
 function loadPresetWithManipulators(presetName: string) {
-  const preset = findPresetByName(sanitizePresetName(presetName));
+  const preset = findPresetByName(sanitizeName(presetName));
   if (!preset) {
     throw new Error(`Preset not found: ${presetName}`);
   }

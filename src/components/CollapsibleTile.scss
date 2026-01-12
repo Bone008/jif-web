@@ -6,8 +6,10 @@
   overflow: hidden;
   display: flex;
   justify-content: right;
+  pointer-events: none;
 
   &__settings {
+    pointer-events: auto;
     position: absolute;
     top: 0;
     right: 0;

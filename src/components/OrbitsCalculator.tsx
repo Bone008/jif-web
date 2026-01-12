@@ -20,10 +20,12 @@ import {
   ThrowsTableData,
 } from "../jif/orbits";
 import {
+  ALL_PRESETS_BY_CATEGORY,
+  Category,
+  findCategoryByName,
   findPresetByName,
-  getPresetsGroupedByCategory,
   Preset,
-  sanitizePresetName,
+  sanitizeName,
 } from "../jif/presets";
 import { CollapsibleTile } from "./CollapsibleTile";
 import { EmbedLink } from "./EmbedLink";
@@ -37,13 +39,65 @@ import { CycleDisplay } from "./CycleDisplay";
 const PRESET_NAME_PARAM = "pattern";
 const INSTRUCTIONS_PARAM = "q";
 const MANIPULATION_PARAM = "m";
+const CATEGORY_FILTER_PARAM = "category";
 
 type HeaderDisplayState = "embed" | "compact" | "full";
+
+function PresetSelector({
+  selectedPreset,
+  categoryFilter,
+  onChange,
+  allowCustom,
+}: {
+  selectedPreset: Preset | null;
+  categoryFilter: Category | null;
+  onChange: (presetName: string) => void;
+  allowCustom: boolean;
+}) {
+  const value = selectedPreset ? sanitizeName(selectedPreset.name) : "";
+
+  function renderPresets(presets: Preset[]) {
+    return presets.map((p) => (
+      <option key={sanitizeName(p.name)} value={sanitizeName(p.name)}>
+        {p.name}
+      </option>
+    ));
+  }
+
+  return (
+    <select
+      value={allowCustom && !selectedPreset ? "custom" : value}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      {allowCustom ? (
+        <option value="custom">Custom</option>
+      ) : (
+        <option value="" disabled>
+          Choose a pattern ...
+        </option>
+      )}
+      {categoryFilter
+        ? renderPresets(categoryFilter.presets)
+        : Object.entries(ALL_PRESETS_BY_CATEGORY).map(([category, presets]) => (
+            <optgroup key={category} label={category}>
+              {renderPresets(presets)}
+            </optgroup>
+          ))}
+    </select>
+  );
+}
 
 export function OrbitsCalculator() {
   const search = useSearchParams();
   const isEmbed = useEmbedMode();
   const { viewSettings } = useViewSettings();
+
+  // Category filter (read-only from URL, not settable via UI)
+  const categoryFilterParam = search.get(CATEGORY_FILTER_PARAM);
+  const categoryFilter = useMemo(
+    () => findCategoryByName(categoryFilterParam ?? ""),
+    [categoryFilterParam],
+  );
 
   const presetSearchName = search.get(PRESET_NAME_PARAM);
   const preset = findPresetByName(presetSearchName ?? "");
@@ -58,7 +112,7 @@ export function OrbitsCalculator() {
 
     if (newPreset) {
       search.setAll({
-        [PRESET_NAME_PARAM]: sanitizePresetName(newPreset.name),
+        [PRESET_NAME_PARAM]: sanitizeName(newPreset.name),
         [INSTRUCTIONS_PARAM]: null,
         [MANIPULATION_PARAM]: null,
       });
@@ -154,6 +208,19 @@ export function OrbitsCalculator() {
           <ViewSettingsControls />
         </CollapsibleTile>
       )}
+      {categoryFilter !== null && (
+        <div className="card stretch">
+          <label>
+            Select {categoryFilter.name} pattern:&nbsp;&nbsp;
+            <PresetSelector
+              selectedPreset={preset}
+              categoryFilter={categoryFilter}
+              onChange={updatePreset}
+              allowCustom={false}
+            />
+          </label>
+        </div>
+      )}
       {headerDisplayState === "compact" && (
         <div className="card stretch">
           <div style={{ display: "flex", gap: "2em" }}>
@@ -172,25 +239,16 @@ export function OrbitsCalculator() {
         <div className="card stretch">
           <p style={{ display: "flex" }}>
             <label style={{ flexGrow: 1 }}>
-              Select preset:&nbsp;&nbsp;
-              <select
-                value={preset ? sanitizePresetName(preset.name) : "custom"}
-                onChange={(e) => updatePreset(e.target.value)}
-              >
-                <option value="custom">Custom</option>
-                {getPresetsGroupedByCategory().map(([category, presets]) => (
-                  <optgroup key={category} label={category}>
-                    {presets.map((preset) => (
-                      <option
-                        key={sanitizePresetName(preset.name)}
-                        value={sanitizePresetName(preset.name)}
-                      >
-                        {preset.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
+              {categoryFilter
+                ? `Select ${categoryFilter.name} pattern:`
+                : "Select preset:"}
+              &nbsp;&nbsp;
+              <PresetSelector
+                selectedPreset={preset}
+                categoryFilter={categoryFilter}
+                onChange={updatePreset}
+                allowCustom={true}
+              />
             </label>
 
             <button
