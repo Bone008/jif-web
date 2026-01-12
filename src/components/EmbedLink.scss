@@ -1,14 +1,14 @@
 @use "../breakpoints";
 
 .embedLink a {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 3rem;
-    padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 3rem;
+  padding: 1rem;
 
-    @include breakpoints.sm {
-        /* Hide on small screens, it's not so important there. */
-        display: none;
-    }
+  @include breakpoints.sm {
+    /* Hide on small screens, it's not so important there. */
+    display: none;
+  }
 }
