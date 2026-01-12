@@ -13,6 +13,7 @@ import {
 
 export interface Preset {
   name: string;
+  slug?: string;
   instructions: string;
   manipulators?: string[];
   warningNote?: string;
@@ -54,26 +55,32 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
   "2 Person Async Patterns": [
     {
       name: "5-count popcorn",
+      slug: "popcorn",
       instructions: "7a6667a6667a666",
     },
     {
       name: "7-club one-count",
+      slug: "one-count",
       instructions: "777777777",
     },
     {
       name: "786 - French 3-count",
+      slug: "french-3-count",
       instructions: "786786786",
     },
     {
       name: "975 - Holy Grail",
+      slug: "holy-grail",
       instructions: "975975975",
     },
     {
       name: "77862 - Why Not",
+      slug: "why-not",
       instructions: "778627786277862",
     },
     {
       name: "777786 - Example of Period 6",
+      slug: "period-6",
       instructions: "777786777786",
     },
   ],
@@ -162,6 +169,7 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
     },
     {
       name: "Muckabout (TODO)",
+      slug: "muckabout",
       instructions: ["3 3c 3 3 3b 3", "3 3 3 3 3a 3", "3 3a 3 3 3 3"].join(
         "\n",
       ),
@@ -173,26 +181,31 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
   Scrambled: [
     {
       name: "Scrambled - iB cB sA - B",
+      slug: "b",
       instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
       manipulators: ["i2A - - - sB -"],
     },
     {
       name: "Scrambled - iA cC sC - Ivy",
+      slug: "ivy",
       instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
       manipulators: ["i2B - - - sC -"],
     },
     {
       name: "Scrambled - cB sC iC - Postmen",
+      slug: "postmen",
       instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
       manipulators: ["- - sA - i2C -"],
     },
     {
       name: "Scrambled - cB sB iC - Toast",
+      slug: "toast",
       instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
       manipulators: ["sA - i2A - - -"],
     },
     {
       name: "Scrambled - cB sB iC - V",
+      slug: "v",
       instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
       manipulators: ["- - sB - i2C -"],
     },
@@ -201,6 +214,7 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
   Ambled: [
     {
       name: "Ambled - Choptopus",
+      slug: "choptopus",
       instructions: RAW_DATA_WALKING_FEED_10C.join("\n"),
       manipulators: ["- sB - i2c - - -"],
     },
@@ -223,10 +237,15 @@ export function sanitizeName(name: string) {
   return name.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
 }
 
-/** Returns a preset by looking it up by its sanitized name. */
-export function findPresetByName(name: string): Preset | null {
+/** Returns the slug for a preset (uses explicit slug if set, otherwise sanitized name). */
+export function getPresetSlug(preset: Preset): string {
+  return preset.slug ?? sanitizeName(preset.name);
+}
+
+/** Returns a preset by looking it up by its slug. */
+export function findPresetBySlug(slug: string): Preset | null {
   for (const presets of Object.values(ALL_PRESETS_BY_CATEGORY)) {
-    const found = presets.find((preset) => sanitizeName(preset.name) === name);
+    const found = presets.find((preset) => getPresetSlug(preset) === slug);
     if (found) return found;
   }
   return null;

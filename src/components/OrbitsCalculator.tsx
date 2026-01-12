@@ -23,9 +23,9 @@ import {
   ALL_PRESETS_BY_CATEGORY,
   Category,
   findCategoryByName,
-  findPresetByName,
+  findPresetBySlug,
+  getPresetSlug,
   Preset,
-  sanitizeName,
 } from "../jif/presets";
 import { CollapsibleTile } from "./CollapsibleTile";
 import { EmbedLink } from "./EmbedLink";
@@ -51,14 +51,14 @@ function PresetSelector({
 }: {
   selectedPreset: Preset | null;
   categoryFilter: Category | null;
-  onChange: (presetName: string) => void;
+  onChange: (presetSlug: string) => void;
   allowCustom: boolean;
 }) {
-  const value = selectedPreset ? sanitizeName(selectedPreset.name) : "";
+  const value = selectedPreset ? getPresetSlug(selectedPreset) : "";
 
   function renderPresets(presets: Preset[]) {
     return presets.map((p) => (
-      <option key={sanitizeName(p.name)} value={sanitizeName(p.name)}>
+      <option key={getPresetSlug(p)} value={getPresetSlug(p)}>
         {p.name}
       </option>
     ));
@@ -100,7 +100,7 @@ export function OrbitsCalculator() {
   );
 
   const presetSearchName = search.get(PRESET_NAME_PARAM);
-  const preset = findPresetByName(presetSearchName ?? "");
+  const preset = findPresetBySlug(presetSearchName ?? "");
   const jifInput = search.get(INSTRUCTIONS_PARAM) ?? preset?.instructions ?? "";
   const manipulationInput =
     search.get(MANIPULATION_PARAM) ?? preset?.manipulators?.join("\n") ?? "";
@@ -112,7 +112,7 @@ export function OrbitsCalculator() {
 
     if (newPreset) {
       search.setAll({
-        [PRESET_NAME_PARAM]: sanitizeName(newPreset.name),
+        [PRESET_NAME_PARAM]: getPresetSlug(newPreset),
         [INSTRUCTIONS_PARAM]: null,
         [MANIPULATION_PARAM]: null,
       });
@@ -185,8 +185,8 @@ export function OrbitsCalculator() {
     [jif, manipulators, disabledInstructions, viewSettings.isLimbsTable],
   );
 
-  function updatePreset(name: string) {
-    const newPreset = findPresetByName(name);
+  function updatePreset(slug: string) {
+    const newPreset = findPresetBySlug(slug);
     setPreset(newPreset);
     setDisabledInstructions([]);
   }
