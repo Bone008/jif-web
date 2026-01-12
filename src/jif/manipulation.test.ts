@@ -1,22 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { addManipulator } from "./manipulation";
-import { loadWithDefaults } from "./jif_loader";
-import { prechacToJif, parseManipulator } from "./high_level_converter";
-import {
-  RAW_DATA_WALKING_FEED_9C,
-  RAW_DATA_WALKING_FEED_10C,
-} from "./test_data";
-
-const RAW_PHOENICIAN_WALTZ = [
-  "3B 3B  3  3B 3B  3  3B 3B  3",
-  "3A 3A  3  3A 3A  3  3A 3A  3",
-];
+import { loadPresetBySlug } from "./preset_loader";
 
 describe("addManipulator", () => {
   it("adds manipulator to Phoenician Waltz", () => {
-    const jif = loadWithDefaults(prechacToJif(RAW_PHOENICIAN_WALTZ));
-    const manipulator = parseManipulator("sA - - sA - - i1A - -");
-    const result = addManipulator(jif, manipulator);
+    const result = loadPresetBySlug("phoenician-waltz");
     expect(result).toMatchInlineSnapshot(`
       {
         "jugglers": [
@@ -279,19 +266,8 @@ describe("addManipulator", () => {
   });
 
   it("adds three manipulators to Göttinger Opernball", () => {
-    const baseJif = loadWithDefaults(prechacToJif(RAW_PHOENICIAN_WALTZ));
-    const manipulators = [
-      "sA - - sA - - i1A - -",
-      "sB - - i1B - - sA - -",
-      "i1A - - sB - - sB - -",
-    ];
-
-    let jif = baseJif;
-    for (const m of manipulators) {
-      jif = addManipulator(jif, parseManipulator(m));
-    }
-
-    expect(jif).toMatchInlineSnapshot(`
+    const result = loadPresetBySlug("goettinger-opernball");
+    expect(result).toMatchInlineSnapshot(`
       {
         "jugglers": [
           {
@@ -715,9 +691,7 @@ describe("addManipulator", () => {
   });
 
   it("adds manipulator to Scrambled B", () => {
-    const jif = loadWithDefaults(prechacToJif(RAW_DATA_WALKING_FEED_9C));
-    const manipulator = parseManipulator("i2A - - - sB -");
-    const result = addManipulator(jif, manipulator);
+    const result = loadPresetBySlug("b");
     expect(result).toMatchInlineSnapshot(`
       {
         "jugglers": [
@@ -977,9 +951,7 @@ describe("addManipulator", () => {
   });
 
   it("adds manipulator to Toast", () => {
-    const jif = loadWithDefaults(prechacToJif(RAW_DATA_WALKING_FEED_9C));
-    const manipulator = parseManipulator("sA - i2A - - -");
-    const result = addManipulator(jif, manipulator);
+    const result = loadPresetBySlug("toast");
     expect(result).toMatchInlineSnapshot(`
       {
         "jugglers": [
@@ -1239,9 +1211,7 @@ describe("addManipulator", () => {
   });
 
   it("adds manipulator to Choptopus", () => {
-    const jif = loadWithDefaults(prechacToJif(RAW_DATA_WALKING_FEED_10C));
-    const manipulator = parseManipulator("- sB - i2c - - -");
-    const result = addManipulator(jif, manipulator);
+    const result = loadPresetBySlug("choptopus");
     expect(result).toMatchInlineSnapshot(`
       {
         "jugglers": [

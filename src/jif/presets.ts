@@ -126,6 +126,7 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
     },
     {
       name: "Göttinger Opernball",
+      slug: "goettinger-opernball",
       instructions: [
         "3B 3B  3  3B 3B  3  3B 3B  3",
         "3A 3A  3  3A 3A  3  3A 3A  3",
