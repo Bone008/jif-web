@@ -214,7 +214,9 @@ export function OrbitsCalculator() {
       {headerDisplayState === "embed" && (
         <>
           <CollapsibleTile>
-            <ViewSettingsControls />
+            <ViewSettingsControls
+              hasManipulator={!!manipulators && manipulators.length > 0}
+            />
           </CollapsibleTile>
           {categoryFilter !== null && (
             <div className="card stretch">
@@ -239,7 +241,10 @@ export function OrbitsCalculator() {
           {preset?.warningNote && (
             <div className="warningNote">{preset.warningNote}</div>
           )}
-          <ViewSettingsControls style={{ marginTop: "1rem" }} />
+          <ViewSettingsControls
+            style={{ marginTop: "1rem" }}
+            hasManipulator={!!manipulators && manipulators.length > 0}
+          />
         </div>
       )}
       {headerDisplayState === "full" && (
@@ -303,7 +308,10 @@ export function OrbitsCalculator() {
               style={{ width: "100%", resize: "vertical" }}
             ></textarea>
           </label>
-          <ViewSettingsControls style={{ marginTop: "1.5rem" }} />
+          <ViewSettingsControls
+            style={{ marginTop: "1.5rem" }}
+            hasManipulator={!!manipulators && manipulators.length > 0}
+          />
         </div>
       )}
 
@@ -480,8 +488,9 @@ function formatManipulator(
     const destination = jif.jugglers[jif.limbs[thrw.to].juggler].label;
     result[thrw.time] = {
       label: `${letter}^{${source}}_{${destination}}`,
-      disabled: disabledInstructions[i],
+      originalThrow: thrw,
       originalIndex: i,
+      disabled: disabledInstructions[i],
     };
   }
 

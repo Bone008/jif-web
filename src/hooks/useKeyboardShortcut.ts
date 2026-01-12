@@ -3,11 +3,13 @@ import { useEffect } from "react";
 export interface UseKeyboardShortcutArgs {
   key: string;
   onKeyPressed: () => void;
+  deps?: any[];
 }
 
 export function useKeyboardShortcut({
   key,
   onKeyPressed,
+  deps,
 }: UseKeyboardShortcutArgs) {
   useEffect(() => {
     function keyDownHandler(e: globalThis.KeyboardEvent) {
@@ -35,5 +37,5 @@ export function useKeyboardShortcut({
     return () => {
       document.removeEventListener("keydown", keyDownHandler);
     };
-  }, []);
+  }, deps ?? []);
 }

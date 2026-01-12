@@ -24,6 +24,8 @@ const ORBIT_COLORS = [
 
 export interface FormattedManipulatorInstruction {
   label: string;
+  /** Reference to the original throw that is manipulated. */
+  originalThrow?: FullThrow;
   /** Index in the initial instructions array. */
   originalIndex?: number;
   disabled?: boolean;
@@ -106,6 +108,32 @@ export function ThrowsTable({
     ? (limbIndex: number) => jif.repetition.limbPermutation[limbIndex]
     : (jugglerIndex: number) => jif.jugglers[jugglerIndex].becomes;
 
+  // Compute the set of throws that have manipulator instructions (for filtering).
+  // A value of null means show all throws.
+  const manipulatedThrows = useMemo(() => {
+    if (
+      viewSettings.onlyManipulatedArrows &&
+      viewSettings.arrowMode !== "orbits"
+    ) {
+      if (manipulationOptions?.formattedManipulators.length) {
+        return manipulationOptions.formattedManipulators
+          .flat()
+          .filter((instruction) => !instruction.disabled)
+          .map((instruction) => instruction.originalThrow!)
+          .filter(Boolean);
+      }
+      if (jif.throws.some((thrw) => thrw.isManipulated)) {
+        return jif.throws.filter((thrw) => thrw.isManipulated);
+      }
+    }
+    return null;
+  }, [
+    jif.throws,
+    viewSettings.onlyManipulatedArrows,
+    viewSettings.arrowMode,
+    manipulationOptions?.formattedManipulators,
+  ]);
+
   let arrows: ArrowData[] = [];
   try {
     arrows = getArrows(
@@ -114,6 +142,7 @@ export function ThrowsTable({
       throwOrbits,
       viewSettings.arrowMode,
       viewSettings.wrapArrows,
+      manipulatedThrows,
       isSynchronous,
       hoveredKey,
       hoverKeyFn,
@@ -277,6 +306,7 @@ function getArrows(
   throwOrbits: FullThrow[][],
   arrowMode: string,
   wrapArrows: boolean,
+  onlyForTheseThrows: FullThrow[] | null,
   isSynchronous: boolean,
   hoveredKey: string | null,
   hoverKeyFn: (j: number, t: number) => string,
@@ -320,8 +350,17 @@ function getArrows(
     row.forEach((thrw) => {
       if (!thrw) return;
 
+      // Filter down to only manipulated throws if requested.
+      if (
+        onlyForTheseThrows &&
+        !_.some(onlyForTheseThrows, (other) => _.isEqual(other, thrw))
+      ) {
+        return;
+      }
+
       let t1: number, j1: number, t2: number, j2: number;
       t1 = thrw.time;
+
       t2 = t1 + thrw.duration - arrowTimeDelta;
       if (!wrapArrows && (t2 < 0 || t2 >= row.length)) {
         return;
