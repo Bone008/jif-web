@@ -32,6 +32,7 @@ import { FormattedManipulatorInstruction, ThrowsTable } from "./ThrowsTable";
 import { useViewSettings, ViewSettingsControls } from "./ViewSettings";
 import { wrapJuggler } from "../jif/util";
 import { InterfaceJaggedPiece } from "./InterfaceJaggedPiece";
+import { CycleDisplay } from "./CycleDisplay";
 
 const PRESET_NAME_PARAM = "pattern";
 const INSTRUCTIONS_PARAM = "q";
@@ -277,14 +278,20 @@ export function OrbitsCalculator() {
       {manipulators?.length !== 0 &&
         jifWithManipulation &&
         throwsTableWithManipulation && (
-          <div className="card start">
-            <h3>With Manipulation Applied</h3>
-            <ThrowsTable
+          <>
+            <CycleDisplay
               jif={jifWithManipulation}
-              throws={throwsTableWithManipulation}
               isLimbsTable={viewSettings.isLimbsTable}
             />
-          </div>
+            <div className="card start">
+              <h3>With Manipulation Applied</h3>
+              <ThrowsTable
+                jif={jifWithManipulation}
+                throws={throwsTableWithManipulation}
+                isLimbsTable={viewSettings.isLimbsTable}
+              />
+            </div>
+          </>
         )}
 
       {jif?.jugglers.length === 2 &&
