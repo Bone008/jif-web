@@ -29,7 +29,7 @@ export function addManipulator(
   let manipLimb = jif.limbs.length;
   let manipAltLimb = manipLimb + 1;
   jif.jugglers.push({
-    label: jif.jugglers.find((j) => j.label === "M") ? "N" : "M",
+    label: getNextManipulatorLabel(jif),
     becomes: manipIndex,
   });
   jif.limbs.push({ kind: "right_hand", juggler: manipIndex });
@@ -316,4 +316,37 @@ export function getThrowFromJuggler(
       (thrw) => thrw.time === time && jif.limbs[thrw.from!].juggler === j,
     ) || null
   );
+}
+
+/**
+ * Returns the label for the next manipulator to be added.
+ * - First manipulator: "M"
+ * - Second manipulator: renames existing "M" to "M1", returns "M2"
+ * - Subsequent manipulators: "M3", "M4", etc.
+ */
+function getNextManipulatorLabel(jif: AlmostFullJIF): string {
+  const manipulatorLabels = jif.jugglers
+    .map((j) => j.label)
+    .filter((label): label is string => label?.startsWith("M") ?? false);
+
+  if (manipulatorLabels.length === 0) {
+    return "M";
+  }
+
+  // If there's exactly one manipulator labeled "M" (not numbered), rename it to "M1"
+  const plainM = jif.jugglers.find((j) => j.label === "M");
+  if (plainM) {
+    plainM.label = "M1";
+  }
+
+  // Find highest existing number
+  let maxNumber = 1;
+  for (const label of manipulatorLabels) {
+    const match = label.match(/^M(\d+)$/);
+    if (match) {
+      maxNumber = Math.max(maxNumber, parseInt(match[1], 10));
+    }
+  }
+
+  return `M${maxNumber + 1}`;
 }

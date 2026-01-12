@@ -304,15 +304,15 @@ describe("addManipulator", () => {
           },
           {
             "becomes": 4,
-            "label": "M",
+            "label": "M1",
           },
           {
             "becomes": 1,
-            "label": "N",
+            "label": "M2",
           },
           {
             "becomes": 0,
-            "label": "N",
+            "label": "M3",
           },
         ],
         "limbs": [
