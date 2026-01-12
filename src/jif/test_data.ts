@@ -46,6 +46,25 @@ export const DATA_4_COUNT_PASSING_2X: JIF = prechacToJif(
   RAW_DATA_4_COUNT_PASSING_2X,
 );
 
+export const RAW_DATA_PASS_PASS_SELF: string[] = ["3B 3B 3", "3A 3A 3"];
+export const DATA_PASS_PASS_SELF: JIF = prechacToJif(RAW_DATA_PASS_PASS_SELF);
+
+export const RAW_DATA_PASS_PASS_SELF_2X: string[] = [
+  "3B 3B 3  3B 3B 3",
+  "3A 3A 3  3A 3A 3",
+];
+export const DATA_PASS_PASS_SELF_2X: JIF = prechacToJif(
+  RAW_DATA_PASS_PASS_SELF_2X,
+);
+
+export const RAW_DATA_PASS_PASS_SELF_3X: string[] = [
+  "3B 3B 3  3B 3B 3  3B 3B 3",
+  "3A 3A 3  3A 3A 3  3A 3A 3",
+];
+export const DATA_PASS_PASS_SELF_3X: JIF = prechacToJif(
+  RAW_DATA_PASS_PASS_SELF_3X,
+);
+
 export const RAW_DATA_WEIRD_PASSING: string[] = [
   // Made to test intercept of B at beat 4.
   "4 4 4 4 4 4 4 4 4 4 4 4 4 4",

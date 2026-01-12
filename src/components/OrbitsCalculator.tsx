@@ -20,8 +20,8 @@ import {
   ThrowsTableData,
 } from "../jif/orbits";
 import {
-  ALL_PRESETS,
   findPresetByName,
+  getPresetsGroupedByCategory,
   Preset,
   sanitizePresetName,
 } from "../jif/presets";
@@ -177,12 +177,19 @@ export function OrbitsCalculator() {
                 value={preset ? sanitizePresetName(preset.name) : "custom"}
                 onChange={(e) => updatePreset(e.target.value)}
               >
-                {ALL_PRESETS.map((preset, i) => (
-                  <option key={i} value={sanitizePresetName(preset.name)}>
-                    {preset.name}
-                  </option>
-                ))}
                 <option value="custom">Custom</option>
+                {getPresetsGroupedByCategory().map(([category, presets]) => (
+                  <optgroup key={category} label={category}>
+                    {presets.map((preset) => (
+                      <option
+                        key={sanitizePresetName(preset.name)}
+                        value={sanitizePresetName(preset.name)}
+                      >
+                        {preset.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
               </select>
             </label>
 
