@@ -101,7 +101,8 @@ export function OrbitsCalculator() {
 
   const presetSearchName = search.get(PRESET_NAME_PARAM);
   const preset = findPresetBySlug(presetSearchName ?? "");
-  const jifInput = search.get(INSTRUCTIONS_PARAM) ?? preset?.instructions ?? "";
+  const jifInput =
+    search.get(INSTRUCTIONS_PARAM) ?? preset?.instructions.join("\n") ?? "";
   const manipulationInput =
     search.get(MANIPULATION_PARAM) ?? preset?.manipulators?.join("\n") ?? "";
 
@@ -120,7 +121,7 @@ export function OrbitsCalculator() {
       // When setting to "custom", fill in the inputs with the preset values.
       search.setAll({
         [PRESET_NAME_PARAM]: null,
-        [INSTRUCTIONS_PARAM]: preset!.instructions,
+        [INSTRUCTIONS_PARAM]: preset!.instructions.join("\n"),
         [MANIPULATION_PARAM]: preset!.manipulators?.join("\n") ?? null,
       });
     }

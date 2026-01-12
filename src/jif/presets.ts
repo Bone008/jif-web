@@ -14,7 +14,7 @@ import {
 export interface Preset {
   name: string;
   slug?: string;
-  instructions: string;
+  instructions: string[];
   manipulators?: string[];
   warningNote?: string;
 }
@@ -24,31 +24,31 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
   "2 Person Base Patterns": [
     {
       name: "3-count",
-      instructions: RAW_DATA_3_COUNT_PASSING.join("\n"),
+      instructions: RAW_DATA_3_COUNT_PASSING,
     },
     {
       name: "3-count 2x",
-      instructions: RAW_DATA_3_COUNT_PASSING_2X.join("\n"),
+      instructions: RAW_DATA_3_COUNT_PASSING_2X,
     },
     {
       name: "4-count",
-      instructions: RAW_DATA_4_COUNT_PASSING.join("\n"),
+      instructions: RAW_DATA_4_COUNT_PASSING,
     },
     {
       name: "4-count 2x",
-      instructions: RAW_DATA_4_COUNT_PASSING_2X.join("\n"),
+      instructions: RAW_DATA_4_COUNT_PASSING_2X,
     },
     {
       name: "Pass Pass Self",
-      instructions: RAW_DATA_PASS_PASS_SELF.join("\n"),
+      instructions: RAW_DATA_PASS_PASS_SELF,
     },
     {
       name: "Pass Pass Self 2x",
-      instructions: RAW_DATA_PASS_PASS_SELF_2X.join("\n"),
+      instructions: RAW_DATA_PASS_PASS_SELF_2X,
     },
     {
       name: "Pass Pass Self 3x",
-      instructions: RAW_DATA_PASS_PASS_SELF_3X.join("\n"),
+      instructions: RAW_DATA_PASS_PASS_SELF_3X,
     },
   ],
 
@@ -56,72 +56,69 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
     {
       name: "5-count popcorn",
       slug: "popcorn",
-      instructions: "7a6667a6667a666",
+      instructions: ["7a6667a6667a666"],
     },
     {
       name: "7-club one-count",
       slug: "one-count",
-      instructions: "777777777",
+      instructions: ["777777777"],
     },
     {
       name: "786 - French 3-count",
       slug: "french-3-count",
-      instructions: "786786786",
+      instructions: ["786786786"],
     },
     {
       name: "975 - Holy Grail",
       slug: "holy-grail",
-      instructions: "975975975",
+      instructions: ["975975975"],
     },
     {
       name: "77862 - Why Not",
       slug: "why-not",
-      instructions: "778627786277862",
+      instructions: ["778627786277862"],
     },
     {
       name: "777786 - Example of Period 6",
       slug: "period-6",
-      instructions: "777786777786",
+      instructions: ["777786777786"],
     },
   ],
 
   "3 Person Base Patterns": [
     {
       name: "Walking feed 9c",
-      instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
+      instructions: RAW_DATA_WALKING_FEED_9C,
     },
     {
       name: "Walking feed 9c 2x",
-      instructions: RAW_DATA_WALKING_FEED_9C_2X.join("\n"),
+      instructions: RAW_DATA_WALKING_FEED_9C_2X,
     },
     {
       name: "Walking feed 10c",
-      instructions: RAW_DATA_WALKING_FEED_10C.join("\n"),
+      instructions: RAW_DATA_WALKING_FEED_10C,
     },
   ],
 
   "Manipulation Patterns": [
     {
       name: "3-count Roundabout",
-      instructions: RAW_DATA_3_COUNT_PASSING_2X.join("\n"),
+      instructions: RAW_DATA_3_COUNT_PASSING_2X,
       manipulators: ["- - - sa - i1b"],
     },
     {
       name: "4-count Roundabout",
-      instructions: RAW_DATA_4_COUNT_PASSING_2X.join("\n"),
+      instructions: RAW_DATA_4_COUNT_PASSING_2X,
       manipulators: ["sa - sb - ia -"],
     },
     {
       name: "Ronjabout",
-      instructions: [
-        "4B 3  5  3  4B 3  5  3  4B",
-        "3  4A 3  3  3  4A 3  3  3",
-      ].join("\n"),
+      instructions: ["4B 3  5  3  4B 3  5  3  4B", "3  4A 3  3  3  4A 3  3  3"],
       manipulators: ["sa - - sb - ia - - -"],
     },
     {
       name: "Phoenician Waltz",
-      instructions: RAW_DATA_PASS_PASS_SELF_3X.join("\n"),
+      instructions: RAW_DATA_PASS_PASS_SELF_3X,
       manipulators: ["sA - - sA - - i1A - -"],
     },
     {
@@ -130,7 +127,7 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
       instructions: [
         "3B 3B  3  3B 3B  3  3B 3B  3",
         "3A 3A  3  3A 3A  3  3A 3A  3",
-      ].join("\n"),
+      ],
       manipulators: [
         "sA - - sA - - i1A - -",
         "sB - - i1B - - sA - -",
@@ -142,19 +139,19 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
       instructions: [
         "4b 4b 3 4b 4b 3 4b 4b 3 4b 4b 3 -> A",
         "3 3a 4a 3 3a 4a 3 3a 4a 3 3a 4a -> B",
-      ].join("\n"),
+      ],
       manipulators: ["- iA - - - - - iB"],
     },
     {
       name: "Dolby 5.1",
-      instructions: ["3B 3  3  3  3", "3A 3  3  3  3"].join("\n"),
+      instructions: ["3B 3  3  3  3", "3A 3  3  3  3"],
       manipulators: ["sA i2B -  -  -"],
       warningNote:
         "The carry is crossing, which the orbits calculation does not handle yet!",
     },
     {
       name: "Dolby 5.1 with Doppelgänger",
-      instructions: ["3B 3  3  3  3", "3A 3  3  3  3"].join("\n"),
+      instructions: ["3B 3  3  3  3", "3A 3  3  3  3"],
       manipulators: ["sA i2B -  -  -", "sB i2A -  -  -"],
       warningNote:
         "The carry is crossing, which the orbits calculation does not handle yet!",
@@ -165,15 +162,13 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
         "3B 3C 3 3B 3C 3 3C 3B 3 3C 3B 3 -> A",
         "3A 3  3 3A 3  3 3  3A 3 3  3A 3 -> B",
         "3  3A 3 3  3A 3 3A 3  3 3A 3  3 -> C",
-      ].join("\n"),
+      ],
       manipulators: ["- i1A - - - i2B - - - i1C - -"],
     },
     {
       name: "Muckabout (TODO)",
       slug: "muckabout",
-      instructions: ["3 3c 3 3 3b 3", "3 3 3 3 3a 3", "3 3a 3 3 3 3"].join(
-        "\n",
-      ),
+      instructions: ["3 3c 3 3 3b 3", "3 3 3 3 3a 3", "3 3a 3 3 3 3"],
       manipulators: ["- sa - i2c - -", "i2b - - - sb -"],
       warningNote: "Instructions for this pattern are unfinished / unverified.",
     },
@@ -183,31 +178,31 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
     {
       name: "Scrambled - iB cB sA - B",
       slug: "b",
-      instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
+      instructions: RAW_DATA_WALKING_FEED_9C,
       manipulators: ["i2A - - - sB -"],
     },
     {
       name: "Scrambled - iA cC sC - Ivy",
       slug: "ivy",
-      instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
+      instructions: RAW_DATA_WALKING_FEED_9C,
       manipulators: ["i2B - - - sC -"],
     },
     {
       name: "Scrambled - cB sC iC - Postmen",
       slug: "postmen",
-      instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
+      instructions: RAW_DATA_WALKING_FEED_9C,
       manipulators: ["- - sA - i2C -"],
     },
     {
       name: "Scrambled - cB sB iC - Toast",
       slug: "toast",
-      instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
+      instructions: RAW_DATA_WALKING_FEED_9C,
       manipulators: ["sA - i2A - - -"],
     },
     {
       name: "Scrambled - cB sB iC - V",
       slug: "v",
-      instructions: RAW_DATA_WALKING_FEED_9C.join("\n"),
+      instructions: RAW_DATA_WALKING_FEED_9C,
       manipulators: ["- - sB - i2C -"],
     },
   ],
@@ -216,7 +211,7 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
     {
       name: "Ambled - Choptopus",
       slug: "choptopus",
-      instructions: RAW_DATA_WALKING_FEED_10C.join("\n"),
+      instructions: RAW_DATA_WALKING_FEED_10C,
       manipulators: ["- sB - i2c - - -"],
     },
   ],
@@ -224,12 +219,12 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
   "Tool Demonstration": [
     {
       name: "Solo Self Substitute",
-      instructions: "3 3 3 3 3 3 3 3",
+      instructions: ["3 3 3 3 3 3 3 3"],
       manipulators: ["- - sA"],
     },
     {
       name: "Happy Holds",
-      instructions: ["2 2 2 2 2 2", "2 2 2 2 2 2"].join("\n"),
+      instructions: ["2 2 2 2 2 2", "2 2 2 2 2 2"],
     },
   ],
 };

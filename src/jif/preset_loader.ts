@@ -24,7 +24,7 @@ export function loadPresetBySlug(slug: string): FullJIF {
  * Applies any manipulators defined in the preset.
  */
 export function loadPreset(preset: Preset): FullJIF {
-  const instructions = preset.instructions;
+  const instructions = preset.instructions.join("\n");
 
   // Detect format: siteswap has no whitespace, prechac has whitespace
   const isSiteswap = !instructions.match(/\s/);
