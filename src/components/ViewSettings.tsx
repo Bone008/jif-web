@@ -40,9 +40,9 @@ export const ViewSettingsContainer = createContainer(() => {
   const setViewSettings = (newSettings: ViewSettings) => {
     searchParams.setAll({
       arrowMode: newSettings.arrowMode,
-      wrapArrows: newSettings.wrapArrows ? "1" : "0",
+      wrapArrows: newSettings.wrapArrows ? null : "0",
       onlyManipulatedArrows: newSettings.onlyManipulatedArrows ? null : "0",
-      showHands: newSettings.showHands ? "1" : "0",
+      showHands: newSettings.showHands ? "1" : null,
       isLimbsTable: newSettings.isLimbsTable ? "1" : null,
     });
   };
