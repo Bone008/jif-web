@@ -1211,7 +1211,7 @@ describe("addManipulator", () => {
   });
 
   it("adds manipulator to Choptopus", () => {
-    const result = loadPresetBySlug("choptopus");
+    const result = loadPresetBySlug("ambled-choptopus");
     expect(result).toMatchInlineSnapshot(`
       {
         "jugglers": [

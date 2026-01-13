@@ -7,6 +7,7 @@ import {
   RAW_DATA_PASS_PASS_SELF_2X,
   RAW_DATA_PASS_PASS_SELF_3X,
   RAW_DATA_WALKING_FEED_10C,
+  RAW_DATA_WALKING_FEED_10C_RIGHT_HANDED_DS,
   RAW_DATA_WALKING_FEED_9C,
   RAW_DATA_WALKING_FEED_9C_2X,
 } from "./test_data";
@@ -344,10 +345,266 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
 
   Ambled: [
     {
-      name: "Ambled - Choptopus",
-      slug: "choptopus",
+      name: "#1.1 - JHAL",
+      slug: "ambled-jhal",
       instructions: RAW_DATA_WALKING_FEED_10C,
-      manipulators: ["- sB - i2c - - -"],
+      manipulators: ["- - - i2B - - sA"],
+    },
+    {
+      name: "#1.2 - Ambled Back to the Future",
+      slug: "ambled-back-to-the-future",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["sA - - i2B - - -"],
+    },
+    {
+      name: "#1.3 - Ambled Wust",
+      slug: "ambled-wust",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- sC - i2B - - -"],
+    },
+    {
+      name: "#1.4 - Ambled Saibca",
+      slug: "ambled-saibca",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- sB - i2B - - -"],
+    },
+    {
+      name: "#2.1 - Zap Me Maybe",
+      slug: "ambled-zap-me-maybe",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["sA - - i2C - - -"],
+    },
+    {
+      name: "#2.2 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- sC - i2C - - -"],
+    },
+    {
+      name: "#2.3 - Choptopus",
+      slug: "ambled-choptopus",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- sB - i2C - - -"],
+    },
+    {
+      name: "#2.4 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - sB i2C - - -"],
+    },
+    {
+      name: "#2.5 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - sA i2C - - -"],
+    },
+    {
+      name: "#3.1 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- sB - - - i2C -"],
+    },
+    {
+      name: "#3.2 - Ambled V",
+      slug: "ambled-v",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - sB - i2C -"],
+    },
+    {
+      name: "#3.3 - Ambled Postmen",
+      slug: "ambled-postmen",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - sA - - i2C -"],
+    },
+    {
+      name: "#3.4 - Ambled Chopped V",
+      slug: "ambled-chopped-v",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - sC - i2C -"],
+    },
+    {
+      name: "#4.1 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- sB - - i2A - -"],
+    },
+    {
+      name: "#4.2 - Ambled Wrong One",
+      slug: "ambled-wrong-one",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - sB i2A - -"],
+    },
+    {
+      name: "#4.3 - Ambled Zig Zag",
+      slug: "ambled-zig-zag",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - sA - i2A - -"],
+    },
+    {
+      name: "#4.4 - Ambled 3",
+      slug: "ambled-3",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - sC i2A - -"],
+    },
+    {
+      name: "#5.1 - Ambled Casbia",
+      slug: "ambled-casbia",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - sB - i2B -"],
+    },
+    {
+      name: "#5.2 - Ambled Cascia",
+      slug: "ambled-cascia",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - sA - - i2B -"],
+    },
+    {
+      name: "#5.3 - Ambled Aidan",
+      slug: "ambled-aidan",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - sC - i2B -"],
+    },
+    {
+      name: "#5.4 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - - sA i2B -"],
+    },
+    {
+      name: "#5.5 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C_RIGHT_HANDED_DS,
+      manipulators: ["- - - - - i2B - -"],
+      warningNote:
+        "There is a sC-C on beat 5 -- notated on the same beat as the intercept, " +
+        "which the tool does not support yet.",
+    },
+    {
+      name: "#6.1 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["i2A - - - - - -"],
+      warningNote:
+        "There is a sC-A on beat 4 -- notated on the same beat as the carry, " +
+        "which the tool does not support yet.",
+    },
+    {
+      name: "#6.2 - Ambled Chopped B",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["i2A - - - sA - -"],
+    },
+    {
+      name: "#6.3 - Ambled Gentle Romble",
+      slug: "ambled-gentle-romble",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["i2A - - - - sC -"],
+    },
+    {
+      name: "#6.4 - Ambled B",
+      slug: "ambled-b",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["i2A - - - - sB -"],
+    },
+    {
+      name: "#6.5 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["i2A - - - - - sA"],
+    },
+    {
+      name: "#6.6 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["sC i2A - - - - - -"],
+    },
+    {
+      name: "#7.1 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - sC - - i2A"],
+    },
+    {
+      name: "#7.2 - Ambled LB",
+      slug: "ambled-lb",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - - sA - i2A"],
+    },
+    {
+      name: "#7.3 - Ambled Ivy",
+      slug: "ambled-ivy",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - - - sC i2A"],
+    },
+    {
+      name: "#7.4 - Around the Ambled World",
+      slug: "around-the-ambled-world",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - - - - sB i2A"],
+    },
+    {
+      name: "#8.1 - Ambled 3 Variation",
+      slug: "ambled-3-variation",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- i2C - - sA - -"],
+    },
+    {
+      name: "#8.2 - Ambled Wankle Engine",
+      slug: "ambled-wankle-engine",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- i2C - - - sC -"],
+    },
+    {
+      name: "#8.3 - Ambled Moonwalk",
+      slug: "ambled-moonwalk",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- i2C - - - sB -"],
+    },
+    {
+      name: "#8.4 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- i2C - - - - sA"],
+    },
+    {
+      name: "#9.1 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- i2B - - - sB -"],
+    },
+    {
+      name: "#9.2 - Ambled Buddy Check (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- i2B - - - - sA"],
+    },
+    {
+      name: "#9.3 - Ambled Panto",
+      slug: "ambled-panto",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["sC i2B - - - - -"],
+    },
+    {
+      name: "#9.4 - Ambled Anna-Maria",
+      slug: "ambled-anna-maria",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["sA i2B - - - - -"],
+    },
+    {
+      name: "#10.1 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - i2A - - - -"],
+      warningNote:
+        "There is a sB-A on beat 6 -- notated on the same beat as the carry, " +
+        "which the tool does not support yet.",
+    },
+    {
+      name: "#10.2 - Ambled Vegemite Toast",
+      slug: "ambled-vegemite-toast",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- - i2A - - - sA"],
+    },
+    {
+      name: "#10.3 - Ambled Right One",
+      slug: "ambled-right-one",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["sC - i2A - - - -"],
+    },
+    {
+      name: "#10.4 - Ambled Toast",
+      slug: "ambled-toast",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["sA - i2A - - - -"],
+    },
+    {
+      name: "#10.5 - Unnamed (to juggle!)",
+      instructions: RAW_DATA_WALKING_FEED_10C,
+      manipulators: ["- sB i2A - - - -"],
     },
   ],
 
@@ -365,7 +622,10 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
 };
 
 export function sanitizeName(name: string) {
-  return name.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+  return name
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .toLowerCase()
+    .replace(/^-+|-+$/g, "");
 }
 
 /** Returns the slug for a preset (uses explicit slug if set, otherwise sanitized name). */
