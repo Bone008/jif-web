@@ -200,26 +200,45 @@ export function ThrowsTable({
           {manipulationOptions?.formattedManipulators.map((manipulator, m) => (
             <tr key={m} className="line__m">
               <td>M{manipulatorNameSuffixes[m]}</td>
-              {manipulator.map((instruction, t) => (
-                <td
-                  key={t}
-                  className={instruction.disabled ? "disabled" : ""}
-                  onClick={
-                    instruction.originalIndex !== undefined
-                      ? () =>
-                          manipulationOptions.onSetInstructionDisabled(
-                            m,
-                            instruction.originalIndex!,
-                            !instruction.disabled,
-                          )
-                      : undefined
-                  }
-                >
-                  <MathJax key={instruction.label}>
-                    $${instruction.label}$$
-                  </MathJax>
-                </td>
-              ))}
+              {manipulator.map((instruction, t) => {
+                const instructionHoverKey = instruction.originalThrow
+                  ? hoverKeyFn(
+                      jif.limbs[instruction.originalThrow.from]?.juggler,
+                      instruction.originalThrow.time,
+                    )
+                  : null;
+                return (
+                  <td
+                    key={t}
+                    className={`${instruction.disabled ? "disabled" : ""} ${instructionHoverKey && hoveredKey === instructionHoverKey ? "hovered" : ""}`}
+                    onClick={
+                      instruction.originalIndex !== undefined
+                        ? () =>
+                            manipulationOptions.onSetInstructionDisabled(
+                              m,
+                              instruction.originalIndex!,
+                              !instruction.disabled,
+                            )
+                        : undefined
+                    }
+                    onMouseEnter={() =>
+                      instructionHoverKey &&
+                      onThrowMouseEnter(instructionHoverKey)
+                    }
+                    onMouseLeave={() =>
+                      instructionHoverKey &&
+                      onThrowMouseOut(instructionHoverKey)
+                    }
+                    onTouchStart={() =>
+                      instructionHoverKey && onThrowTouch(instructionHoverKey)
+                    }
+                  >
+                    <MathJax key={instruction.label}>
+                      $${instruction.label}$$
+                    </MathJax>
+                  </td>
+                );
+              })}
               <td>&rarr; M{manipulatorNameSuffixes[m]}</td>
             </tr>
           ))}
