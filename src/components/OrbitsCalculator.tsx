@@ -228,6 +228,11 @@ export function OrbitsCalculator() {
               />
             </div>
           )}
+          {preset?.warningNote && (
+            <div className="card">
+              <div className="warningNote">{preset.warningNote}</div>
+            </div>
+          )}
         </>
       )}
       {headerDisplayState === "compact" && (
