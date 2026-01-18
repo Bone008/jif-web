@@ -17,5 +17,6 @@ The `instructions` and `manipulators` fields must be given in the same format ac
 This app is based on TypeScript + React + Vite. To get started:
 
 1. Install dependencies with `npm install`.
-2. Run a development server with `npm run dev`.
+2. Run a development server with `npm start`.
 3. Build with `npm run build`.
+4. Run tests with `npm test`.

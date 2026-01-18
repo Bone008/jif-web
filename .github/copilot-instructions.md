@@ -59,7 +59,7 @@ Uses `unstated-next` for lightweight container-based state:
 
 ```bash
 npm install       # Install dependencies
-npm run dev       # Dev server (Vite HMR)
+npm start       # Dev server (Vite HMR)
 npm run build     # Type-check then build
 npm run lint      # ESLint
 npm run format    # Prettier

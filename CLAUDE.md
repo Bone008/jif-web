@@ -12,7 +12,7 @@ Deployed at: https://notations.bonauer.me/
 
 ```bash
 npm install       # Install dependencies
-npm run dev       # Start Vite dev server with HMR
+npm start         # Start Vite dev server with HMR
 npm run build     # TypeScript check + Vite production build, use for type checking
 npm run format    # Format with Prettier
 npm run test          # Run unit tests
