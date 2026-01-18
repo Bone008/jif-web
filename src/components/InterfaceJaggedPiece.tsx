@@ -24,8 +24,9 @@ export function InterfaceJaggedPiece({
   const beatWidth = 20;
   const height = 80;
   const jagHeight = 10;
-  const strokeWidth = 3;
-  const labelWidth = 70; // Width for the label section on the left
+  const strokeWidth = 1.5;
+  const strokeInset = 5; // should be >=strokeWidth/2 to avoid clipping
+  const labelWidth = 90; // Width for the label section on the left
 
   const throwsTable = getThrowsTableByJuggler(jif);
   const throws = throwsTable[juggler].slice();
@@ -47,12 +48,21 @@ export function InterfaceJaggedPiece({
 
   const width = throws.length * beatWidth;
 
-  // Generate path for the outline with jagged edges
+  // Generate path for the fill with jagged edges (background)
   const pathData = generateJaggedPath(
     interfaceShapes,
     beatWidth,
     height,
     jagHeight,
+  );
+
+  // Generate path for the outline with slightly smaller dimensions for padding
+  const outlinePathData = generateJaggedPath(
+    interfaceShapes,
+    beatWidth,
+    height,
+    jagHeight,
+    strokeInset,
   );
 
   const copyToClipboard = useCallback(() => {
@@ -84,15 +94,15 @@ export function InterfaceJaggedPiece({
     <div className="jagged-piece" style={{ marginLeft: leftMargin }}>
       <svg
         ref={svgRef}
-        width={width + strokeWidth * 2 + labelWidth}
-        height={height + jagHeight * 2 + strokeWidth * 2}
+        width={width + labelWidth}
+        height={height + jagHeight * 2}
         xmlns="http://www.w3.org/2000/svg"
       >
         {/* Layer 1: Filled surface */}
         <g
           id="layer1"
           className="base"
-          transform={`translate(${strokeWidth}, ${strokeWidth + jagHeight})`}
+          transform={`translate(0, ${jagHeight})`}
         >
           {/* Label rectangle background */}
           <rect
@@ -104,7 +114,7 @@ export function InterfaceJaggedPiece({
             stroke="none"
           />
           {/* Main puzzle piece filled surface */}
-          <g transform={`translate(${labelWidth}, 0)`}>
+          <g transform={`translate(${labelWidth}, ${height / 2})`}>
             <path d={pathData} fill="#4b3673" stroke="none" />
           </g>
         </g>
@@ -113,10 +123,10 @@ export function InterfaceJaggedPiece({
         <g
           id="layer2"
           className="outline"
-          transform={`translate(${labelWidth + strokeWidth}, ${strokeWidth + jagHeight})`}
+          transform={`translate(${labelWidth}, ${jagHeight + height / 2})`}
         >
           <path
-            d={pathData}
+            d={outlinePathData}
             fill="none"
             stroke="white"
             strokeWidth={strokeWidth}
@@ -142,23 +152,24 @@ export function InterfaceJaggedPiece({
         <g
           id="layer3"
           className="text"
-          transform={`translate(${strokeWidth}, ${strokeWidth + jagHeight})`}
+          transform={`translate(0, ${jagHeight})`}
         >
           {/* Label text */}
-          <text
-            x={labelWidth / 2}
-            y={height / 2}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize="18"
-            fontWeight="bold"
-            fill="white"
-          >
-            {label}
-          </text>
+          <g transform={`translate(${labelWidth - 5}, ${height / 2})`}>
+            <text
+              textAnchor="middle"
+              dominantBaseline="hanging"
+              fontSize="18"
+              fontWeight="bold"
+              fill="white"
+              transform="rotate(90)"
+            >
+              {label}
+            </text>
+          </g>
 
           {/* Throw duration numbers */}
-          <g transform={`translate(${labelWidth}, 0)`}>
+          <g transform={`translate(${labelWidth}, 3)`}>
             {throws.map((thrw, beat) => {
               if (thrw) {
                 return (
@@ -193,57 +204,66 @@ function generateJaggedPath(
   beatWidth: number,
   height: number,
   jagHeight: number,
+  inset: number = 0,
 ): string {
   const numBeats = shapes.length;
   const width = numBeats * beatWidth;
   const parts: string[] = [];
 
-  // Start at top left (accounting for left padding)
-  parts.push(`M 0,0`);
+  // Apply inset to dimensions (only affects baseline, not jag height)
+  // TODO: Left and right should also be fully inset, but this leads to weird angles
+  // when there is a jag on the first or last beat, which is hard to fix. so we allow
+  // horizontal edges to be slightly closer to the border.
+  // const left = inset;
+  const left = inset / 2;
+  const right = width - inset / 2;
+  const top = -height / 2 + inset;
+  const bottom = height / 2 - inset;
+
+  // Start at top left (with vertical origin centered)
+  parts.push(`M ${left},${top}`);
 
   // Draw top edge (left to right) with jags
   for (let i = 0; i < numBeats; i++) {
-    const x1 = i * beatWidth;
-    const x2 = (i + 1) * beatWidth;
-    const xMid = (x1 + x2) / 2;
+    const xEnd = i === numBeats - 1 ? right : (i + 1) * beatWidth;
+    const xMid = (i * beatWidth + (i + 1) * beatWidth) / 2;
 
     if (shapes[i] === "straight") {
-      parts.push(`L ${x2},0`);
+      parts.push(`L ${xEnd},${top}`);
     } else if (shapes[i] === "outwards") {
       // Jag upwards (away from inside)
-      parts.push(`L ${xMid},${-jagHeight}`);
-      parts.push(`L ${x2},0`);
+      parts.push(`L ${xMid},${top - jagHeight}`);
+      parts.push(`L ${xEnd},${top}`);
     } else if (shapes[i] === "inwards") {
       // Jag downwards (towards inside)
-      parts.push(`L ${xMid},${jagHeight}`);
-      parts.push(`L ${x2},0`);
+      parts.push(`L ${xMid},${top + jagHeight}`);
+      parts.push(`L ${xEnd},${top}`);
     }
   }
 
   // Draw right edge (top to bottom)
-  parts.push(`L ${width},${height}`);
+  parts.push(`L ${right},${bottom}`);
 
   // Draw bottom edge (right to left) with jags
   for (let i = numBeats - 1; i >= 0; i--) {
-    const x1 = i * beatWidth;
-    const x2 = (i + 1) * beatWidth;
-    const xMid = (x1 + x2) / 2;
+    const xStart = i === 0 ? left : i * beatWidth;
+    const xMid = (i * beatWidth + (i + 1) * beatWidth) / 2;
 
     if (shapes[i] === "straight") {
-      parts.push(`L ${x1},${height}`);
+      parts.push(`L ${xStart},${bottom}`);
     } else if (shapes[i] === "outwards") {
       // Jag downwards (away from inside)
-      parts.push(`L ${xMid},${height + jagHeight}`);
-      parts.push(`L ${x1},${height}`);
+      parts.push(`L ${xMid},${bottom + jagHeight}`);
+      parts.push(`L ${xStart},${bottom}`);
     } else if (shapes[i] === "inwards") {
       // Jag upwards (towards inside)
-      parts.push(`L ${xMid},${height - jagHeight}`);
-      parts.push(`L ${x1},${height}`);
+      parts.push(`L ${xMid},${bottom - jagHeight}`);
+      parts.push(`L ${xStart},${bottom}`);
     }
   }
 
   // Draw left edge (bottom to top) - close the path
-  parts.push(`L 0,0`);
+  parts.push(`L ${left},${top}`);
   parts.push(`Z`);
 
   return parts.join(" ");
