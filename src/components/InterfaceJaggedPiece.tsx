@@ -1,9 +1,10 @@
 import _ from "lodash";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { FullJIF, FullThrow } from "../jif/jif_loader";
 import { getThrowsTableByJuggler } from "../jif/orbits";
 import { inferIsSynchronousPattern, wrapLimb } from "../jif/util";
 import "./InterfaceJaggedPiece.scss";
+import { useKeyboardShortcut } from "../hooks/useKeyboardShortcut";
 
 type InterfaceBeatShape = "straight" | "outwards" | "inwards";
 
@@ -15,6 +16,7 @@ export function InterfaceJaggedPiece({
   juggler: number;
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [showVerticalGridLines, setShowVerticalGridLines] = useState(false);
   const interfaceShapes = computeInterfaceShapes(jif, juggler);
 
   const isSynchronous = inferIsSynchronousPattern(jif);
@@ -63,6 +65,13 @@ export function InterfaceJaggedPiece({
     navigator.clipboard.writeText(svgString);
   }, []);
 
+  useKeyboardShortcut({
+    key: "v",
+    onKeyPressed() {
+      setShowVerticalGridLines((value) => !value);
+    },
+  });
+
   if (isSynchronous) {
     return (
       <div className="secondary">
@@ -79,35 +88,43 @@ export function InterfaceJaggedPiece({
         height={height + jagHeight * 2 + strokeWidth * 2}
         xmlns="http://www.w3.org/2000/svg"
       >
-        <g transform={`translate(${strokeWidth}, ${strokeWidth + jagHeight})`}>
-          {/* Layer 1: Filled surface */}
-          <g className="base">
-            {/* Label rectangle background */}
-            <rect
-              x={0}
-              y={jagHeight}
-              width={labelWidth}
-              height={height - jagHeight * 2}
-              fill="#4b3673"
-              stroke="none"
-            />
-            {/* Main puzzle piece filled surface */}
-            <g transform={`translate(${labelWidth}, 0)`}>
-              <path d={pathData} fill="#4b3673" stroke="none" />
-            </g>
+        {/* Layer 1: Filled surface */}
+        <g
+          id="layer1"
+          className="base"
+          transform={`translate(${strokeWidth}, ${strokeWidth + jagHeight})`}
+        >
+          {/* Label rectangle background */}
+          <rect
+            x={0}
+            y={jagHeight}
+            width={labelWidth}
+            height={height - jagHeight * 2}
+            fill="#4b3673"
+            stroke="none"
+          />
+          {/* Main puzzle piece filled surface */}
+          <g transform={`translate(${labelWidth}, 0)`}>
+            <path d={pathData} fill="#4b3673" stroke="none" />
           </g>
+        </g>
 
-          {/* Layer 2: Outline and vertical grid lines */}
-          <g className="outline" transform={`translate(${labelWidth}, 0)`}>
-            <path
-              d={pathData}
-              fill="none"
-              stroke="white"
-              strokeWidth={strokeWidth}
-              strokeLinejoin="miter"
-            />
+        {/* Layer 2: Outline and vertical grid lines */}
+        <g
+          id="layer2"
+          className="outline"
+          transform={`translate(${labelWidth + strokeWidth}, ${strokeWidth + jagHeight})`}
+        >
+          <path
+            d={pathData}
+            fill="none"
+            stroke="white"
+            strokeWidth={strokeWidth}
+            strokeLinejoin="miter"
+          />
 
-            {_.range(1, throws.length).map((beat) => (
+          {showVerticalGridLines &&
+            _.range(1, throws.length).map((beat) => (
               <line
                 key={`grid-${beat}`}
                 x1={beat * beatWidth}
@@ -119,45 +136,48 @@ export function InterfaceJaggedPiece({
                 opacity={0.5}
               />
             ))}
-          </g>
+        </g>
 
-          {/* Layer 3: Text */}
-          <g className="text">
-            {/* Label text */}
-            <text
-              x={labelWidth / 2}
-              y={height / 2}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize="18"
-              fontWeight="bold"
-              fill="white"
-            >
-              {label}
-            </text>
+        {/* Layer 3: Text */}
+        <g
+          id="layer3"
+          className="text"
+          transform={`translate(${strokeWidth}, ${strokeWidth + jagHeight})`}
+        >
+          {/* Label text */}
+          <text
+            x={labelWidth / 2}
+            y={height / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize="18"
+            fontWeight="bold"
+            fill="white"
+          >
+            {label}
+          </text>
 
-            {/* Throw duration numbers */}
-            <g transform={`translate(${labelWidth}, 0)`}>
-              {throws.map((thrw, beat) => {
-                if (thrw) {
-                  return (
-                    <text
-                      key={beat}
-                      x={beat * beatWidth + beatWidth / 2}
-                      y={height / 2}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fontSize="30"
-                      fontWeight="bold"
-                      fill="white"
-                    >
-                      {thrw.duration.toString(36)}
-                    </text>
-                  );
-                }
-                return null;
-              })}
-            </g>
+          {/* Throw duration numbers */}
+          <g transform={`translate(${labelWidth}, 0)`}>
+            {throws.map((thrw, beat) => {
+              if (thrw) {
+                return (
+                  <text
+                    key={beat}
+                    x={beat * beatWidth + beatWidth / 2}
+                    y={height / 2}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize="30"
+                    fontWeight="bold"
+                    fill="white"
+                  >
+                    {thrw.duration.toString(36)}
+                  </text>
+                );
+              }
+              return null;
+            })}
           </g>
         </g>
       </svg>
