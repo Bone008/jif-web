@@ -6,7 +6,7 @@ import { inferIsSynchronousPattern, wrapLimb } from "../jif/util";
 import "./InterfaceJaggedPiece.scss";
 import { useKeyboardShortcut } from "../hooks/useKeyboardShortcut";
 
-type InterfaceBeatShape = "straight" | "outwards" | "inwards";
+export type InterfaceBeatShape = "straight" | "outwards" | "inwards";
 
 export function InterfaceJaggedPiece({
   jif,
@@ -199,7 +199,7 @@ export function InterfaceJaggedPiece({
   );
 }
 
-function generateJaggedPath(
+export function generateJaggedPath(
   shapes: InterfaceBeatShape[],
   beatWidth: number,
   height: number,
@@ -269,7 +269,7 @@ function generateJaggedPath(
   return parts.join(" ");
 }
 
-function computeInterfaceShapes(
+export function computeInterfaceShapes(
   jif: FullJIF,
   juggler: number,
 ): InterfaceBeatShape[] {
@@ -313,7 +313,7 @@ function computeInterfaceShapes(
 }
 
 /** Formats the label of a jagged piece. */
-function generateLabel(throws: (FullThrow | null)[]): string {
+export function generateLabel(throws: (FullThrow | null)[]): string {
   const sum = throws
     .map((thrw) => (thrw ? thrw.duration : 0))
     .reduce((a, b) => a + b, 0);

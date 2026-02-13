@@ -1,0 +1,15 @@
+.bulk-export {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &__input {
+    width: 100%;
+    resize: vertical;
+  }
+
+  &__errors {
+    color: red;
+    font-size: 0.9em;
+  }
+}

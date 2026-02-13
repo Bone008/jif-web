@@ -33,6 +33,7 @@ import "./OrbitsCalculator.scss";
 import { FormattedManipulatorInstruction, ThrowsTable } from "./ThrowsTable";
 import { useViewSettings, ViewSettingsControls } from "./ViewSettings";
 import { wrapJuggler } from "../jif/util";
+import { BulkJaggedPieceExport } from "./BulkJaggedPieceExport";
 import { InterfaceJaggedPiece } from "./InterfaceJaggedPiece";
 import { CycleDisplay } from "./CycleDisplay";
 
@@ -388,6 +389,12 @@ export function OrbitsCalculator() {
             </div>
           </div>
         )}
+
+      {!isEmbed && (
+        <div className="card start">
+          <BulkJaggedPieceExport />
+        </div>
+      )}
     </>
   );
 }
