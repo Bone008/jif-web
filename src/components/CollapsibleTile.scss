@@ -29,6 +29,12 @@
     &:hover {
       transform: translateY(-20%) scale(1.1);
       opacity: 1;
+      background: transparent;
+    }
+    &:focus,
+    &:focus-visible {
+      background: transparent;
+      outline: none;
     }
 
     .open & {

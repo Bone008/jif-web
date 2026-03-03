@@ -17,6 +17,13 @@ html {
   --table-border: rgba(255, 255, 255, 0.4);
   --passingzone-color: #321d5b;
   --passingzone-color-light: #4b3673;
+
+  --input-bg: #2a1650;
+  --input-border: rgba(255, 255, 255, 0.25);
+  --accent-color: #9b7ecf;
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.4);
 }
 
 body {
@@ -24,7 +31,7 @@ body {
   min-height: 100vh;
   display: flex;
   background-color: var(--passingzone-color-light);
-  color: rgba(255, 255, 255, 0.87);
+  color: var(--text-primary);
 
   &.embed {
     background-color: var(--passingzone-color);
@@ -41,7 +48,7 @@ body {
 }
 
 .secondary {
-  color: #888;
+  color: var(--text-secondary);
 }
 .error {
   color: #f64;
@@ -50,40 +57,137 @@ body {
 
 a {
   font-weight: 500;
-  color: #213547;
+  color: var(--accent-color);
   text-decoration: inherit;
 
   &:hover {
-    color: #747bff;
+    color: #c4a8f0;
   }
 }
 
 h1 {
   font-size: 2.2em;
   line-height: 1.1;
+  margin-bottom: 0.1em;
 
   @include breakpoints.sm {
     text-align: center;
   }
 }
 
+// --- Buttons ---
 button,
 .button {
   border-radius: 8px;
-  border: 1px solid transparent;
+  border: 1px solid var(--input-border);
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #f9f9f9;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 
   &:hover {
-    border-color: #646cff;
+    background-color: rgba(255, 255, 255, 0.18);
+    border-color: var(--accent-color);
   }
   &:focus,
   &:focus-visible {
-    outline: 4px auto -webkit-focus-ring-color;
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
   }
+}
+
+// --- Form controls ---
+textarea {
+  font-family: "Fira Code", "Fira Mono", "Cascadia Code", "JetBrains Mono",
+    "Consolas", "Monaco", monospace;
+  font-size: 0.9em;
+}
+
+select,
+textarea,
+input[type="text"] {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  padding: 0.5em 0.75em;
+  font-size: 1em;
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent-color);
+  }
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='rgba(255,255,255,0.6)' d='M1.4 0L6 4.6 10.6 0 12 1.4l-6 6-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75em center;
+  padding-right: 2.2em;
+  cursor: pointer;
+}
+
+// --- Custom checkboxes ---
+input[type="checkbox"] {
+  appearance: none;
+  width: 1.15em;
+  height: 1.15em;
+  border: 1.5px solid var(--input-border);
+  border-radius: 3px;
+  background-color: transparent;
+  cursor: pointer;
+  vertical-align: middle;
+  position: relative;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+
+  &:checked {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 0px;
+      width: 5px;
+      height: 9px;
+      border: solid #1a0e33;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+  }
+}
+
+// --- Keyboard shortcut badge ---
+kbd {
+  display: inline-block;
+  padding: 0.1em 0.45em;
+  font-size: 0.75em;
+  font-family: inherit;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  line-height: 1.4;
+  vertical-align: middle;
+  margin-left: 0.3em;
 }

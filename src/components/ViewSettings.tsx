@@ -112,11 +112,11 @@ export function ViewSettingsControls({
 
   return (
     <div
-      style={{ display: "flex", gap: "2em", flexWrap: "wrap", ...style }}
+      style={{ display: "flex", gap: "1.5em", flexWrap: "wrap", ...style }}
       {...other}
     >
-      <label>
-        Show arrows:&nbsp;&nbsp;
+      <label style={{ display: "flex", alignItems: "center", gap: "0.5em" }}>
+        <span>Arrows</span>
         <select
           value={viewSettings.arrowMode}
           onChange={(e) =>
@@ -134,7 +134,9 @@ export function ViewSettingsControls({
       </label>
       <label
         style={{
-          display: viewSettings.arrowMode === "none" ? "none" : undefined,
+          display: viewSettings.arrowMode === "none" ? "none" : "flex",
+          alignItems: "center",
+          gap: "0.4em",
         }}
       >
         <input
@@ -144,7 +146,7 @@ export function ViewSettingsControls({
             setViewSettings({ ...viewSettings, wrapArrows: e.target.checked })
           }
         />
-        Wrap arrows
+        <span>Wrap arrows</span>
       </label>
       <label
         style={{
@@ -153,7 +155,9 @@ export function ViewSettingsControls({
             viewSettings.arrowMode === "orbits" ||
             !hasManipulator
               ? "none"
-              : undefined,
+              : "flex",
+          alignItems: "center",
+          gap: "0.4em",
         }}
       >
         <input
@@ -166,9 +170,9 @@ export function ViewSettingsControls({
             })
           }
         />
-        Only manipulated arrows
+        <span>Only manipulated</span>
       </label>
-      <label>
+      <label style={{ display: "flex", alignItems: "center", gap: "0.4em" }}>
         <input
           type="checkbox"
           checked={viewSettings.showHands}
@@ -179,9 +183,9 @@ export function ViewSettingsControls({
             })
           }
         />
-        Show hands
+        <span>Show hands</span>
       </label>
-      <label>
+      <label style={{ display: "flex", alignItems: "center", gap: "0.4em" }}>
         <input
           type="checkbox"
           checked={viewSettings.isLimbsTable}
@@ -189,7 +193,7 @@ export function ViewSettingsControls({
             setViewSettings({ ...viewSettings, isLimbsTable: e.target.checked })
           }
         />
-        Limbs table
+        <span>Limbs table</span>
       </label>
     </div>
   );

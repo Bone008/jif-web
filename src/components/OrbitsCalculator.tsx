@@ -66,9 +66,10 @@ function PresetSelector({
   }
 
   return (
-    <label {...props}>
-      {categoryFilter ? `Select ${categoryFilter.name}:` : "Select preset:"}
-      &nbsp;&nbsp;
+    <label className="editor-card__preset-selector" {...props}>
+      <span className="label-text">
+        {categoryFilter ? `Select ${categoryFilter.name}` : "Select pattern"}
+      </span>
       <select
         value={allowCustom && !selectedPreset ? "custom" : value}
         onChange={(e) => onSelectPreset(e.target.value)}
@@ -155,6 +156,7 @@ export function OrbitsCalculator() {
   const [disabledInstructions, setDisabledInstructions] = useState<boolean[][]>(
     [],
   );
+  const [showJifOutput, setShowJifOutput] = useState(false);
   const {
     error: jifError,
     jif,
@@ -208,7 +210,10 @@ export function OrbitsCalculator() {
   return (
     <>
       <div className="pageHeader">
-        <h1>Passing Pattern Notations</h1>
+        <div>
+          <h1>Passing Pattern Notations</h1>
+          <p className="subtitle">Visualize juggling passing patterns</p>
+        </div>
         <EmbedLink />
       </div>
       {headerDisplayState === "embed" && (
@@ -237,10 +242,12 @@ export function OrbitsCalculator() {
       )}
       {headerDisplayState === "compact" && (
         <div className="card stretch">
-          <div style={{ display: "flex", gap: "2em" }}>
-            <h2 style={{ margin: 0 }}>{preset?.name ?? "Unnamed pattern"}</h2>
+          <div className="compact-header">
+            <h2 className="compact-header__title">
+              {preset?.name ?? "Unnamed pattern"}
+            </h2>
             <button type="button" onClick={() => setHeaderDisplayState("full")}>
-              Edit
+              Edit pattern
             </button>
           </div>
           {preset?.warningNote && (
@@ -253,70 +260,77 @@ export function OrbitsCalculator() {
         </div>
       )}
       {headerDisplayState === "full" && (
-        <div className="card stretch">
-          <p style={{ display: "flex" }}>
+        <div className="card stretch editor-card">
+          <div className="editor-card__top-row">
             <PresetSelector
               selectedPreset={preset}
               categoryFilter={categoryFilter}
               onSelectPreset={updatePreset}
               allowCustom={true}
-              style={{ flexGrow: 1 }}
             />
-
             <button
               type="button"
               onClick={() => setHeaderDisplayState("compact")}
             >
-              Hide
+              Hide editor
             </button>
-          </p>
-          <div style={{ display: "flex", gap: "0.5em" }}>
-            <label style={{ flexGrow: 2 }}>
-              <div>Enter social siteswap, 4-handed siteswap, or JIF:</div>
+          </div>
+
+          <div className="editor-card__input-section">
+            <label className="editor-card__pattern-label">
+              <div className="label-text">Pattern notation</div>
+              <div className="hint">
+                e.g. &quot;3B 3 3&quot; (prechac) or &quot;77862&quot;
+                (siteswap)
+              </div>
               <textarea
                 value={jifInput}
                 onChange={(e) => setJifInput(e.target.value)}
-                placeholder=""
+                placeholder="3B 3 3&#10;3A 3 3"
                 rows={6}
                 style={{ width: "100%", resize: "vertical" }}
               ></textarea>
             </label>
-            <label
-              style={{
-                flexGrow: 1,
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <div>Full JIF:</div>
-              <textarea
-                value={JSON.stringify(jifWithManipulation, null, 2)}
-                readOnly
-                style={{
-                  width: "100%",
-                  flexGrow: 1,
-                  fontSize: "80%",
-                  background: "lightgray",
-                }}
-              />
-            </label>
+
+            <div className="jif-toggle-section">
+              <button
+                type="button"
+                className="jif-toggle-btn"
+                onClick={() => setShowJifOutput(!showJifOutput)}
+              >
+                {showJifOutput ? "Hide" : "Show"} JIF output
+              </button>
+              {showJifOutput && (
+                <textarea
+                  value={JSON.stringify(jifWithManipulation, null, 2)}
+                  readOnly
+                  className="jif-output"
+                />
+              )}
+            </div>
           </div>
-          <label>
-            Enter manipulator instructions (with <b>source</b> juggler label,{" "}
-            <code>i</code> = intercept with 2-beat carry, <code>i1</code> = with
-            1-beat carry):
+
+          <label className="editor-card__manipulation-label">
+            <div className="label-text">Manipulator instructions</div>
+            <div className="hint">
+              e.g. &quot;sA - - i2B&quot; &mdash; s = substitute, i = intercept
+              (2-beat carry), i1 = 1-beat carry
+            </div>
             <textarea
               value={manipulationInput}
               onChange={(e) => setManipulationInput(e.target.value)}
-              placeholder=""
+              placeholder="sA - - i2B"
               rows={2}
               style={{ width: "100%", resize: "vertical" }}
             ></textarea>
           </label>
-          <ViewSettingsControls
-            style={{ marginTop: "1.5rem" }}
-            hasManipulator={!!manipulators && manipulators.length > 0}
-          />
+
+          <div className="settings-section">
+            <div className="settings-section__header">Display settings</div>
+            <ViewSettingsControls
+              hasManipulator={!!manipulators && manipulators.length > 0}
+            />
+          </div>
         </div>
       )}
 
@@ -325,10 +339,23 @@ export function OrbitsCalculator() {
           <div className="warningNote">{preset.warningNote}</div>
         </div>
       )}
-      {jifError && <p className="card error">{jifError}</p>}
-      {manipulationError && <p className="card error">{manipulationError}</p>}
+      {jifError && (
+        <div className="card error-card">
+          <span className="error-card__icon">!</span>
+          <p className="error-card__message">{jifError}</p>
+        </div>
+      )}
+      {manipulationError && (
+        <div className="card error-card">
+          <span className="error-card__icon">!</span>
+          <p className="error-card__message">{manipulationError}</p>
+        </div>
+      )}
       {applyManipulatorsError && (
-        <p className="card error">{applyManipulatorsError}</p>
+        <div className="card error-card">
+          <span className="error-card__icon">!</span>
+          <p className="error-card__message">{applyManipulatorsError}</p>
+        </div>
       )}
 
       {jif && throwsTable && (
