@@ -345,8 +345,8 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
 
   Ambled: [
     {
-      name: "#1.1 - JHAL",
-      slug: "ambled-jhal",
+      name: "#1.1 - Turn Around",
+      slug: "ambled-turn-around",
       instructions: RAW_DATA_WALKING_FEED_10C,
       manipulators: ["- - - i2B - - sA"],
     },
