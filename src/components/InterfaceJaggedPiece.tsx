@@ -4,7 +4,7 @@ import { useKeyboardShortcut } from "../hooks/useKeyboardShortcut";
 import {
   computeInterfaceShapes,
   InterfaceBeatShape,
-} from "../jif/interface_shapes";
+} from "../utils/interface_shapes";
 import { FullJIF, FullThrow } from "../jif/jif_loader";
 import { getThrowsTableByJuggler } from "../jif/orbits";
 import { inferIsSynchronousPattern } from "../jif/util";
@@ -330,46 +330,6 @@ export function generateJaggedPath(
   parts.push(`Z`);
 
   return parts.join(" ");
-}
-
-export function computeInterfaceShapes(
-  jif: FullJIF,
-  juggler: number,
-): InterfaceBeatShape[] {
-  const isSynchronous = inferIsSynchronousPattern(jif);
-  // TODO: terrible heuristic :(
-  const causalOffset = isSynchronous ? 2 : 4;
-
-  const beatsWithSelf = _.range(jif.repetition.period).map(() => false);
-  const beatsWithOutgoing = _.range(jif.repetition.period).map(() => false);
-
-  const throwsTable = getThrowsTableByJuggler(jif);
-  const ownLimbs = new Set(
-    _.range(jif.limbs.length).filter((l) => jif.limbs[l].juggler === juggler),
-  );
-  const ownThrows = throwsTable[juggler];
-  for (const thrw of ownThrows) {
-    if (thrw) {
-      let targetTime = thrw.time + thrw.duration - causalOffset;
-      let targetLimb = thrw.to;
-      [targetTime, targetLimb] = wrapLimb(targetTime, targetLimb, jif);
-      if (ownLimbs.has(targetLimb)) {
-        beatsWithSelf[targetTime] = true;
-      } else {
-        beatsWithOutgoing[targetTime] = true;
-      }
-    }
-  }
-
-  return _.range(jif.repetition.period).map((beat) => {
-    if (beatsWithOutgoing[beat]) {
-      return "outwards";
-    } else if (ownThrows[beat] && !beatsWithSelf[beat]) {
-      return "inwards";
-    } else {
-      return "straight";
-    }
-  });
 }
 
 /** Formats the label of a jagged piece. */

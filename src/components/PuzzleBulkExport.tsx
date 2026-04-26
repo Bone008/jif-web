@@ -4,6 +4,10 @@ import {
   PUZZLE_THROW_DIGITS,
   PuzzleThrowDigit,
 } from "../data/period6_locals";
+import {
+  clubCountLabel,
+  groupLocalsByPuzzleCategory,
+} from "../utils/interface_shapes";
 import { downloadPieceZip } from "../utils/zipPieces";
 import "./PuzzleBulkExport.scss";
 
@@ -11,6 +15,14 @@ interface Props {
   onAssignA: (local: string) => void;
   onAssignB: (local: string) => void;
 }
+
+// Hard-coded layout: complementary fractional groups sit in the same row.
+const GROUP_ROWS: string[][] = [
+  ["x.2", "x.8"],
+  ["x.3", "x.7"],
+  ["x.5, 1 pass", "x.5, 3 passes"],
+  ["x.0"],
+];
 
 const DEFAULT_CHECKED: Record<PuzzleThrowDigit, boolean> = {
   "2": true,
@@ -38,6 +50,11 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
       local.split("").every((ch) => allowed.has(ch)),
     );
   }, [checked]);
+
+  const groups = useMemo(
+    () => groupLocalsByPuzzleCategory(qualifying),
+    [qualifying],
+  );
 
   function toggle(digit: PuzzleThrowDigit) {
     setChecked((prev) => ({ ...prev, [digit]: !prev[digit] }));
@@ -84,9 +101,7 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
             onClick={handleDownload}
             disabled={qualifying.length === 0 || downloading}
           >
-            {downloading
-              ? "Building ZIP …"
-              : `Download SVGs (${qualifying.length})`}
+            {downloading ? "Building ZIP …" : "Download SVGs"}
           </button>
           <span className="puzzle-bulk-export__count">
             {qualifying.length} pattern{qualifying.length === 1 ? "" : "s"}{" "}
@@ -94,29 +109,53 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
           </span>
         </div>
 
-        <ul className="puzzle-bulk-export__list">
-          {qualifying.map((local) => (
-            <li key={local} className="puzzle-bulk-export__item">
-              <span className="puzzle-bulk-export__pattern">{local}</span>
-              <button
-                type="button"
-                className="puzzle-bulk-export__assign"
-                onClick={() => onAssignA(local)}
-                title={`Set juggler A to ${local}`}
-              >
-                ↑ A
-              </button>
-              <button
-                type="button"
-                className="puzzle-bulk-export__assign"
-                onClick={() => onAssignB(local)}
-                title={`Set juggler B to ${local}`}
-              >
-                ↑ B
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="puzzle-bulk-export__groups">
+          {GROUP_ROWS.map((row, rowIndex) => {
+            const cells = row
+              .map((label) => ({ label, locals: groups.get(label) ?? [] }))
+              .filter((cell) => cell.locals.length > 0);
+            if (cells.length === 0) return null;
+            return (
+              <div key={rowIndex} className="puzzle-bulk-export__group-row">
+                {cells.map(({ label, locals }) => (
+                  <section key={label} className="puzzle-bulk-export__group">
+                    <h4 className="puzzle-bulk-export__group-header">
+                      {label}
+                    </h4>
+                    <ul className="puzzle-bulk-export__list">
+                      {locals.map((local) => (
+                        <li key={local} className="puzzle-bulk-export__item">
+                          <span className="puzzle-bulk-export__pattern">
+                            {local}
+                          </span>
+                          <span className="puzzle-bulk-export__clubs">
+                            {clubCountLabel(local)}
+                          </span>
+                          <button
+                            type="button"
+                            className="puzzle-bulk-export__assign"
+                            onClick={() => onAssignA(local)}
+                            title={`Set juggler A to ${local}`}
+                          >
+                            ↑A
+                          </button>
+                          <button
+                            type="button"
+                            className="puzzle-bulk-export__assign"
+                            onClick={() => onAssignB(local)}
+                            title={`Set juggler B to ${local}`}
+                          >
+                            ↑B
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+            );
+          })}
+        </div>
 
         {errors.length > 0 && (
           <div className="puzzle-bulk-export__errors">
