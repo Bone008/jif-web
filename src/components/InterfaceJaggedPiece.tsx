@@ -26,7 +26,7 @@ export function InterfaceJaggedPiece({
   const jagHeight = 10;
   const strokeWidth = 1.5;
   const strokeInset = 5; // should be >=strokeWidth/2 to avoid clipping
-  const labelWidth = 90; // Width for the label section on the left
+  const labelWidth = 100; // Width for the label section on the left
 
   const throwsTable = getThrowsTableByJuggler(jif);
   const throws = throwsTable[juggler].slice();
@@ -155,18 +155,17 @@ export function InterfaceJaggedPiece({
           transform={`translate(0, ${jagHeight})`}
         >
           {/* Label text */}
-          <g transform={`translate(${labelWidth - 5}, ${height / 2})`}>
-            <text
-              textAnchor="middle"
-              dominantBaseline="hanging"
-              fontSize="18"
-              fontWeight="bold"
-              fill="white"
-              transform="rotate(90)"
-            >
-              {label}
-            </text>
-          </g>
+          <text
+            x={15}
+            y={height / 2}
+            textAnchor="start"
+            dominantBaseline="central" // NOT middle, to focus digits correctly!
+            fontSize="30"
+            fontWeight="bold"
+            fill="lightgreen"
+          >
+            {label}
+          </text>
 
           {/* Throw duration numbers */}
           <g transform={`translate(${labelWidth}, 3)`}>
@@ -318,9 +317,7 @@ function generateLabel(throws: (FullThrow | null)[]): string {
     .map((thrw) => (thrw ? thrw.duration : 0))
     .reduce((a, b) => a + b, 0);
   const numObjects = sum / throws.length;
-  return (
-    (Number.isInteger(numObjects)
-      ? numObjects.toString()
-      : numObjects.toFixed(1)) + " C"
-  );
+  return Number.isInteger(numObjects)
+    ? numObjects.toString()
+    : numObjects.toFixed(1);
 }
