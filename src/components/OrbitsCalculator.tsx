@@ -216,7 +216,17 @@ export function OrbitsCalculator() {
           <h1>Passing Pattern Notations</h1>
           <p className="subtitle">Visualize juggling passing patterns</p>
         </div>
-        <EmbedLink />
+        <div className="pageHeader__actions">
+          <a
+            href="?puzzle"
+            className="button pageHeader__puzzle-link"
+            title="Open puzzle-piece input mode"
+          >
+            <span className="pageHeader__puzzle-icon">🧩</span>
+            <span className="pageHeader__puzzle-label">Puzzle Pieces</span>
+          </a>
+          <EmbedLink />
+        </div>
       </div>
       {headerDisplayState === "embed" && (
         <>
