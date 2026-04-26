@@ -111,4 +111,4 @@ Edit `src/jif/presets.ts`:
 ## Coding Conventions
 
 - Put exported components/functions at the top of the file, starting with the main
-   component, then subcomponents, then helper functions at the bottom.
+  component, then subcomponents, then helper functions at the bottom.

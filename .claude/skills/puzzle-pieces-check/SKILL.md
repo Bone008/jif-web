@@ -27,6 +27,7 @@ The puzzle pieces only render for 2-juggler patterns where each juggler returns 
 1. **Start the dev server if it isn't running.** Use `npm start > /tmp/jif-vite.log 2>&1 &` and then read `/tmp/jif-vite.log` to discover the port (Vite increments if 5173 is taken). Don't kill an existing server — reuse it.
 
 2. **Spawn a subagent** (general-purpose) to do the Playwright work in isolation, keeping screenshot bytes out of the main agent's context until they're needed. Pass it the dev-server URL and the list of siteswaps. Tell it to:
+
    - For each siteswap, navigate to `http://localhost:<PORT>/?q=<siteswap>` (the doubled form).
    - Use `mcp__playwright__browser_snapshot` to find the `ref` of the "Interface Puzzle Pieces" section heading's parent container.
    - Call `mcp__playwright__browser_take_screenshot` with `element` + `ref` + `filename: "/tmp/puzzle-<siteswap>.png"` (absolute path keeps it out of the repo).
