@@ -30,38 +30,6 @@ interface BuiltLocalError {
 }
 type BuiltResult = BuiltLocal | BuiltLocalError;
 
-function buildLocalJif(local: string, doubled: boolean): BuiltResult | null {
-  if (local.length === 0) return null;
-  try {
-    const interleaved = interleaveLocalSiteswap(local);
-    const siteswap = doubled ? interleaved + interleaved : interleaved;
-    return { jif: loadWithDefaults(siteswapToJIF(siteswap, 2)) };
-  } catch (e) {
-    return { error: String(e) };
-  }
-}
-
-function buildGlobalJif(
-  global: string,
-  doubled: boolean,
-  isLimbsTable: boolean,
-): { jif: FullJIF; throwsTable: ThrowsTableData } | { error: string } {
-  try {
-    const siteswap = doubled ? global + global : global;
-    const jif = loadWithDefaults(siteswapToJIF(siteswap, 2));
-    const throwsTable = isLimbsTable
-      ? getThrowsTableByLimb(jif)
-      : getThrowsTableByJuggler(jif);
-    return { jif, throwsTable };
-  } catch (e) {
-    return { error: String(e) };
-  }
-}
-
-function normalizeLocal(value: string): string {
-  return value.trim().toLowerCase();
-}
-
 export function PuzzlePage() {
   const search = useSearchParams();
   const localA = normalizeLocal(search.get(PA_PARAM) ?? "");
@@ -228,4 +196,36 @@ export function PuzzlePage() {
       </div>
     </div>
   );
+}
+
+function buildLocalJif(local: string, doubled: boolean): BuiltResult | null {
+  if (local.length === 0) return null;
+  try {
+    const interleaved = interleaveLocalSiteswap(local);
+    const siteswap = doubled ? interleaved + interleaved : interleaved;
+    return { jif: loadWithDefaults(siteswapToJIF(siteswap, 2)) };
+  } catch (e) {
+    return { error: String(e) };
+  }
+}
+
+function buildGlobalJif(
+  global: string,
+  doubled: boolean,
+  isLimbsTable: boolean,
+): { jif: FullJIF; throwsTable: ThrowsTableData } | { error: string } {
+  try {
+    const siteswap = doubled ? global + global : global;
+    const jif = loadWithDefaults(siteswapToJIF(siteswap, 2));
+    const throwsTable = isLimbsTable
+      ? getThrowsTableByLimb(jif)
+      : getThrowsTableByJuggler(jif);
+    return { jif, throwsTable };
+  } catch (e) {
+    return { error: String(e) };
+  }
+}
+
+function normalizeLocal(value: string): string {
+  return value.trim().toLowerCase();
 }
