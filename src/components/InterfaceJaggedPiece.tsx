@@ -148,26 +148,12 @@ export function InterfaceJaggedPiece({
             ))}
         </g>
 
-        {/* Layer 3: Text */}
+        {/* Layer 3: Throw duration numbers */}
         <g
           id="layer3"
           className="text"
           transform={`translate(0, ${jagHeight})`}
         >
-          {/* Label text */}
-          <text
-            x={15}
-            y={height / 2}
-            textAnchor="start"
-            dominantBaseline="central" // NOT middle, to focus digits correctly!
-            fontSize="30"
-            fontWeight="bold"
-            fill="lightgreen"
-          >
-            {label}
-          </text>
-
-          {/* Throw duration numbers */}
           <g transform={`translate(${labelWidth}, 3)`}>
             {throws.map((thrw, beat) => {
               if (thrw) {
@@ -189,6 +175,25 @@ export function InterfaceJaggedPiece({
               return null;
             })}
           </g>
+        </g>
+
+        {/* Layer 4: Label text */}
+        <g
+          id="layer4"
+          className="label"
+          transform={`translate(0, ${jagHeight})`}
+        >
+          <text
+            x={15}
+            y={height / 2}
+            textAnchor="start"
+            dominantBaseline="central" // NOT middle, to focus digits correctly!
+            fontSize="30"
+            fontWeight="bold"
+            fill="lightgreen"
+          >
+            {label}
+          </text>
         </g>
       </svg>
       <button onClick={copyToClipboard} title="Copy SVG to clipboard">
