@@ -1,13 +1,15 @@
 import _ from "lodash";
 import { useCallback, useRef, useState } from "react";
 import { useKeyboardShortcut } from "../hooks/useKeyboardShortcut";
+import {
+  computeInterfaceShapes,
+  InterfaceBeatShape,
+} from "../jif/interface_shapes";
 import { FullJIF, FullThrow } from "../jif/jif_loader";
 import { getThrowsTableByJuggler } from "../jif/orbits";
-import { inferIsSynchronousPattern, wrapLimb } from "../jif/util";
+import { inferIsSynchronousPattern } from "../jif/util";
 import { renderJaggedPieceSVGString } from "../utils/jaggedPieceSvg";
 import "./InterfaceJaggedPiece.scss";
-
-export type InterfaceBeatShape = "straight" | "outwards" | "inwards";
 
 // Layout constants — single source of truth, used by both the live component
 // and the static-string renderer.
@@ -260,50 +262,71 @@ export function generateJaggedPath(
   const width = numBeats * beatWidth;
   const parts: string[] = [];
 
-  // Apply inset to dimensions (only affects baseline, not jag height)
-  // TODO: Left and right should also be fully inset, but this leads to weird angles
-  // when there is a jag on the first or last beat, which is hard to fix. so we allow
-  // horizontal edges to be slightly closer to the border.
   const left = inset / 2;
   const right = width - inset / 2;
   const top = -height / 2 + inset;
   const bottom = height / 2 - inset;
 
-  parts.push(`M ${left},${top}`);
+  // When the first or last beat is a jag, the inset corner must lie on the
+  // same diagonal as the jag itself — otherwise the outline tilts away from
+  // the background fill at the start/end of the piece. The peak is at
+  // `beatWidth/2` from the edge; the corner is at `inset/2` from the edge.
+  // Project the jag's diagonal back to x=left/right to get the corner y.
+  const cornerYOffset = (s: InterfaceBeatShape) => {
+    if (s === "straight") return 0;
+    const offset = (jagHeight * inset) / beatWidth;
+    return s === "outwards" ? -offset : +offset;
+  };
+  const firstOffset = cornerYOffset(shapes[0]);
+  const lastOffset = cornerYOffset(shapes[numBeats - 1]);
+  const topLeftY = top + firstOffset;
+  const topRightY = top + lastOffset;
+  const bottomLeftY = bottom - firstOffset;
+  const bottomRightY = bottom - lastOffset;
 
+  parts.push(`M ${left},${topLeftY}`);
+
+  // Top edge (left → right)
   for (let i = 0; i < numBeats; i++) {
-    const xEnd = i === numBeats - 1 ? right : (i + 1) * beatWidth;
+    const isLast = i === numBeats - 1;
+    const xEnd = isLast ? right : (i + 1) * beatWidth;
     const xMid = (i * beatWidth + (i + 1) * beatWidth) / 2;
+    const endY = isLast ? topRightY : top;
 
     if (shapes[i] === "straight") {
-      parts.push(`L ${xEnd},${top}`);
+      parts.push(`L ${xEnd},${endY}`);
     } else if (shapes[i] === "outwards") {
       parts.push(`L ${xMid},${top - jagHeight}`);
-      parts.push(`L ${xEnd},${top}`);
+      parts.push(`L ${xEnd},${endY}`);
     } else if (shapes[i] === "inwards") {
       parts.push(`L ${xMid},${top + jagHeight}`);
-      parts.push(`L ${xEnd},${top}`);
+      parts.push(`L ${xEnd},${endY}`);
     }
   }
 
-  parts.push(`L ${right},${bottom}`);
+  // Right edge (top-right → bottom-right)
+  parts.push(`L ${right},${bottomRightY}`);
 
+  // Bottom edge (right → left)
   for (let i = numBeats - 1; i >= 0; i--) {
-    const xStart = i === 0 ? left : i * beatWidth;
+    const isFirst = i === 0;
+    const xStart = isFirst ? left : i * beatWidth;
     const xMid = (i * beatWidth + (i + 1) * beatWidth) / 2;
+    const endY = isFirst ? bottomLeftY : bottom;
 
     if (shapes[i] === "straight") {
-      parts.push(`L ${xStart},${bottom}`);
+      parts.push(`L ${xStart},${endY}`);
     } else if (shapes[i] === "outwards") {
       parts.push(`L ${xMid},${bottom + jagHeight}`);
-      parts.push(`L ${xStart},${bottom}`);
+      parts.push(`L ${xStart},${endY}`);
     } else if (shapes[i] === "inwards") {
       parts.push(`L ${xMid},${bottom - jagHeight}`);
-      parts.push(`L ${xStart},${bottom}`);
+      parts.push(`L ${xStart},${endY}`);
     }
   }
 
-  parts.push(`L ${left},${top}`);
+  // Left edge (bottom-left → top-left), then close
+  parts.push(`L ${left},${topLeftY}`);
   parts.push(`Z`);
 
   return parts.join(" ");
