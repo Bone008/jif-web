@@ -81,10 +81,20 @@ export function PuzzlePage() {
   return (
     <div className="puzzle-page">
       <div className="pageHeader">
-        <h1>Puzzle Pieces</h1>
-        <p className="subtitle">
-          Pair two local siteswaps and inspect the resulting puzzle pieces.
-        </p>
+        <div>
+          <h1>Puzzle Pieces</h1>
+          <p className="subtitle">
+            Pair two local siteswaps and inspect the resulting puzzle pieces.
+          </p>
+        </div>
+        <a
+          href="?"
+          className="button pageHeader__puzzle-link"
+          title="Back to the main pattern visualizer"
+        >
+          <span className="pageHeader__puzzle-icon">←</span>
+          <span className="pageHeader__puzzle-label">Back to main</span>
+        </a>
       </div>
 
       <div className="card stretch puzzle-page__editor">
