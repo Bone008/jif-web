@@ -6,7 +6,7 @@ import {
   computeInterfaceShapes,
   generateJaggedPath,
   generateLabel,
-} from "./InterfaceJaggedPiece";
+} from "../components/InterfaceJaggedPiece";
 
 /**
  * Renders the InterfaceJaggedPiece for the given juggler as an SVG XML string.

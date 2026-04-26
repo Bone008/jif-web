@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { renderJaggedPieceSVGString } from "../components/jaggedPieceSvg";
+import { renderJaggedPieceSVGString } from "./jaggedPieceSvg";
 import { siteswapToJIF } from "../jif/high_level_converter";
 import { loadWithDefaults } from "../jif/jif_loader";
 import { interleaveLocalSiteswap } from "../jif/local_pattern";
