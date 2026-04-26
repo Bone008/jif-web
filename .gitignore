@@ -1,6 +1,7 @@
 todo.txt
 
 .venv/
+.playwright-mcp/
 
 # Logs
 logs
