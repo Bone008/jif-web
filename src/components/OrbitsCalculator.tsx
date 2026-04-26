@@ -33,7 +33,7 @@ import "./OrbitsCalculator.scss";
 import { FormattedManipulatorInstruction, ThrowsTable } from "./ThrowsTable";
 import { useViewSettings, ViewSettingsControls } from "./ViewSettings";
 import { wrapJuggler } from "../jif/util";
-import { BulkJaggedPieceExport } from "./BulkJaggedPieceExport";
+import { isValidJif } from "../jif/validation";
 import { InterfaceJaggedPiece } from "./InterfaceJaggedPiece";
 import { CycleDisplay } from "./CycleDisplay";
 
@@ -160,6 +160,7 @@ export function OrbitsCalculator() {
   const [showJifOutput, setShowJifOutput] = useState(false);
   const {
     error: jifError,
+    warning: jifWarning,
     jif,
     throwsTable,
   } = useMemo(
@@ -383,6 +384,12 @@ export function OrbitsCalculator() {
           />
         </div>
       )}
+      {jifWarning && (
+        <div className="card error-card">
+          <span className="error-card__icon">i</span>
+          <p className="error-card__message">{jifWarning}</p>
+        </div>
+      )}
       {manipulators?.length !== 0 &&
         jifWithManipulation &&
         throwsTableWithManipulation && (
@@ -416,12 +423,6 @@ export function OrbitsCalculator() {
             </div>
           </div>
         )}
-
-      {!isEmbed && (
-        <div className="card start">
-          <BulkJaggedPieceExport />
-        </div>
-      )}
     </>
   );
 }
@@ -431,9 +432,13 @@ function processInput(
   isLimbsTable: boolean,
 ): {
   error?: string;
+  warning?: string;
   jif?: FullJIF;
   throwsTable?: ThrowsTableData;
 } {
+  if (jifInput.trim().length === 0) {
+    return {};
+  }
   let jif: JIF;
   try {
     if (jifInput.startsWith("{")) {
@@ -448,7 +453,10 @@ function processInput(
     const throwsTable = isLimbsTable
       ? getThrowsTableByLimb(fullJif)
       : getThrowsTableByJuggler(fullJif);
-    return { jif: fullJif, throwsTable };
+    const warning = isValidJif(fullJif)
+      ? undefined
+      : "Pattern is not a valid siteswap (throws collide).";
+    return { jif: fullJif, throwsTable, warning };
   } catch (e) {
     return { error: String(e) };
   }

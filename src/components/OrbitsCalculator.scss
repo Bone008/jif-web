@@ -50,12 +50,20 @@
   .embed & {
     display: none;
   }
+
+  @include breakpoints.sm {
+    padding: 0 1em;
+  }
 }
 
 .subtitle {
   color: var(--text-secondary);
   margin: 0;
   font-size: 1.05em;
+
+  @include breakpoints.sm {
+    display: none;
+  }
 }
 
 // --- Compact header ---

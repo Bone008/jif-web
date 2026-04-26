@@ -2,17 +2,11 @@ import _ from "lodash";
 import { readFileSync, writeFileSync } from "fs";
 import { siteswapToJIF } from "../src/jif/high_level_converter.ts";
 import { FullJIF, loadWithDefaults } from "../src/jif/jif_loader.ts";
+import { interleaveLocalSiteswap } from "../src/jif/local_pattern.ts";
 import { getThrowsTableByJuggler } from "../src/jif/orbits.ts";
 import { inferIsSynchronousPattern, wrapLimb } from "../src/jif/util.ts";
 
 type InterfaceBeatShape = "straight" | "outwards" | "inwards";
-
-function interleaveLocalSiteswap(siteswap: string): string {
-  return siteswap
-    .split("")
-    .map((ch) => ch + "0")
-    .join("");
-}
 
 function computeInterfaceShapes(
   jif: FullJIF,

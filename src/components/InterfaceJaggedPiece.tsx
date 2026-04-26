@@ -11,9 +11,15 @@ export type InterfaceBeatShape = "straight" | "outwards" | "inwards";
 export function InterfaceJaggedPiece({
   jif,
   juggler,
+  beatShift = 0,
 }: {
   jif: FullJIF;
   juggler: number;
+  /**
+   * Extra horizontal offset (in beats) added to the rendered piece. Used in
+   * puzzle mode to shift a paired piece so its jags line up after rotation.
+   */
+  beatShift?: number;
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [showVerticalGridLines, setShowVerticalGridLines] = useState(false);
@@ -44,7 +50,8 @@ export function InterfaceJaggedPiece({
     interfaceShapes.push(interfaceShapes[0]);
   }
   // How far to offset the card to match it up with its counterpart.
-  const leftMargin = firstBeatOccupied ? 0 : beatWidth;
+  const leftMargin =
+    (firstBeatOccupied ? 0 : beatWidth) + beatShift * beatWidth;
 
   const width = throws.length * beatWidth;
 

@@ -107,3 +107,8 @@ Edit `src/jif/presets.ts`:
 - Component-scoped `.scss` files co-located with components
 - Shared styles in `src/index.scss`, `src/breakpoints.scss`
 - BEM-like naming convention (e.g., `throws-container`, `collapsible-tile__panel`)
+
+## Coding Conventions
+
+- Put exported components/functions at the top of the file, starting with the main
+   component, then subcomponents, then helper functions at the bottom.

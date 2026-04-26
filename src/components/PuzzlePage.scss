@@ -1,0 +1,58 @@
+.puzzle-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &__editor {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    align-items: flex-end;
+  }
+
+  &__input-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    input {
+      font-family: monospace;
+      font-size: 1.1rem;
+      padding: 0.3rem 0.5rem;
+      width: 8rem;
+    }
+  }
+
+  &__doubled-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    user-select: none;
+  }
+
+  &__global {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    code {
+      font-family: monospace;
+      font-size: 1.1rem;
+      padding: 0.15rem 0.4rem;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+    }
+  }
+
+  &__rotation-note {
+    font-size: 0.9em;
+    opacity: 0.8;
+  }
+}
