@@ -143,16 +143,14 @@ export function localPassCount(local: string): number {
 }
 
 /**
- * Group label combining the 1-digit fractional clubs with extra disambiguation
- * for x.5 (which has two distinct shape categories distinguished by pass count).
+ * Group label combining the 1-digit fractional clubs with the local pass count.
+ * x.5 splits into two pass-count subgroups; the others have a single pass count
+ * each in period 6 but the label includes it for consistency.
  */
 export function puzzleGroupLabel(local: string): string {
   const frac = fractionalClubsLabel(local);
-  if (frac === "x.5") {
-    const passes = localPassCount(local);
-    return `x.5, ${passes} pass${passes === 1 ? "" : "es"}`;
-  }
-  return frac;
+  const passes = localPassCount(local);
+  return `${frac}, ${passes} pass${passes === 1 ? "" : "es"}`;
 }
 
 export interface InterfaceGroup {

@@ -11,6 +11,9 @@ import {
 import { downloadPieceZip } from "../utils/zipPieces";
 import "./PuzzleBulkExport.scss";
 
+/** Version string to include in the downloaded ZIP filename. */
+const VERSION_FOR_ZIP = "v3";
+
 interface Props {
   onAssignA: (local: string) => void;
   onAssignB: (local: string) => void;
@@ -18,10 +21,10 @@ interface Props {
 
 // Hard-coded layout: complementary fractional groups sit in the same row.
 const GROUP_ROWS: string[][] = [
-  ["x.2", "x.8"],
-  ["x.3", "x.7"],
-  ["x.5, 1 pass", "x.5, 3 passes"],
-  ["x.0"],
+  ["x.2, 1 pass", "x.8, 1 pass"],
+  ["x.3, 2 passes", "x.7, 2 passes"],
+  ["x.5, 1 pass", "x.0, 2 passes"],
+  ["x.5, 3 passes"],
 ];
 
 const DEFAULT_CHECKED: Record<PuzzleThrowDigit, boolean> = {
@@ -65,7 +68,27 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
     setDownloading(true);
     setErrors([]);
     try {
-      const result = await downloadPieceZip(qualifying, { doubled: true });
+      const checkedDigits = PUZZLE_THROW_DIGITS.filter((d) => checked[d]).join(
+        "",
+      );
+      const filename = `puzzle-pieces-${VERSION_FOR_ZIP}-${checkedDigits}.zip`;
+      // Build a local → category-prefix map so SVGs are named e.g. "x.2--a45".
+      // For the "x.5, ..." groups, drop the ", N passes" suffix.
+      const categoryByLocal = new Map<string, string>();
+      for (const [groupLabel, groupLocals] of groups.entries()) {
+        const prefix = groupLabel.split(",")[0].trim();
+        for (const local of groupLocals) {
+          categoryByLocal.set(local, prefix);
+        }
+      }
+      const result = await downloadPieceZip(qualifying, {
+        doubled: true,
+        filename,
+        svgNameFor: (local) => {
+          const prefix = categoryByLocal.get(local);
+          return prefix ? `${prefix}--${local}` : local;
+        },
+      });
       setErrors(result.errors);
     } finally {
       setDownloading(false);
@@ -76,9 +99,13 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
     <>
       <h3>List of Period 6 Building Blocks</h3>
       <p className="puzzle-bulk-export__info">
-        Puzzle pieces work for any even period pattern, but here is an
+        Puzzle pieces can be created for any even period pattern. Here is an
         exhaustive list of all possible combinations for the local period 3
         halves of period 6 patterns.
+      </p>
+      <p className="puzzle-bulk-export__info">
+        The object counts of both patterns must add up to an integer to be a
+        valid combination.
       </p>
       <div className="puzzle-bulk-export">
         <div className="puzzle-bulk-export__filters">
