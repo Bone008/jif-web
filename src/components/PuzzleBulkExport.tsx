@@ -104,8 +104,8 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
         halves of period 6 patterns.
       </p>
       <p className="puzzle-bulk-export__info">
-        The object counts of both patterns must add up to an integer to be a
-        valid combination.
+        The <span className="puzzle-bulk-export__highlight">object counts</span>{" "}
+        of both patterns must add up to an integer to be a valid combination.
       </p>
       <div className="puzzle-bulk-export">
         <div className="puzzle-bulk-export__filters">

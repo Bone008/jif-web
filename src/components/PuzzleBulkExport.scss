@@ -22,6 +22,10 @@
     font-weight: bold;
   }
 
+  &__highlight {
+    color: lightgreen;
+  }
+
   &__chip {
     display: inline-flex;
     align-items: center;
