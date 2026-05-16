@@ -375,7 +375,7 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
       manipulators: ["sA - - i2C - - -"],
     },
     {
-      name: "#2.2 - Unnamed (to juggle!)",
+      name: "#2.2 - Super Lazy B",
       instructions: RAW_DATA_WALKING_FEED_10C,
       manipulators: ["- sC - i2C - - -"],
     },
@@ -389,6 +389,7 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
       name: "#2.4 - Unnamed (to juggle!)",
       instructions: RAW_DATA_WALKING_FEED_10C,
       manipulators: ["- - - sB i2C - - -"],
+      warningNote: "Claude did wrong and Lukas didn't catch on!",
     },
     {
       name: "#2.5 - Unnamed (to juggle!)",
