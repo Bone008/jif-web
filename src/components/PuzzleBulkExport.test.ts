@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  PERIOD_6_LOCALS,
-  PUZZLE_THROW_DIGITS,
-} from "../data/period6_locals";
+import { PERIOD_6_LOCALS, PUZZLE_THROW_DIGITS } from "../data/period6_locals";
 import { buildPieceZip, DEFAULT_ZIP_FILENAME } from "../utils/zipPieces";
 
 /**
@@ -60,8 +57,8 @@ describe("PuzzleBulkExport zip generation", () => {
     expect(errors).toEqual([]);
     expect(Object.keys(zip.files)).toHaveLength(131);
     // Every entry ends in .svg
-    expect(
-      Object.keys(zip.files).every((name) => name.endsWith(".svg")),
-    ).toBe(true);
+    expect(Object.keys(zip.files).every((name) => name.endsWith(".svg"))).toBe(
+      true,
+    );
   });
 });
