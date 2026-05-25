@@ -12,7 +12,7 @@ import { downloadPieceZip } from "../utils/zipPieces";
 import "./PuzzleBulkExport.scss";
 
 /** Version string to include in the downloaded ZIP filename. */
-const VERSION_FOR_ZIP = "v3";
+const VERSION_FOR_ZIP = "v4";
 
 interface Props {
   onAssignA: (local: string) => void;

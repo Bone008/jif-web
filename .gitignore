@@ -17,6 +17,10 @@ dist
 dist-ssr
 *.local
 
+# CI-generated 3D-print assets (rebuilt on every deploy).
+public/stl/
+public/svg-simplified/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

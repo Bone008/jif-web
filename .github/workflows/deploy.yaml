@@ -49,6 +49,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Cache generated STLs
+        id: stl-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            public/stl
+            public/svg-simplified
+          key: stls-${{ hashFiles('src/data/P6.txt', 'scad/**', 'scripts/build-stls.ts', 'src/components/JaggedPieceSvg.tsx', 'src/utils/jaggedPieceSvg.tsx', 'src/utils/interface_shapes.ts', 'src/jif/**') }}
+
+      - name: Install OpenSCAD and Inkscape
+        if: steps.stl-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends openscad inkscape
+
+      - name: Build STLs
+        if: steps.stl-cache.outputs.cache-hit != 'true'
+        run: npm run build:stls
+
       - name: Build app
         run: npm run build
 

@@ -40,25 +40,33 @@ describe("PuzzleBulkExport zip generation", () => {
     expect(DEFAULT_ZIP_FILENAME).toBe("puzzle-pieces.zip");
   });
 
-  it("names each SVG file after its local pattern", () => {
+  it("places each SVG under svg/<local>.svg", () => {
     const locals = ["522", "655", "a45", "bbb"];
     const { zip, errors } = buildPieceZip(locals, { doubled: true });
     expect(errors).toEqual([]);
-    expect(Object.keys(zip.files).sort()).toEqual([
-      "522.svg",
-      "655.svg",
-      "a45.svg",
-      "bbb.svg",
+    const svgEntries = Object.keys(zip.files)
+      .filter((name) => name.endsWith(".svg"))
+      .sort();
+    expect(svgEntries).toEqual([
+      "svg/522.svg",
+      "svg/655.svg",
+      "svg/a45.svg",
+      "svg/bbb.svg",
     ]);
+  });
+
+  it("ships the OpenSCAD template at scad/puzzle_piece.scad", () => {
+    const { zip } = buildPieceZip(["522"], { doubled: true });
+    expect(zip.files["scad/puzzle_piece.scad"]).toBeDefined();
   });
 
   it("contains one SVG per qualifying pattern when given the full P6 list", () => {
     const { zip, errors } = buildPieceZip(PERIOD_6_LOCALS, { doubled: true });
     expect(errors).toEqual([]);
-    expect(Object.keys(zip.files)).toHaveLength(131);
-    // Every entry ends in .svg
-    expect(Object.keys(zip.files).every((name) => name.endsWith(".svg"))).toBe(
-      true,
+    const svgEntries = Object.keys(zip.files).filter((name) =>
+      name.endsWith(".svg"),
     );
+    expect(svgEntries).toHaveLength(131);
+    expect(svgEntries.every((name) => name.startsWith("svg/"))).toBe(true);
   });
 });
