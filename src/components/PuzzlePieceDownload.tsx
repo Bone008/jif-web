@@ -1,10 +1,17 @@
 import { useId, useState } from "react";
-import {
-  ALL_FORMATS,
-  downloadPieceZip,
-  FormatOptions,
-} from "../utils/zipPieces";
+import { downloadPieceZip, FormatOptions } from "../utils/zipPieces";
 import "./PuzzlePieceDownload.scss";
+
+/**
+ * Default selection when the component first mounts. STL and OpenSCAD are
+ * still WIP, so they're off — users can opt in via the disclosure.
+ */
+const DEFAULT_FORMATS: FormatOptions = {
+  originalSvg: true,
+  simplifiedSvg: true,
+  scadTemplate: false,
+  stl: false,
+};
 
 interface Props {
   /** Local siteswaps to include in the downloaded ZIP. */
@@ -40,18 +47,18 @@ const FORMATS: FormatSpec[] = [
     key: "scadTemplate",
     label: "OpenSCAD template",
     description:
-      "Single .scad file that extrudes a Simplified SVG. Tweak thickness or scale, then re-render the STLs yourself.",
+      "WORK IN PROGRESS: Single .scad file that extrudes a Simplified SVG. Tweak thickness or scale, then re-render the STLs yourself.",
   },
   {
     key: "stl",
     label: "3D-printable STLs",
     description:
-      "Pre-built per-layer STLs (4 per pattern). Drop into a slicer and print as a multi-material piece.",
+      "WORK IN PROGRESS: Pre-built per-layer STLs (4 per pattern). Drop into a slicer and print as a multi-material piece.",
   },
 ];
 
 export function PuzzlePieceDownload({ locals, svgNameFor, filename }: Props) {
-  const [formats, setFormats] = useState<FormatOptions>(ALL_FORMATS);
+  const [formats, setFormats] = useState<FormatOptions>(DEFAULT_FORMATS);
   const [errors, setErrors] = useState<string[]>([]);
   const [downloading, setDownloading] = useState(false);
   const [formatsOpen, setFormatsOpen] = useState(false);
@@ -84,7 +91,7 @@ export function PuzzlePieceDownload({ locals, svgNameFor, filename }: Props) {
   }
 
   const buttonLabel = downloading
-    ? "Building ZIP…"
+    ? "Building ZIP …"
     : `Download ${locals.length} pattern${locals.length === 1 ? "" : "s"}`;
 
   const disclosureLabel = disclosureStatus({
