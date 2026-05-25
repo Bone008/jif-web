@@ -5,7 +5,7 @@ import {
 } from "../src/utils/interface_shapes.ts";
 
 // --- main ---
-const inputFile = process.argv[2] || "scripts/data/P6.txt";
+const inputFile = process.argv[2] || "src/data/P6.txt";
 const outputFile =
   process.argv[3] || inputFile.replace(/\.txt$/, "_grouped.txt");
 

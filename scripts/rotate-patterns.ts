@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from "fs";
 // cyclic rotation whose comparison key is lexicographically maximal. The
 // comparison key treats 8 as equivalent to 2 and a (= 10) as equivalent to 4.
 
-const inputFile = process.argv[2] || "scripts/data/P6.txt";
+const inputFile = process.argv[2] || "src/data/P6.txt";
 const outputFile = process.argv[3] || inputFile;
 
 function substitute(c: string): string {

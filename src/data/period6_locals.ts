@@ -1,9 +1,9 @@
 /**
  * Catalog of period-6 local siteswaps (length-3, 2-juggler async). Sourced from
- * scripts/data/P6.txt.
+ * src/data/P6.txt.
  */
 
-import p6Text from "../../scripts/data/P6.txt?raw";
+import p6Text from "./P6.txt?raw";
 
 export const PUZZLE_THROW_DIGITS = [
   "2",

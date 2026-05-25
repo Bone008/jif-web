@@ -3,8 +3,8 @@
 This is how many patterns ("unique local sequence per person") we counted for throws
 of the given range, always excluding 0s, 1s and 3s.
 
-For the full pattern list, see [P6.txt](/scripts/data/P6.txt) and
-[P10.txt](/scripts/data/P10.txt).
+For the full pattern list, see [P6.txt](/src/data/P6.txt) and
+[P10.txt](/src/data/P10.txt).
 
 Period 6:
 
@@ -30,8 +30,8 @@ To run from repo root.
 for PATTERN_FILE in P6.txt P10.txt
 do
   echo $PATTERN_FILE:
-  cat scripts/data/$PATTERN_FILE | egrep "^[0-9]+$" | wc -l
-  cat scripts/data/$PATTERN_FILE | egrep "^[0-9a]+$" | wc -l
-  cat scripts/data/$PATTERN_FILE | egrep "^[0-9ab]+$" | wc -l
+  cat src/data/$PATTERN_FILE | egrep "^[0-9]+$" | wc -l
+  cat src/data/$PATTERN_FILE | egrep "^[0-9a]+$" | wc -l
+  cat src/data/$PATTERN_FILE | egrep "^[0-9ab]+$" | wc -l
 done
 ```
