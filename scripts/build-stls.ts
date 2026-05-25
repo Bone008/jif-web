@@ -2,8 +2,8 @@
  * Generates per-layer STL files for every period-6 local in
  * `src/data/P6.txt`. Output goes to:
  *
- *   public/scad/svg/<local>_layer<n>.svg  - single-layer preprocessed SVG
- *   public/stl/<local>_layer<n>.stl       - 3D-printable layer (n = 1..4)
+ *   public/svg-simplified/<local>_layer<n>.svg  - single-layer simplified SVG
+ *   public/stl/<local>_layer<n>.stl             - 3D-printable layer (n = 1..4)
  *
  * Pipeline per pattern:
  *   1. Render the same JaggedPieceSvg the live UI uses, with forExport=true
@@ -41,7 +41,7 @@ const REPO_ROOT = resolve(import.meta.dirname, "..");
 const P6_FILE = join(REPO_ROOT, "src/data/P6.txt");
 const SCAD_FILE = join(REPO_ROOT, "scad/puzzle_piece.scad");
 const STL_OUT = join(REPO_ROOT, "public/stl");
-const PREPROCESSED_SVG_OUT = join(REPO_ROOT, "public/scad/svg");
+const SIMPLIFIED_SVG_OUT = join(REPO_ROOT, "public/svg-simplified");
 
 const CONCURRENCY = Number(process.env.STL_CONCURRENCY ?? "4");
 
@@ -58,7 +58,7 @@ async function main() {
   }
 
   await mkdir(STL_OUT, { recursive: true });
-  await mkdir(PREPROCESSED_SVG_OUT, { recursive: true });
+  await mkdir(SIMPLIFIED_SVG_OUT, { recursive: true });
 
   // mkdtempSync is fine here — runs once at startup, not in a hot loop.
   const tmpRoot = mkdtempSync(join(tmpdir(), "jif-stl-"));
@@ -141,10 +141,7 @@ async function buildPiece(local: string, tmpRoot: string): Promise<void> {
   const flattened = await readFile(flattenedSvgPath, "utf-8");
   for (const layer of [1, 2, 3, 4]) {
     const layerSvg = extractLayerSvg(flattened, `layer${layer}`);
-    const layerSvgPath = join(
-      PREPROCESSED_SVG_OUT,
-      `${local}_layer${layer}.svg`,
-    );
+    const layerSvgPath = join(SIMPLIFIED_SVG_OUT, `${local}_layer${layer}.svg`);
     await writeFile(layerSvgPath, layerSvg);
 
     const stlPath = join(STL_OUT, `${local}_layer${layer}.stl`);

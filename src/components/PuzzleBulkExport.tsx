@@ -8,7 +8,7 @@ import {
   clubCountLabel,
   groupLocalsByPuzzleCategory,
 } from "../utils/interface_shapes";
-import { downloadPieceZip } from "../utils/zipPieces";
+import { PuzzlePieceDownload } from "./PuzzlePieceDownload";
 import "./PuzzleBulkExport.scss";
 
 /** Version string to include in the downloaded ZIP filename. */
@@ -42,8 +42,6 @@ const DEFAULT_CHECKED: Record<PuzzleThrowDigit, boolean> = {
 export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
   const [checked, setChecked] =
     useState<Record<PuzzleThrowDigit, boolean>>(DEFAULT_CHECKED);
-  const [errors, setErrors] = useState<string[]>([]);
-  const [downloading, setDownloading] = useState(false);
 
   const qualifying = useMemo(() => {
     const allowed = new Set(
@@ -59,40 +57,30 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
     [qualifying],
   );
 
+  // Build a local → category-prefix map so files are named e.g. "x.2--a45".
+  // For the "x.5, ..." groups, drop the ", N passes" suffix.
+  const { svgNameFor, filename } = useMemo(() => {
+    const categoryByLocal = new Map<string, string>();
+    for (const [groupLabel, groupLocals] of groups.entries()) {
+      const prefix = groupLabel.split(",")[0].trim();
+      for (const local of groupLocals) {
+        categoryByLocal.set(local, prefix);
+      }
+    }
+    const checkedDigits = PUZZLE_THROW_DIGITS.filter((d) => checked[d]).join(
+      "",
+    );
+    return {
+      svgNameFor: (local: string) => {
+        const prefix = categoryByLocal.get(local);
+        return prefix ? `${prefix}--${local}` : local;
+      },
+      filename: `puzzle-pieces-${VERSION_FOR_ZIP}-${checkedDigits}.zip`,
+    };
+  }, [groups, checked]);
+
   function toggle(digit: PuzzleThrowDigit) {
     setChecked((prev) => ({ ...prev, [digit]: !prev[digit] }));
-  }
-
-  async function handleDownload() {
-    if (qualifying.length === 0) return;
-    setDownloading(true);
-    setErrors([]);
-    try {
-      const checkedDigits = PUZZLE_THROW_DIGITS.filter((d) => checked[d]).join(
-        "",
-      );
-      const filename = `puzzle-pieces-${VERSION_FOR_ZIP}-${checkedDigits}.zip`;
-      // Build a local → category-prefix map so SVGs are named e.g. "x.2--a45".
-      // For the "x.5, ..." groups, drop the ", N passes" suffix.
-      const categoryByLocal = new Map<string, string>();
-      for (const [groupLabel, groupLocals] of groups.entries()) {
-        const prefix = groupLabel.split(",")[0].trim();
-        for (const local of groupLocals) {
-          categoryByLocal.set(local, prefix);
-        }
-      }
-      const result = await downloadPieceZip(qualifying, {
-        doubled: true,
-        filename,
-        svgNameFor: (local) => {
-          const prefix = categoryByLocal.get(local);
-          return prefix ? `${prefix}--${local}` : local;
-        },
-      });
-      setErrors(result.errors);
-    } finally {
-      setDownloading(false);
-    }
   }
 
   return (
@@ -122,19 +110,11 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
           ))}
         </div>
 
-        <div className="puzzle-bulk-export__summary">
-          <button
-            type="button"
-            onClick={handleDownload}
-            disabled={qualifying.length === 0 || downloading}
-          >
-            {downloading ? "Building ZIP …" : "Download SVGs"}
-          </button>
-          <span className="puzzle-bulk-export__count">
-            {qualifying.length} pattern{qualifying.length === 1 ? "" : "s"}{" "}
-            match
-          </span>
-        </div>
+        <PuzzlePieceDownload
+          locals={qualifying}
+          svgNameFor={svgNameFor}
+          filename={filename}
+        />
 
         <div className="puzzle-bulk-export__groups">
           {GROUP_ROWS.map((row, rowIndex) => {
@@ -183,14 +163,6 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
             );
           })}
         </div>
-
-        {errors.length > 0 && (
-          <div className="puzzle-bulk-export__errors">
-            {errors.map((err, i) => (
-              <div key={i}>{err}</div>
-            ))}
-          </div>
-        )}
       </div>
     </>
   );

@@ -69,4 +69,42 @@ describe("PuzzleBulkExport zip generation", () => {
     expect(svgEntries).toHaveLength(131);
     expect(svgEntries.every((name) => name.startsWith("svg/"))).toBe(true);
   });
+
+  it("omits original SVGs when formats.originalSvg is false", () => {
+    const { zip } = buildPieceZip(["522", "655"], {
+      doubled: true,
+      formats: {
+        originalSvg: false,
+        simplifiedSvg: false,
+        stl: false,
+        scadTemplate: true,
+      },
+    });
+    expect(zipEntries(zip)).toEqual(["scad/puzzle_piece.scad"]);
+  });
+
+  it("omits the OpenSCAD template when formats.scadTemplate is false", () => {
+    const { zip } = buildPieceZip(["522"], {
+      doubled: true,
+      formats: {
+        originalSvg: true,
+        simplifiedSvg: false,
+        stl: false,
+        scadTemplate: false,
+      },
+    });
+    expect(zip.files["scad/puzzle_piece.scad"]).toBeUndefined();
+    expect(zipEntries(zip)).toEqual(["svg/522.svg"]);
+  });
 });
+
+/** Real file entries in the zip — JSZip auto-adds parent folder entries
+ *  (e.g. "scad/") alongside the files we explicitly write, and those aren't
+ *  useful for assertions about which files are present. */
+function zipEntries(zip: {
+  files: Record<string, { dir: boolean }>;
+}): string[] {
+  return Object.keys(zip.files)
+    .filter((name) => !zip.files[name].dir)
+    .sort();
+}
