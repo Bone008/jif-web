@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { JaggedPieceSvg } from "../components/InterfaceJaggedPiece";
+import { JaggedPieceSvg } from "../components/JaggedPieceSvg";
 import { FullJIF } from "../jif/jif_loader";
 import { inferIsSynchronousPattern } from "../jif/util";
 

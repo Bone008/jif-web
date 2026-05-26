@@ -40,25 +40,71 @@ describe("PuzzleBulkExport zip generation", () => {
     expect(DEFAULT_ZIP_FILENAME).toBe("puzzle-pieces.zip");
   });
 
-  it("names each SVG file after its local pattern", () => {
+  it("places each SVG under svg/<local>.svg", () => {
     const locals = ["522", "655", "a45", "bbb"];
     const { zip, errors } = buildPieceZip(locals, { doubled: true });
     expect(errors).toEqual([]);
-    expect(Object.keys(zip.files).sort()).toEqual([
-      "522.svg",
-      "655.svg",
-      "a45.svg",
-      "bbb.svg",
+    const svgEntries = Object.keys(zip.files)
+      .filter((name) => name.endsWith(".svg"))
+      .sort();
+    expect(svgEntries).toEqual([
+      "svg/522.svg",
+      "svg/655.svg",
+      "svg/a45.svg",
+      "svg/bbb.svg",
     ]);
+  });
+
+  it("ships the OpenSCAD template at scad/puzzle_piece.scad", () => {
+    const { zip } = buildPieceZip(["522"], { doubled: true });
+    expect(zip.files["scad/puzzle_piece.scad"]).toBeDefined();
   });
 
   it("contains one SVG per qualifying pattern when given the full P6 list", () => {
     const { zip, errors } = buildPieceZip(PERIOD_6_LOCALS, { doubled: true });
     expect(errors).toEqual([]);
-    expect(Object.keys(zip.files)).toHaveLength(131);
-    // Every entry ends in .svg
-    expect(Object.keys(zip.files).every((name) => name.endsWith(".svg"))).toBe(
-      true,
+    const svgEntries = Object.keys(zip.files).filter((name) =>
+      name.endsWith(".svg"),
     );
+    expect(svgEntries).toHaveLength(131);
+    expect(svgEntries.every((name) => name.startsWith("svg/"))).toBe(true);
+  });
+
+  it("omits original SVGs when formats.originalSvg is false", () => {
+    const { zip } = buildPieceZip(["522", "655"], {
+      doubled: true,
+      formats: {
+        originalSvg: false,
+        simplifiedSvg: false,
+        stl: false,
+        scadTemplate: true,
+      },
+    });
+    expect(zipEntries(zip)).toEqual(["scad/puzzle_piece.scad"]);
+  });
+
+  it("omits the OpenSCAD template when formats.scadTemplate is false", () => {
+    const { zip } = buildPieceZip(["522"], {
+      doubled: true,
+      formats: {
+        originalSvg: true,
+        simplifiedSvg: false,
+        stl: false,
+        scadTemplate: false,
+      },
+    });
+    expect(zip.files["scad/puzzle_piece.scad"]).toBeUndefined();
+    expect(zipEntries(zip)).toEqual(["svg/522.svg"]);
   });
 });
+
+/** Real file entries in the zip — JSZip auto-adds parent folder entries
+ *  (e.g. "scad/") alongside the files we explicitly write, and those aren't
+ *  useful for assertions about which files are present. */
+function zipEntries(zip: {
+  files: Record<string, { dir: boolean }>;
+}): string[] {
+  return Object.keys(zip.files)
+    .filter((name) => !zip.files[name].dir)
+    .sort();
+}

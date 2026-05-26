@@ -40,18 +40,6 @@
     }
   }
 
-  &__summary {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 1rem;
-  }
-
-  &__count {
-    font-size: 0.9em;
-    opacity: 0.8;
-  }
-
   &__groups {
     display: flex;
     flex-direction: column;
@@ -113,11 +101,5 @@
     font-size: 0.8em;
     padding: 0.1rem 0.4rem;
     margin-right: -0.2rem;
-  }
-
-  &__errors {
-    color: red;
-    font-size: 0.9em;
-    white-space: pre-wrap;
   }
 }
