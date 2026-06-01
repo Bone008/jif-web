@@ -392,7 +392,7 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
       warningNote: "Claude did wrong and Lukas didn't catch on!",
     },
     {
-      name: "#2.5 - Unnamed (to juggle!)",
+      name: "#2.5 - Ambled "Guck in die Luft",
       instructions: RAW_DATA_WALKING_FEED_10C,
       manipulators: ["- - sA i2C - - -"],
     },
