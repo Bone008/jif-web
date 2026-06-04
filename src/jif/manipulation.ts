@@ -9,6 +9,12 @@ export interface ManipulatorInstruction {
   throwFromJuggler: number;
 }
 
+export interface ParsedManipulator {
+  /** Optional user-provided label for the manipulator (e.g. "M_Toast"). */
+  label?: string;
+  instructions: ManipulatorInstruction[];
+}
+
 type AlmostFullJIF = FullJIF & {
   limbs: Limb[];
   throws: Throw[];
@@ -17,8 +23,9 @@ type AlmostFullJIF = FullJIF & {
 /** Returns a copy of the input JIF with the given manipulator added. */
 export function addManipulator(
   inputJif: FullJIF,
-  spec: ManipulatorInstruction[],
+  manipulator: ParsedManipulator,
 ): FullJIF {
+  let { label, instructions: spec } = manipulator;
   // Drop some of the recursive completeness constraints.
   const jif: AlmostFullJIF = _.cloneDeep(inputJif);
   const period = jif.repetition.period;
@@ -29,7 +36,7 @@ export function addManipulator(
   let manipLimb = jif.limbs.length;
   let manipAltLimb = manipLimb + 1;
   jif.jugglers.push({
-    label: getNextManipulatorLabel(jif),
+    label: label ?? getNextManipulatorLabel(jif),
     becomes: manipIndex,
   });
   jif.limbs.push({ kind: "right_hand", juggler: manipIndex });
@@ -316,6 +323,40 @@ export function getThrowFromJuggler(
       (thrw) => thrw.time === time && jif.limbs[thrw.from!].juggler === j,
     ) || null
   );
+}
+
+/**
+ * Resolves display labels for a sequence of manipulators given their (optional)
+ * custom labels, mirroring how `addManipulator` would auto-name unlabeled ones.
+ */
+export function resolveManipulatorLabels(
+  customLabels: (string | undefined)[],
+): string[] {
+  const resolved: string[] = [];
+  for (const custom of customLabels) {
+    if (custom) {
+      resolved.push(custom);
+      continue;
+    }
+    const mLabels = resolved.filter((l) => l.startsWith("M"));
+    if (mLabels.length === 0) {
+      resolved.push("M");
+      continue;
+    }
+    const plainIdx = resolved.indexOf("M");
+    if (plainIdx !== -1) {
+      resolved[plainIdx] = "M1";
+    }
+    let maxNumber = 1;
+    for (const l of resolved) {
+      const match = l.match(/^M(\d+)$/);
+      if (match) {
+        maxNumber = Math.max(maxNumber, parseInt(match[1], 10));
+      }
+    }
+    resolved.push(`M${maxNumber + 1}`);
+  }
+  return resolved;
 }
 
 /**

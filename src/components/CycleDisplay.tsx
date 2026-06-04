@@ -1,6 +1,7 @@
 import "./CycleDisplay.scss";
 import { FullJIF } from "../jif/jif_loader";
 import { getJugglerCycle, getLimbCycle } from "../jif/cycles";
+import { FormattedLabel } from "./labelFormat";
 
 /** Shows the full cycle of roles that jugglers go through for a pattern. */
 export function CycleDisplay({
@@ -23,7 +24,7 @@ export function CycleDisplay({
         Cycle:&nbsp;&nbsp;&nbsp;
         {cycle.map((label, i) => (
           <span key={i}>
-            {label}
+            {isLimbsTable ? label : <FormattedLabel label={label} />}
             {i < cycle.length - 1 ? <> &rarr; </> : ""}
           </span>
         ))}

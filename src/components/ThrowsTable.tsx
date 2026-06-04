@@ -1,10 +1,11 @@
 import { MathJax as UncachedMathJax } from "better-react-mathjax";
 import _ from "lodash";
-import { memo, useId, useMemo, useState } from "react";
+import { memo, ReactNode, useId, useMemo, useState } from "react";
 import { FullJIF, FullThrow } from "../jif/jif_loader";
 import { ThrowsTableData, calculateOrbits } from "../jif/orbits";
 import { inferIsSynchronousPattern, wrapJuggler, wrapLimb } from "../jif/util";
 import { ArrowData, ArrowOverlay } from "./ArrowOverlay";
+import { FormattedLabel, formatLabelMathJax } from "./labelFormat";
 import "./ThrowsTable.scss";
 import { useViewSettings } from "./ViewSettings";
 
@@ -41,6 +42,8 @@ export function ThrowsTable({
   throws: ThrowsTableData;
   manipulationOptions?: {
     formattedManipulators: FormattedManipulatorInstruction[][];
+    /** Resolved label per manipulator (e.g. "M", "M1", "M_Toast"). */
+    manipulatorLabels: string[];
     onSetInstructionDisabled: (
       manipulatorIndex: number,
       instructionIndex: number,
@@ -78,12 +81,10 @@ export function ThrowsTable({
   );
   const useLetters = isSynchronous && hasOnly3Throws;
 
-  const manipulatorNameSuffixes =
-    manipulationOptions?.formattedManipulators.length === 1
-      ? [null]
-      : (manipulationOptions?.formattedManipulators.map((_, i) => (
-          <sub key={i}>{i + 1}</sub>
-        )) ?? []);
+  const manipulatorNames =
+    manipulationOptions?.manipulatorLabels.map((label) => (
+      <FormattedLabel label={label} />
+    )) ?? [];
 
   function onThrowMouseEnter(hoverKey: string) {
     setHoveredKey(hoverKey);
@@ -102,8 +103,10 @@ export function ThrowsTable({
   }
 
   const labelFn = isLimbsTable
-    ? (limbIndex: number) => limbIndex
-    : (jugglerIndex: number) => jif.jugglers[jugglerIndex]?.label ?? "?";
+    ? (limbIndex: number): ReactNode => limbIndex
+    : (jugglerIndex: number): ReactNode => (
+        <FormattedLabel label={jif.jugglers[jugglerIndex]?.label ?? "?"} />
+      );
   const becomesFn = isLimbsTable
     ? (limbIndex: number) => jif.repetition.limbPermutation[limbIndex]
     : (jugglerIndex: number) => jif.jugglers[jugglerIndex].becomes;
@@ -199,7 +202,7 @@ export function ThrowsTable({
         <tfoot>
           {manipulationOptions?.formattedManipulators.map((manipulator, m) => (
             <tr key={m} className="line__m">
-              <td>M{manipulatorNameSuffixes[m]}</td>
+              <td>{manipulatorNames[m]}</td>
               {manipulator.map((instruction, t) => {
                 const instructionHoverKey = instruction.originalThrow
                   ? hoverKeyFn(
@@ -239,7 +242,7 @@ export function ThrowsTable({
                   </td>
                 );
               })}
-              <td>&rarr; M{manipulatorNameSuffixes[m]}</td>
+              <td>&rarr; {manipulatorNames[m]}</td>
             </tr>
           ))}
         </tfoot>
@@ -300,7 +303,7 @@ function ThrowCell({
     }
   }
   if (isPass) {
-    label += `_{${jif.jugglers[toJuggler]?.label ?? "?"}}`;
+    label += `_{${formatLabelMathJax(jif.jugglers[toJuggler]?.label ?? "?")}}`;
   }
   if (viewSettings.showHands) {
     // TODO: colorize, for some reason \textcolor does not work

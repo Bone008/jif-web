@@ -829,7 +829,8 @@ describe("prechacToJif", () => {
 describe("parseManipulator", () => {
   it("parses substitute instruction", () => {
     const result = parseManipulator("sA");
-    expect(result).toMatchInlineSnapshot(`
+    expect(result.label).toBeUndefined();
+    expect(result.instructions).toMatchInlineSnapshot(`
       [
         {
           "throwFromJuggler": 0,
@@ -842,7 +843,7 @@ describe("parseManipulator", () => {
 
   it("parses intercept 2-beat instruction", () => {
     const result = parseManipulator("i2B");
-    expect(result).toMatchInlineSnapshot(`
+    expect(result.instructions).toMatchInlineSnapshot(`
       [
         {
           "throwFromJuggler": 1,
@@ -855,7 +856,7 @@ describe("parseManipulator", () => {
 
   it("parses intercept 1-beat instruction", () => {
     const result = parseManipulator("i1C");
-    expect(result).toMatchInlineSnapshot(`
+    expect(result.instructions).toMatchInlineSnapshot(`
       [
         {
           "throwFromJuggler": 2,
@@ -868,7 +869,7 @@ describe("parseManipulator", () => {
 
   it("parses shorthand intercept as 2-beat", () => {
     const result = parseManipulator("iA");
-    expect(result).toMatchInlineSnapshot(`
+    expect(result.instructions).toMatchInlineSnapshot(`
       [
         {
           "throwFromJuggler": 0,
@@ -881,7 +882,7 @@ describe("parseManipulator", () => {
 
   it("parses 3-count roundabout manipulator", () => {
     const result = parseManipulator("sA - i1B");
-    expect(result).toMatchInlineSnapshot(`
+    expect(result.instructions).toMatchInlineSnapshot(`
       [
         {
           "throwFromJuggler": 0,
@@ -899,7 +900,7 @@ describe("parseManipulator", () => {
 
   it("parses 4-count roundabout manipulator", () => {
     const result = parseManipulator("sA - sB - i2A");
-    expect(result).toMatchInlineSnapshot(`
+    expect(result.instructions).toMatchInlineSnapshot(`
       [
         {
           "throwFromJuggler": 0,
@@ -922,7 +923,7 @@ describe("parseManipulator", () => {
 
   it("parses scrambled B manipulator", () => {
     const result = parseManipulator("i2A - - - sB");
-    expect(result).toMatchInlineSnapshot(`
+    expect(result.instructions).toMatchInlineSnapshot(`
       [
         {
           "throwFromJuggler": 0,
@@ -940,7 +941,7 @@ describe("parseManipulator", () => {
 
   it("handles multiple consecutive dashes", () => {
     const result = parseManipulator("sA --- iB");
-    expect(result).toMatchInlineSnapshot(`
+    expect(result.instructions).toMatchInlineSnapshot(`
       [
         {
           "throwFromJuggler": 0,
@@ -954,5 +955,30 @@ describe("parseManipulator", () => {
         },
       ]
     `);
+  });
+
+  it("parses label prefix", () => {
+    const result = parseManipulator("M_Toast: sA - - i2B");
+    expect(result.label).toBe("M_Toast");
+    expect(result.instructions).toMatchInlineSnapshot(`
+      [
+        {
+          "throwFromJuggler": 0,
+          "throwTime": 0,
+          "type": "substitute",
+        },
+        {
+          "throwFromJuggler": 1,
+          "throwTime": 3,
+          "type": "intercept2b",
+        },
+      ]
+    `);
+  });
+
+  it("trims whitespace around label", () => {
+    const result = parseManipulator("  Toast  :sA");
+    expect(result.label).toBe("Toast");
+    expect(result.instructions).toHaveLength(1);
   });
 });

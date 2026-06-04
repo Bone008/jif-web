@@ -13,6 +13,8 @@ import {
   addManipulator,
   getThrowFromJuggler,
   ManipulatorInstruction,
+  ParsedManipulator,
+  resolveManipulatorLabels,
 } from "../jif/manipulation";
 import {
   getThrowsTableByJuggler,
@@ -326,7 +328,8 @@ export function OrbitsCalculator() {
             <div className="label-text">Manipulator instructions</div>
             <div className="hint">
               e.g. &quot;sA - - i2B&quot; &mdash; s = substitute, i = intercept
-              (2-beat carry), i1 = 1-beat carry
+              (2-beat carry), i1 = 1-beat carry. Prefix with &quot;M_Name:&quot;
+              to label the manipulator.
             </div>
             <textarea
               value={manipulationInput}
@@ -377,9 +380,12 @@ export function OrbitsCalculator() {
             isLimbsTable={viewSettings.isLimbsTable}
             throws={throwsTable}
             manipulationOptions={
-              formattedManipulators
+              formattedManipulators && manipulators
                 ? {
                     formattedManipulators,
+                    manipulatorLabels: resolveManipulatorLabels(
+                      manipulators.map((m) => m.label),
+                    ),
                     onSetInstructionDisabled: (m, i, disabled) => {
                       const newDisabledInstructions =
                         _.cloneDeep(disabledInstructions);
@@ -478,14 +484,14 @@ function processManipulationInput(
   jif: FullJIF,
 ): {
   error?: string;
-  manipulators?: ManipulatorInstruction[][];
+  manipulators?: ParsedManipulator[];
   formattedManipulators?: FormattedManipulatorInstruction[][];
 } {
   const lines = getCleanedLines(manipulationInput);
   try {
     const manipulators = lines.map(parseManipulator);
-    const formattedManipulators = manipulators.map((spec, m) =>
-      formatManipulator(jif, spec, disabledInstructions[m] ?? []),
+    const formattedManipulators = manipulators.map(({ instructions }, m) =>
+      formatManipulator(jif, instructions, disabledInstructions[m] ?? []),
     );
     return { manipulators, formattedManipulators };
   } catch (e) {
@@ -496,7 +502,7 @@ function processManipulationInput(
 
 function applyManipulators(
   jif: FullJIF,
-  manipulators: ManipulatorInstruction[][],
+  manipulators: ParsedManipulator[],
   disabledInstructions: boolean[][],
   isLimbsTable: boolean,
 ): {
@@ -507,15 +513,17 @@ function applyManipulators(
   try {
     let jifWithManipulation = jif;
     for (let m = 0; m < manipulators.length; m++) {
-      const manipulator = manipulators[m];
+      const { label, instructions } = manipulators[m];
       // Strip out disabled instructions.
       const disabledLine = disabledInstructions[m] ?? [];
-      const activeManipulator = manipulator.filter((_, i) => !disabledLine[i]);
-
-      jifWithManipulation = addManipulator(
-        jifWithManipulation,
-        activeManipulator,
+      const activeInstructions = instructions.filter(
+        (_, i) => !disabledLine[i],
       );
+
+      jifWithManipulation = addManipulator(jifWithManipulation, {
+        label,
+        instructions: activeInstructions,
+      });
     }
 
     const throwsTable = isLimbsTable

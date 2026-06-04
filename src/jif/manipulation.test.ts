@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { loadPresetBySlug } from "./preset_loader";
+import { prechacToJif, parseManipulator } from "./high_level_converter";
+import { loadWithDefaults } from "./jif_loader";
+import { addManipulator } from "./manipulation";
 
 describe("addManipulator", () => {
   it("adds manipulator to Phoenician Waltz", () => {
@@ -1496,5 +1499,20 @@ describe("addManipulator", () => {
         ],
       }
     `);
+  });
+
+  it("uses custom label when provided", () => {
+    const baseJif = loadWithDefaults(prechacToJif(["3 3 3", "3 3 3"]));
+    const result = addManipulator(baseJif, {
+      label: "M_Toast",
+      instructions: [],
+    });
+    expect(result.jugglers.map((j) => j.label)).toEqual(["A", "B", "M_Toast"]);
+  });
+
+  it("parses and applies label from manipulator string", () => {
+    const baseJif = loadWithDefaults(prechacToJif(["3 3 3", "3 3 3"]));
+    const result = addManipulator(baseJif, parseManipulator("M_Toast: sA - -"));
+    expect(result.jugglers.map((j) => j.label)).toEqual(["A", "B", "M_Toast"]);
   });
 });

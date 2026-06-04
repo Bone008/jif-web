@@ -1,6 +1,6 @@
 import { JIF, Juggler, Throw } from "./jif";
 import { indexToJugglerName } from "./jif_loader";
-import { ManipulatorInstruction } from "./manipulation";
+import { ManipulatorInstruction, ParsedManipulator } from "./manipulation";
 
 export function siteswapToJIF(siteswap: string, numJugglers: number): JIF {
   const throwStrings = siteswap
@@ -138,11 +138,16 @@ function limbOfJuggler(
 }
 
 /** Parses text-based instructions for a single manipulator. */
-export function parseManipulator(
-  instructions: string,
-): ManipulatorInstruction[] {
+export function parseManipulator(instructions: string): ParsedManipulator {
+  let label: string | undefined;
+  const colonIndex = instructions.indexOf(":");
+  if (colonIndex !== -1) {
+    label = instructions.slice(0, colonIndex).trim();
+    instructions = instructions.slice(colonIndex + 1);
+  }
+
   const manipulator: ManipulatorInstruction[] = [];
-  const parts = instructions.split(/\s+/);
+  const parts = instructions.trim().split(/\s+/);
   for (const [beat, part] of parts.entries()) {
     if (part.match(/^-+$/)) {
       continue;
@@ -175,7 +180,7 @@ export function parseManipulator(
       throwFromJuggler: jugglerIndexFromLetter(match[2]),
     });
   }
-  return manipulator;
+  return { label, instructions: manipulator };
 }
 
 /** Returns 0-based index from a-based letter. */
