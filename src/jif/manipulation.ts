@@ -251,7 +251,89 @@ export function addManipulator(
     shiftPatternBy(jif, nShiftedBeats);
   }
 
+  simplifyManipulatedThrows(jif);
+
   return loadWithDefaults(jif);
+}
+
+/**
+ * Absorbs long manipulated throws into adjacent dur-0/1 throws. For each
+ * manipulated throw A at beat t with duration > 2 followed by a throw B at
+ * beat (t+1) mod period with duration < 2, swap the destination events so A
+ * lands where B did and vice versa, with A.duration -= 1 and B.duration += 1.
+ * The swap preserves every (canonical landing-time, canonical landing-limb)
+ * tuple — no new collisions — and preserves the duration sum (siteswap-valid).
+ * Iterates until no more swaps fire; cascades naturally — e.g.
+ * (4p, 1, 1) -> (2, 3p, 1) -> (2, 2, 2p).
+ *
+ * When the swap crosses the period boundary the destination limb stored on
+ * each throw must be adjusted by limbPermutation: A's new landing wraps a
+ * different number of times than B's original landing did (and vice versa).
+ *
+ * Per-beat M-role tracking is intentionally omitted: eligible B candidates
+ * (duration < 2) virtually never appear in normal juggler lines, so simply
+ * filtering by isManipulated on A is sufficient. If the base pattern does
+ * contain such a low throw, mutating it is acceptable.
+ */
+function simplifyManipulatedThrows(jif: AlmostFullJIF) {
+  const period = jif.repetition.period;
+  const perm = jif.repetition.limbPermutation;
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const a of jif.throws) {
+      if (!a.isManipulated) continue;
+      if (a.duration! <= 2) continue;
+
+      const tNext = (a.time! + 1) % period;
+      const b = jif.throws.find(
+        (t) => t !== a && t.time === tNext && t.duration! < 2,
+      );
+      if (!b) continue;
+
+      // A' lands where B originally landed, B' lands where A originally
+      // landed: a' = b+1 and b' = a-1 (sum preserved, swap is symmetric).
+      const newDurA = b.duration! + 1;
+      const newDurB = a.duration! - 1;
+
+      // Compute how many times each throw's landing wraps around the period.
+      const wA = Math.floor((a.time! + a.duration!) / period);
+      const wB = Math.floor((b.time! + b.duration!) / period);
+      const wAPrime = Math.floor((a.time! + newDurA) / period);
+      const wBPrime = Math.floor((b.time! + newDurB) / period);
+
+      // For the canonical landings to be preserved, A''s stored `to` must
+      // resolve (after wAPrime applications of perm) to the same canonical
+      // limb as B's original (wB applications of perm on B.to).
+      const newToA = applyLimbPerm(b.to!, wB - wAPrime, perm);
+      const newToB = applyLimbPerm(a.to!, wA - wBPrime, perm);
+
+      a.duration = newDurA;
+      a.to = newToA;
+      b.duration = newDurB;
+      b.to = newToB;
+      b.isManipulated = true;
+      changed = true;
+      break;
+    }
+  }
+}
+
+/** Applies limbPermutation k times (positive) or its inverse (-k times). */
+function applyLimbPerm(limb: number, k: number, perm: number[]): number {
+  let result = limb;
+  if (k > 0) {
+    for (let i = 0; i < k; i++) result = perm[result];
+  } else if (k < 0) {
+    for (let i = 0; i < -k; i++) {
+      const inv = perm.indexOf(result);
+      if (inv === -1) {
+        throw new Error("limbPermutation is not invertible");
+      }
+      result = inv;
+    }
+  }
+  return result;
 }
 
 /** Generates manipulator throws (1s) in the given half-open time interval [from, to). */

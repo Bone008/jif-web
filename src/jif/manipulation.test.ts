@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { loadPresetBySlug } from "./preset_loader";
 import { prechacToJif, parseManipulator } from "./high_level_converter";
-import { loadWithDefaults } from "./jif_loader";
+import { FullJIF, loadWithDefaults } from "./jif_loader";
 import { addManipulator } from "./manipulation";
 
 describe("addManipulator", () => {
@@ -117,11 +117,11 @@ describe("addManipulator", () => {
             "to": 0,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 0,
             "isManipulated": true,
             "time": 6,
-            "to": 5,
+            "to": 4,
           },
           {
             "duration": 3,
@@ -187,11 +187,11 @@ describe("addManipulator", () => {
             "to": 1,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 3,
             "isManipulated": true,
             "time": 7,
-            "to": 0,
+            "to": 3,
           },
           {
             "duration": 3,
@@ -208,32 +208,32 @@ describe("addManipulator", () => {
             "to": 5,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 5,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 7,
-            "to": 4,
+            "to": 5,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 2,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 8,
-            "to": 3,
+            "to": 0,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 4,
             "isManipulated": true,
             "time": 0,
-            "to": 3,
+            "to": 4,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 5,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 1,
-            "to": 4,
+            "to": 3,
           },
           {
             "duration": 1,
@@ -243,18 +243,18 @@ describe("addManipulator", () => {
             "to": 5,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 5,
             "isManipulated": true,
             "time": 3,
-            "to": 2,
+            "to": 5,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 4,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 4,
-            "to": 5,
+            "to": 2,
           },
           {
             "duration": 1,
@@ -402,11 +402,11 @@ describe("addManipulator", () => {
             "to": 8,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 0,
             "isManipulated": true,
             "time": 4,
-            "to": 3,
+            "to": 8,
           },
           {
             "duration": 3,
@@ -486,11 +486,11 @@ describe("addManipulator", () => {
             "to": 5,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 3,
             "isManipulated": true,
             "time": 7,
-            "to": 6,
+            "to": 3,
           },
           {
             "duration": 3,
@@ -507,32 +507,32 @@ describe("addManipulator", () => {
             "to": 9,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 9,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 7,
-            "to": 8,
+            "to": 9,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 2,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 8,
-            "to": 3,
+            "to": 6,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 8,
             "isManipulated": true,
             "time": 0,
-            "to": 3,
+            "to": 8,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 9,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 1,
-            "to": 8,
+            "to": 3,
           },
           {
             "duration": 1,
@@ -542,25 +542,25 @@ describe("addManipulator", () => {
             "to": 9,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 9,
             "isManipulated": true,
             "time": 3,
+            "to": 9,
+          },
+          {
+            "duration": 2,
+            "from": 8,
+            "isManipulated": true,
+            "time": 4,
             "to": 2,
           },
           {
-            "duration": 1,
-            "from": 8,
-            "isManipulated": false,
-            "time": 4,
-            "to": 9,
-          },
-          {
-            "duration": 1,
+            "duration": 2,
             "from": 9,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 5,
-            "to": 8,
+            "to": 3,
           },
           {
             "duration": 1,
@@ -570,11 +570,11 @@ describe("addManipulator", () => {
             "to": 6,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 6,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 4,
-            "to": 7,
+            "to": 6,
           },
           {
             "duration": 1,
@@ -584,18 +584,18 @@ describe("addManipulator", () => {
             "to": 0,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 0,
             "isManipulated": true,
             "time": 6,
-            "to": 9,
+            "to": 8,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 1,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 7,
-            "to": 0,
+            "to": 7,
           },
           {
             "duration": 1,
@@ -605,18 +605,18 @@ describe("addManipulator", () => {
             "to": 1,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 6,
             "isManipulated": true,
             "time": 0,
-            "to": 1,
+            "to": 6,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 7,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 1,
-            "to": 6,
+            "to": 1,
           },
           {
             "duration": 1,
@@ -647,11 +647,11 @@ describe("addManipulator", () => {
             "to": 5,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 5,
             "isManipulated": true,
             "time": 3,
-            "to": 6,
+            "to": 7,
           },
           {
             "duration": 1,
@@ -668,11 +668,11 @@ describe("addManipulator", () => {
             "to": 4,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 4,
             "isManipulated": true,
             "time": 6,
-            "to": 7,
+            "to": 0,
           },
           {
             "duration": 1,
@@ -781,11 +781,11 @@ describe("addManipulator", () => {
         },
         "throws": [
           {
-            "duration": 3,
+            "duration": 2,
             "from": 0,
             "isManipulated": true,
             "time": 0,
-            "to": 7,
+            "to": 6,
           },
           {
             "duration": 3,
@@ -837,11 +837,11 @@ describe("addManipulator", () => {
             "to": 6,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 2,
             "isManipulated": true,
             "time": 2,
-            "to": 7,
+            "to": 2,
           },
           {
             "duration": 3,
@@ -921,32 +921,32 @@ describe("addManipulator", () => {
             "to": 7,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 7,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 1,
-            "to": 6,
+            "to": 7,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 3,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 3,
-            "to": 2,
+            "to": 7,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 2,
             "isManipulated": true,
             "time": 4,
-            "to": 1,
+            "to": 2,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 3,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 5,
-            "to": 2,
+            "to": 1,
           },
         ],
       }
@@ -1055,11 +1055,11 @@ describe("addManipulator", () => {
             "to": 0,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 0,
             "isManipulated": true,
             "time": 2,
-            "to": 7,
+            "to": 6,
           },
           {
             "duration": 3,
@@ -1153,11 +1153,11 @@ describe("addManipulator", () => {
             "to": 6,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 4,
             "isManipulated": true,
             "time": 4,
-            "to": 7,
+            "to": 4,
           },
           {
             "duration": 3,
@@ -1181,32 +1181,32 @@ describe("addManipulator", () => {
             "to": 7,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 7,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 3,
-            "to": 6,
+            "to": 7,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 5,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 5,
-            "to": 4,
+            "to": 7,
           },
           {
-            "duration": 3,
+            "duration": 2,
             "from": 6,
             "isManipulated": true,
             "time": 0,
-            "to": 3,
+            "to": 6,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 7,
-            "isManipulated": false,
+            "isManipulated": true,
             "time": 1,
-            "to": 6,
+            "to": 3,
           },
         ],
       }
@@ -1343,11 +1343,11 @@ describe("addManipulator", () => {
             "to": 6,
           },
           {
-            "duration": 4,
+            "duration": 2,
             "from": 0,
             "isManipulated": true,
             "time": 6,
-            "to": 4,
+            "to": 0,
           },
           {
             "duration": 3,
@@ -1357,11 +1357,11 @@ describe("addManipulator", () => {
             "to": 3,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 3,
             "isManipulated": true,
             "time": 1,
-            "to": 6,
+            "to": 1,
           },
           {
             "duration": 3,
@@ -1420,7 +1420,7 @@ describe("addManipulator", () => {
             "to": 5,
           },
           {
-            "duration": 4,
+            "duration": 2,
             "from": 5,
             "isManipulated": true,
             "time": 3,
@@ -1455,46 +1455,46 @@ describe("addManipulator", () => {
             "to": 1,
           },
           {
-            "duration": 1,
-            "from": 7,
-            "isManipulated": false,
-            "time": 3,
-            "to": 6,
-          },
-          {
-            "duration": 1,
-            "from": 6,
-            "isManipulated": false,
-            "time": 4,
-            "to": 7,
-          },
-          {
-            "duration": 1,
-            "from": 7,
-            "isManipulated": false,
-            "time": 5,
-            "to": 6,
-          },
-          {
-            "duration": 1,
-            "from": 6,
-            "isManipulated": false,
-            "time": 0,
-            "to": 7,
-          },
-          {
-            "duration": 4,
+            "duration": 2,
             "from": 7,
             "isManipulated": true,
-            "time": 1,
+            "time": 3,
             "to": 1,
           },
           {
-            "duration": 1,
+            "duration": 2,
             "from": 6,
-            "isManipulated": false,
-            "time": 2,
+            "isManipulated": true,
+            "time": 4,
+            "to": 6,
+          },
+          {
+            "duration": 2,
+            "from": 7,
+            "isManipulated": true,
+            "time": 5,
             "to": 7,
+          },
+          {
+            "duration": 2,
+            "from": 6,
+            "isManipulated": true,
+            "time": 0,
+            "to": 6,
+          },
+          {
+            "duration": 2,
+            "from": 7,
+            "isManipulated": true,
+            "time": 1,
+            "to": 7,
+          },
+          {
+            "duration": 2,
+            "from": 6,
+            "isManipulated": true,
+            "time": 2,
+            "to": 6,
           },
         ],
       }
@@ -1514,5 +1514,47 @@ describe("addManipulator", () => {
     const baseJif = loadWithDefaults(prechacToJif(["3 3 3", "3 3 3"]));
     const result = addManipulator(baseJif, parseManipulator("M_Toast: sA - -"));
     expect(result.jugglers.map((j) => j.label)).toEqual(["A", "B", "M_Toast"]);
+  });
+});
+
+describe("simplifyManipulatedThrows", () => {
+  // The manipulator M is juggler 2, limbs 4 (R) and 5 (L).
+  // Lists each manipulator-row throw's duration alongside whether it's "self"
+  // (lands on M's own limb) or a pass labelled "p" (lands elsewhere).
+  function describeManipRow(jif: FullJIF): string[] {
+    const period = jif.repetition.period;
+    const out: string[] = [];
+    for (let t = 0; t < period; t++) {
+      const thrw = jif.throws.find(
+        (x) => x.time === t && jif.limbs[x.from].juggler === 2,
+      );
+      if (!thrw) {
+        out.push("-");
+        continue;
+      }
+      const toJ = jif.limbs[thrw.to].juggler;
+      out.push(`${thrw.duration}${toJ === 2 ? "" : "p"}`);
+    }
+    return out;
+  }
+
+  it("simplifies (3p, 1) into (2, 2p)", () => {
+    // 3-count, M substitutes A on beat 0. Then M idles for two beats.
+    // Original M row would be 3p, 1, 1. After simplification: 2, 2p, 1.
+    const baseJif = loadWithDefaults(prechacToJif(["3B 3 3", "3A 3 3"]));
+    const result = addManipulator(baseJif, parseManipulator("sA - -"));
+    expect(describeManipRow(result)).toEqual(["2", "2p", "1"]);
+  });
+
+  it("cascades a longer pass through multiple idle 1s", () => {
+    // Choptopus is a Walking Feed 10c (has 4p throws) with an intercept2C
+    // manipulator. The intercept produces a 4p that is followed by enough
+    // idle beats to fully absorb into (2, 2, 2p).
+    const result = loadPresetBySlug("ambled-choptopus");
+    // After simplification, no manipulated throw should have duration > 2.
+    const longManip = result.throws.filter(
+      (t) => t.isManipulated && t.duration > 2,
+    );
+    expect(longManip).toEqual([]);
   });
 });
