@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import {
-  PERIOD_6_BEGINNER_LOCALS,
+  classifyDifficulty,
   PERIOD_6_LOCALS,
   PUZZLE_THROW_DIGITS,
   PuzzleThrowDigit,
@@ -10,6 +10,7 @@ import {
   clubCountLabel,
   groupLocalsByPuzzleCategory,
 } from "../utils/interface_shapes";
+import { DifficultyHexagons } from "./JaggedPieceSvg";
 import { PuzzlePieceDownload } from "./PuzzlePieceDownload";
 import "./PuzzleBulkExport.scss";
 
@@ -53,6 +54,69 @@ const DEFAULT_REQUIRED: Record<PuzzleThrowDigit, boolean> = {
   b: false,
 };
 
+// Allowed-throw presets used by the set picker.
+const ALLOWED_UP_TO_9: Record<PuzzleThrowDigit, boolean> = {
+  "2": true,
+  "4": true,
+  "5": true,
+  "6": true,
+  "7": true,
+  "8": true,
+  "9": true,
+  a: false,
+  b: false,
+};
+
+const ALLOWED_UP_TO_B: Record<PuzzleThrowDigit, boolean> = {
+  "2": true,
+  "4": true,
+  "5": true,
+  "6": true,
+  "7": true,
+  "8": true,
+  "9": true,
+  a: true,
+  b: true,
+};
+
+type SetId = "beginner" | "main" | "triple";
+
+interface SetConfig {
+  id: SetId;
+  label: string;
+  /** Difficulty level this set maps to; selecting it filters by this exactly. */
+  difficulty: number;
+  allowed: Record<PuzzleThrowDigit, boolean>;
+  includeOneCounts: boolean;
+}
+
+// Each set maps to a full filter configuration. While a set is selected the
+// list is filtered to exactly that difficulty level; the other fields keep the
+// filter combo boxes in sync. The beginner set only contains throws 2-9.
+const SET_CONFIGS: SetConfig[] = [
+  {
+    id: "beginner",
+    label: "Beginner set",
+    difficulty: 1,
+    allowed: ALLOWED_UP_TO_9,
+    includeOneCounts: false,
+  },
+  {
+    id: "main",
+    label: "Main set",
+    difficulty: 2,
+    allowed: ALLOWED_UP_TO_9,
+    includeOneCounts: false,
+  },
+  {
+    id: "triple",
+    label: "Triples set",
+    difficulty: 3,
+    allowed: ALLOWED_UP_TO_B,
+    includeOneCounts: false,
+  },
+];
+
 export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
   const [allowedChecked, setAllowedChecked] = useLocalStorage<
     Record<PuzzleThrowDigit, boolean>
@@ -64,9 +128,9 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
     "puzzleIncludeOneCounts",
     true,
   );
-  const [beginnerFriendly, setBeginnerFriendly] = useLocalStorage<boolean>(
-    "puzzleBeginnerFriendly",
-    false,
+  const [selectedSet, setSelectedSet] = useLocalStorage<SetId | null>(
+    "puzzleSelectedSet",
+    null,
   );
 
   const qualifying = useMemo(() => {
@@ -77,6 +141,14 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
       (d) => requiredChecked[d],
     );
     return PERIOD_6_LOCALS.filter((local) => {
+      // A selected set filters the list to exactly its difficulty level.
+      if (selectedSet) {
+        const level = SET_CONFIGS.find((c) => c.id === selectedSet)?.difficulty;
+        if (classifyDifficulty(local) !== level) {
+          return false;
+        }
+      }
+
       if (!local.split("").every((ch) => allowedDigits.has(ch))) return false;
       if (!requiredDigits.every((d) => local.includes(d))) return false;
       // "one counts" are patterns where every throw (hex digit) is odd.
@@ -86,11 +158,9 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
       ) {
         return false;
       }
-      if (beginnerFriendly && !PERIOD_6_BEGINNER_LOCALS.has(local))
-        return false;
       return true;
     });
-  }, [allowedChecked, requiredChecked, includeOneCounts, beginnerFriendly]);
+  }, [selectedSet, allowedChecked, requiredChecked, includeOneCounts]);
 
   const groups = useMemo(
     () => groupLocalsByPuzzleCategory(qualifying),
@@ -119,12 +189,29 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
     };
   }, [groups, allowedChecked]);
 
+  // Applies a set preset to all filters at once. Clicking the active set again
+  // clears the selection (reverting to the combo-box filters).
+  function applySet(config: SetConfig) {
+    if (selectedSet === config.id) {
+      setSelectedSet(null);
+      return;
+    }
+    setAllowedChecked(config.allowed);
+    setRequiredChecked(DEFAULT_REQUIRED);
+    setIncludeOneCounts(config.includeOneCounts);
+    setSelectedSet(config.id);
+  }
+
   function toggleAllowed(digit: PuzzleThrowDigit) {
     setAllowedChecked((prev) => ({ ...prev, [digit]: !prev[digit] }));
   }
 
   function toggleRequired(digit: PuzzleThrowDigit) {
     setRequiredChecked((prev) => ({ ...prev, [digit]: !prev[digit] }));
+  }
+
+  function toggleIncludeOneCounts() {
+    setIncludeOneCounts((prev) => !prev);
   }
 
   return (
@@ -140,6 +227,32 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
         of both patterns must add up to an integer to be a valid combination.
       </p>
       <div className="puzzle-bulk-export">
+        <div className="puzzle-bulk-export__filters">
+          <span className="puzzle-bulk-export__filters-label">Set:</span>
+          <div className="puzzle-bulk-export__segmented" role="group">
+            {SET_CONFIGS.map((config) => (
+              <button
+                key={config.id}
+                type="button"
+                className={
+                  "puzzle-bulk-export__segment" +
+                  (selectedSet === config.id
+                    ? " puzzle-bulk-export__segment--active"
+                    : "")
+                }
+                aria-pressed={selectedSet === config.id}
+                onClick={() => applySet(config)}
+              >
+                <DifficultyHexagons
+                  difficulty={config.difficulty}
+                  className="puzzle-bulk-export__segment-hex"
+                />
+                {config.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="puzzle-bulk-export__filters">
           <span className="puzzle-bulk-export__filters-label">
             Allowed throws:
@@ -175,25 +288,12 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
         <div className="puzzle-bulk-export__filters">
           <label className="puzzle-bulk-export__chip puzzle-bulk-export__chip--text">
             <span className="puzzle-bulk-export__filters-label">
-              Only beginner-friendly:
-            </span>
-            <input
-              type="checkbox"
-              checked={beginnerFriendly}
-              onChange={() => setBeginnerFriendly((prev) => !prev)}
-            />
-          </label>
-        </div>
-
-        <div className="puzzle-bulk-export__filters">
-          <label className="puzzle-bulk-export__chip puzzle-bulk-export__chip--text">
-            <span className="puzzle-bulk-export__filters-label">
               Include one counts:
             </span>
             <input
               type="checkbox"
               checked={includeOneCounts}
-              onChange={() => setIncludeOneCounts((prev) => !prev)}
+              onChange={toggleIncludeOneCounts}
             />
           </label>
         </div>
@@ -225,6 +325,11 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
                           </span>
                           <span className="puzzle-bulk-export__clubs">
                             {clubCountLabel(local)}
+                          </span>
+                          <span className="puzzle-bulk-export__item-hex">
+                            <DifficultyHexagons
+                              difficulty={classifyDifficulty(local)}
+                            />
                           </span>
                           <button
                             type="button"

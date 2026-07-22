@@ -45,6 +45,51 @@
     }
   }
 
+  &__segmented {
+    display: inline-flex;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  &__segment {
+    // Reset the global button chrome so the segments read as one control.
+    border: none;
+    border-radius: 0;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.9rem;
+    background-color: transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    & + & {
+      border-left: 1px solid var(--input-border);
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: var(--input-border);
+    }
+
+    &--active {
+      background-color: var(--accent-color);
+      color: #1a0e33;
+      font-weight: 600;
+
+      &:hover {
+        background-color: var(--accent-color);
+      }
+    }
+  }
+
+  &__segment-hex {
+    // Match the difficulty markers on the pieces (lightgreen), overriding the
+    // segment's text color for the icon only.
+    color: lightgreen;
+    flex-shrink: 0;
+  }
+
   &__groups {
     display: flex;
     flex-direction: column;
@@ -100,6 +145,15 @@
     font-size: 0.9rem;
     color: lightgreen;
     min-width: 4ch;
+  }
+
+  &__item-hex {
+    // The badge itself is fixed-width, so rows stay aligned automatically.
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.1rem;
+    color: lightgreen;
+    flex-shrink: 0;
   }
 
   &__assign {

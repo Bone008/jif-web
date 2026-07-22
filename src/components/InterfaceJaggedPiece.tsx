@@ -17,10 +17,12 @@ export function InterfaceJaggedPiece({
   jif,
   juggler,
   beatShift = 0,
+  difficulty,
 }: {
   jif: FullJIF;
   juggler: number;
   beatShift?: number;
+  difficulty?: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showVerticalGridLines, setShowVerticalGridLines] = useState(false);
@@ -52,6 +54,7 @@ export function InterfaceJaggedPiece({
         juggler={juggler}
         beatShift={beatShift}
         showVerticalGridLines={showVerticalGridLines}
+        difficulty={difficulty}
       />
       <button onClick={copyToClipboard} title="Copy SVG to clipboard">
         📋

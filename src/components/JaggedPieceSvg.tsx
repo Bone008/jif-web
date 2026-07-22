@@ -40,7 +40,28 @@ interface JaggedPieceSvgProps {
   showVerticalGridLines?: boolean;
   /** Render with export-friendly black colors instead of UI white/green. */
   forExport?: boolean;
+  /** Difficulty level (1-4). Renders that many small hexagons in the label. */
+  difficulty?: number;
 }
+
+// Radius (center → vertex) of the small difficulty hexagons.
+const HEX_RADIUS = 8;
+// Horizontal center of the difficulty hexagons within the label area — to the
+// right of the object-count text and left of the vertical line at labelWidth.
+const HEX_CENTER_X = 88;
+// Offsets (from the group center) of each hexagon per difficulty level.
+const DIFFICULTY_HEX_OFFSETS: Record<number, Array<[number, number]>> = {
+  1: [[0, 0]],
+  2: [
+    [0, HEX_RADIUS * 1.2],
+    [0, -HEX_RADIUS * 1.2],
+  ],
+  3: [
+    [-HEX_RADIUS * 2, 0],
+    [0, -HEX_RADIUS * 1.2],
+    [0, HEX_RADIUS * 1.2],
+  ],
+};
 
 /**
  * Pure SVG rendering of one juggler's jagged piece. No clipboard, no keypress
@@ -55,6 +76,7 @@ export function JaggedPieceSvg({
   beatShift = 0,
   showVerticalGridLines = false,
   forExport = false,
+  difficulty,
 }: JaggedPieceSvgProps) {
   const colors = forExport ? EXPORT_COLORS : UI_COLORS;
   const { beatWidth, height, jagHeight, strokeWidth, strokeInset, labelWidth } =
@@ -196,9 +218,113 @@ export function JaggedPieceSvg({
         >
           {label}
         </text>
+
+        {difficulty && DIFFICULTY_HEX_OFFSETS[difficulty]
+          ? DIFFICULTY_HEX_OFFSETS[difficulty].map(([dx, dy], i) => (
+              <polygon
+                key={i}
+                points={hexagonPoints(
+                  HEX_CENTER_X + dx,
+                  height / 2 + dy,
+                  HEX_RADIUS,
+                  "flat",
+                )}
+                fill={colors.labelText}
+                stroke="none"
+              />
+            ))
+          : null}
       </g>
     </svg>
   );
+}
+
+/** Points string for a hexagon centered at (cx, cy). */
+function hexagonPoints(
+  cx: number,
+  cy: number,
+  r: number,
+  orientation: "flat" | "pointy" = "pointy",
+): string {
+  // Flat-top has a vertex at 0° (flat edges on top/bottom); pointy-top starts
+  // at -90° (a vertex at the top).
+  const startAngle = orientation === "flat" ? 0 : -90;
+  return _.range(6)
+    .map((k) => {
+      const angle = ((startAngle + 60 * k) * Math.PI) / 180;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    })
+    .join(" ");
+}
+
+// Font-size-relative scale of the standalone badge: each SVG unit maps to this
+// many `em`, so every hexagon renders at the same size regardless of how many
+// there are (the badge box grows with the cluster, not the individual hexagon).
+const HEX_BADGE_EM_PER_UNIT = 0.03;
+
+/**
+ * Standalone SVG badge rendering the same difficulty hexagons used on the
+ * jagged pieces. Scaled relative to the current font size and inherits color
+ * via `currentColor`, so it drops into buttons/labels.
+ */
+export function DifficultyHexagons({
+  difficulty,
+  className,
+}: {
+  difficulty: number;
+  className?: string;
+}) {
+  const offsets = DIFFICULTY_HEX_OFFSETS[difficulty];
+  if (!offsets) return null;
+  const r = HEX_RADIUS;
+  const box = bbox(offsets, r);
+  // Fixed badge box (largest cluster across all levels) so every badge is the
+  // same size; each cluster is centered within it.
+  const { fixedW, fixedH } = fixedBadgeBox(r);
+  const vbMinX = box.cx - fixedW / 2;
+  const vbMinY = box.cy - fixedH / 2;
+  return (
+    <svg
+      className={className}
+      viewBox={`${vbMinX} ${vbMinY} ${fixedW} ${fixedH}`}
+      width={`${(fixedW * HEX_BADGE_EM_PER_UNIT).toFixed(3)}em`}
+      height={`${(fixedH * HEX_BADGE_EM_PER_UNIT).toFixed(3)}em`}
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      {offsets.map(([dx, dy], i) => (
+        <polygon key={i} points={hexagonPoints(dx, dy, r, "flat")} />
+      ))}
+    </svg>
+  );
+}
+
+/** Bounding box (with radius margin) and center of a hexagon cluster. */
+function bbox(offsets: Array<[number, number]>, r: number) {
+  const minX = Math.min(...offsets.map(([dx]) => dx)) - r;
+  const maxX = Math.max(...offsets.map(([dx]) => dx)) + r;
+  const minY = Math.min(...offsets.map(([, dy]) => dy)) - r;
+  const maxY = Math.max(...offsets.map(([, dy]) => dy)) + r;
+  return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+}
+
+/** Fixed badge dimensions = the largest cluster's extent across all levels. */
+function fixedBadgeBox(r: number) {
+  const levels = Object.values(DIFFICULTY_HEX_OFFSETS);
+  const widths = levels.map(
+    (o) => Math.max(...o.map(([dx]) => dx)) - Math.min(...o.map(([dx]) => dx)),
+  );
+  const heights = levels.map(
+    (o) =>
+      Math.max(...o.map(([, dy]) => dy)) - Math.min(...o.map(([, dy]) => dy)),
+  );
+  return {
+    fixedW: Math.max(...widths) + 2 * r,
+    fixedH: Math.max(...heights) + 2 * r,
+  };
 }
 
 export function generateJaggedPath(

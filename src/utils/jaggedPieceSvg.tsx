@@ -12,11 +12,17 @@ import { inferIsSynchronousPattern } from "../jif/util";
 export function renderJaggedPieceSVGString(
   jif: FullJIF,
   juggler: number,
+  difficulty?: number,
 ): string | null {
   if (inferIsSynchronousPattern(jif)) {
     return null;
   }
   return renderToStaticMarkup(
-    <JaggedPieceSvg jif={jif} juggler={juggler} forExport />,
+    <JaggedPieceSvg
+      jif={jif}
+      juggler={juggler}
+      difficulty={difficulty}
+      forExport
+    />,
   );
 }

@@ -32,3 +32,29 @@ export const PERIOD_6_BEGINNER_LOCALS: ReadonlySet<string> = new Set(
     .map((l) => l.trim())
     .filter((l) => l.length > 0),
 );
+
+/** True if any rotation of `local` is in the beginner set. */
+export function isBeginnerLocal(local: string): boolean {
+  const n = local.length;
+  for (let r = 0; r < n; r++) {
+    if (PERIOD_6_BEGINNER_LOCALS.has(local.slice(r) + local.slice(0, r))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Difficulty level of a local pattern:
+ * - 1: contained in the beginner set
+ * - 2: max throw <= 9 and not in the beginner set
+ * - 3: max throw <= b
+ * - 4: anything higher
+ */
+export function classifyDifficulty(local: string): number {
+  if (isBeginnerLocal(local)) return 1;
+  const maxThrow = Math.max(...local.split("").map((ch) => parseInt(ch, 36)));
+  if (maxThrow <= 9) return 2;
+  if (maxThrow <= 11) return 3; // "b" === 11
+  return 4;
+}

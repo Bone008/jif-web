@@ -1,6 +1,7 @@
 import JSZip from "jszip";
 import scadTemplate from "../../scad/puzzle_piece.scad?raw";
 import { renderJaggedPieceSVGString } from "./jaggedPieceSvg";
+import { classifyDifficulty } from "../data/period6_locals";
 import { siteswapToJIF } from "../jif/high_level_converter";
 import { loadWithDefaults } from "../jif/jif_loader";
 import { interleaveLocalSiteswap } from "../jif/local_pattern";
@@ -78,7 +79,11 @@ export function buildPieceZip(
           ? interleaved + interleaved
           : interleaved;
         const jif = loadWithDefaults(siteswapToJIF(siteswap, 2));
-        const svg = renderJaggedPieceSVGString(jif, 0);
+        const svg = renderJaggedPieceSVGString(
+          jif,
+          0,
+          classifyDifficulty(local),
+        );
         if (svg === null) {
           errors.push(`${local}: synchronous pattern, not supported`);
           continue;

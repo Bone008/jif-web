@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { classifyDifficulty } from "../data/period6_locals";
 import { useSearchParams } from "../hooks/useSearchParams";
 import { siteswapToJIF } from "../jif/high_level_converter";
 import { FullJIF, loadWithDefaults } from "../jif/jif_loader";
@@ -162,12 +163,17 @@ export function PuzzlePage() {
           <h3>Interface Puzzle Pieces</h3>
           <div>
             {aResult?.jif && (
-              <InterfaceJaggedPiece jif={aResult.jif} juggler={0} />
+              <InterfaceJaggedPiece
+                jif={aResult.jif}
+                juggler={0}
+                difficulty={classifyDifficulty(localA)}
+              />
             )}
             {bResult?.jif && (
               <InterfaceJaggedPiece
                 jif={bResult.jif}
                 juggler={0}
+                difficulty={classifyDifficulty(localB)}
                 beatShift={
                   combined && localA.length === localB.length
                     ? 1 +
