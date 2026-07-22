@@ -3,6 +3,7 @@ import {
   prechacToJif,
   siteswapToJIF,
 } from "./high_level_converter";
+import { JIF } from "./jif";
 import { FullJIF, loadWithDefaults } from "./jif_loader";
 import { addManipulator } from "./manipulation";
 import { findPresetBySlug, Preset } from "./presets";
@@ -26,11 +27,17 @@ export function loadPresetBySlug(slug: string): FullJIF {
 export function loadPreset(preset: Preset): FullJIF {
   const instructions = preset.instructions.join("\n");
 
-  // Detect format: siteswap has no whitespace, prechac has whitespace
-  const isSiteswap = !instructions.match(/\s/);
-  const baseJif = isSiteswap
-    ? siteswapToJIF(instructions, 2)
-    : prechacToJif(instructions.split("\n"));
+  let baseJif: JIF;
+  if (instructions.trim().startsWith("{")) {
+    // Raw JIF supplied directly as a JSON string.
+    baseJif = JSON.parse(instructions) as JIF;
+  } else {
+    // Detect format: siteswap has no whitespace, prechac has whitespace
+    const isSiteswap = !instructions.match(/\s/);
+    baseJif = isSiteswap
+      ? siteswapToJIF(instructions, 2)
+      : prechacToJif(instructions.split("\n"));
+  }
 
   let jif = loadWithDefaults(baseJif);
 
