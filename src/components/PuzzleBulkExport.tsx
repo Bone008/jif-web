@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import {
+  PERIOD_6_BEGINNER_LOCALS,
   PERIOD_6_LOCALS,
   PUZZLE_THROW_DIGITS,
   PuzzleThrowDigit,
@@ -63,6 +64,10 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
     "puzzleIncludeOneCounts",
     true,
   );
+  const [beginnerFriendly, setBeginnerFriendly] = useLocalStorage<boolean>(
+    "puzzleBeginnerFriendly",
+    false,
+  );
 
   const qualifying = useMemo(() => {
     const allowedDigits = new Set(
@@ -81,9 +86,11 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
       ) {
         return false;
       }
+      if (beginnerFriendly && !PERIOD_6_BEGINNER_LOCALS.has(local))
+        return false;
       return true;
     });
-  }, [allowedChecked, requiredChecked, includeOneCounts]);
+  }, [allowedChecked, requiredChecked, includeOneCounts, beginnerFriendly]);
 
   const groups = useMemo(
     () => groupLocalsByPuzzleCategory(qualifying),
@@ -163,6 +170,19 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
               <span>{digit}</span>
             </label>
           ))}
+        </div>
+
+        <div className="puzzle-bulk-export__filters">
+          <label className="puzzle-bulk-export__chip puzzle-bulk-export__chip--text">
+            <span className="puzzle-bulk-export__filters-label">
+              Only beginner-friendly:
+            </span>
+            <input
+              type="checkbox"
+              checked={beginnerFriendly}
+              onChange={() => setBeginnerFriendly((prev) => !prev)}
+            />
+          </label>
         </div>
 
         <div className="puzzle-bulk-export__filters">
