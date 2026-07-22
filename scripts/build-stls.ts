@@ -31,6 +31,7 @@ import { join, resolve } from "path";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { renderJaggedPieceSVGString } from "../src/utils/jaggedPieceSvg.tsx";
+import { classifyDifficulty } from "../src/data/period6_locals.ts";
 import { siteswapToJIF } from "../src/jif/high_level_converter.ts";
 import { loadWithDefaults } from "../src/jif/jif_loader.ts";
 import { interleaveLocalSiteswap } from "../src/jif/local_pattern.ts";
@@ -106,7 +107,7 @@ async function buildPiece(local: string, tmpRoot: string): Promise<void> {
   const interleaved = interleaveLocalSiteswap(local);
   const siteswap = interleaved + interleaved; // doubled, matches bulk export
   const jif = loadWithDefaults(siteswapToJIF(siteswap, 2));
-  const svg = renderJaggedPieceSVGString(jif, 0);
+  const svg = renderJaggedPieceSVGString(jif, 0, classifyDifficulty(local));
   if (svg === null) {
     throw new Error("synchronous pattern, not supported");
   }
