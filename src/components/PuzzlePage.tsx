@@ -148,7 +148,7 @@ export function PuzzlePage() {
                 href={`https://passist.org/siteswap/${combined.global}?jugglers=2`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="puzzle-piece-download__button"
+                className="button--primary"
               >
                 Open in Passist
               </a>

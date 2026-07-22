@@ -102,6 +102,26 @@ button,
   }
 }
 
+// Primary button variant — strong visual emphasis.
+.button--primary {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #1a0e33;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+
+  &:hover:not(:disabled) {
+    background-color: #b393df;
+    border-color: #b393df;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
 // --- Form controls ---
 
 select,

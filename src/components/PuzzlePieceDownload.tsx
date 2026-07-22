@@ -107,7 +107,7 @@ export function PuzzlePieceDownload({ locals, svgNameFor, filename }: Props) {
           type="button"
           onClick={handleDownload}
           disabled={disabled}
-          className="puzzle-piece-download__button"
+          className="button--primary"
         >
           {buttonLabel}
         </button>
