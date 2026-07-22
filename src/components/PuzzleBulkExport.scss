@@ -38,6 +38,11 @@
     input {
       margin: 0;
     }
+
+    &--text {
+      font-family: inherit;
+      gap: 0.5rem;
+    }
   }
 
   &__groups {

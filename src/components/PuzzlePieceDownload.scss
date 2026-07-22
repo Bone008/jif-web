@@ -21,6 +21,8 @@
     border-color: var(--accent-color);
     color: #1a0e33;
     font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
 
     &:hover:not(:disabled) {
       background-color: #b393df;

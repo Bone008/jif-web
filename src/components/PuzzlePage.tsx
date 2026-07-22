@@ -132,16 +132,28 @@ export function PuzzlePage() {
         </div>
 
         {combined && (
-          <div className="puzzle-page__global">
-            <span className="label-text">Global siteswap:</span>
-            <code>{combined.global}</code>
-            {combined.rotationOfB > 0 && (
-              <span className="puzzle-page__rotation-note">
-                (B rotated by {combined.rotationOfB} beat
-                {combined.rotationOfB === 1 ? "" : "s"})
-              </span>
-            )}
-          </div>
+          <>
+            <div className="puzzle-page__global">
+              <span className="label-text">Global siteswap:</span>
+              <code>{combined.global}</code>
+              {combined.rotationOfB > 0 && (
+                <span className="puzzle-page__rotation-note">
+                  (B rotated by {combined.rotationOfB} beat
+                  {combined.rotationOfB === 1 ? "" : "s"})
+                </span>
+              )}
+            </div>
+            <div className="puzzle-page__global">
+              <a
+                href={`https://passist.org/siteswap/${combined.global}?jugglers=2`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="puzzle-piece-download__button"
+              >
+                Open in Passist
+              </a>
+            </div>
+          </>
         )}
       </div>
 

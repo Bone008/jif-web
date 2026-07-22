@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import {
   PERIOD_6_LOCALS,
   PUZZLE_THROW_DIGITS,
@@ -27,7 +28,7 @@ const GROUP_ROWS: string[][] = [
   ["x.5, 3 passes"],
 ];
 
-const DEFAULT_CHECKED: Record<PuzzleThrowDigit, boolean> = {
+const DEFAULT_ALLOWED: Record<PuzzleThrowDigit, boolean> = {
   "2": true,
   "4": true,
   "5": true,
@@ -39,18 +40,50 @@ const DEFAULT_CHECKED: Record<PuzzleThrowDigit, boolean> = {
   b: false,
 };
 
+const DEFAULT_REQUIRED: Record<PuzzleThrowDigit, boolean> = {
+  "2": false,
+  "4": false,
+  "5": false,
+  "6": false,
+  "7": false,
+  "8": false,
+  "9": false,
+  a: false,
+  b: false,
+};
+
 export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
-  const [checked, setChecked] =
-    useState<Record<PuzzleThrowDigit, boolean>>(DEFAULT_CHECKED);
+  const [allowedChecked, setAllowedChecked] = useLocalStorage<
+    Record<PuzzleThrowDigit, boolean>
+  >("puzzleAllowedThrows", DEFAULT_ALLOWED);
+  const [requiredChecked, setRequiredChecked] = useLocalStorage<
+    Record<PuzzleThrowDigit, boolean>
+  >("puzzleRequiredThrows", DEFAULT_REQUIRED);
+  const [includeOneCounts, setIncludeOneCounts] = useLocalStorage<boolean>(
+    "puzzleIncludeOneCounts",
+    true,
+  );
 
   const qualifying = useMemo(() => {
-    const allowed = new Set(
-      PUZZLE_THROW_DIGITS.filter((d) => checked[d]) as string[],
+    const allowedDigits = new Set(
+      PUZZLE_THROW_DIGITS.filter((d) => allowedChecked[d]) as string[],
     );
-    return PERIOD_6_LOCALS.filter((local) =>
-      local.split("").every((ch) => allowed.has(ch)),
+    const requiredDigits = PUZZLE_THROW_DIGITS.filter(
+      (d) => requiredChecked[d],
     );
-  }, [checked]);
+    return PERIOD_6_LOCALS.filter((local) => {
+      if (!local.split("").every((ch) => allowedDigits.has(ch))) return false;
+      if (!requiredDigits.every((d) => local.includes(d))) return false;
+      // "one counts" are patterns where every throw (hex digit) is odd.
+      if (
+        !includeOneCounts &&
+        local.split("").every((ch) => parseInt(ch, 16) % 2 === 1)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [allowedChecked, requiredChecked, includeOneCounts]);
 
   const groups = useMemo(
     () => groupLocalsByPuzzleCategory(qualifying),
@@ -67,9 +100,9 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
         categoryByLocal.set(local, prefix);
       }
     }
-    const checkedDigits = PUZZLE_THROW_DIGITS.filter((d) => checked[d]).join(
-      "",
-    );
+    const checkedDigits = PUZZLE_THROW_DIGITS.filter(
+      (d) => allowedChecked[d],
+    ).join("");
     return {
       svgNameFor: (local: string) => {
         const prefix = categoryByLocal.get(local);
@@ -77,10 +110,14 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
       },
       filename: `puzzle-pieces-${VERSION_FOR_ZIP}-${checkedDigits}.zip`,
     };
-  }, [groups, checked]);
+  }, [groups, allowedChecked]);
 
-  function toggle(digit: PuzzleThrowDigit) {
-    setChecked((prev) => ({ ...prev, [digit]: !prev[digit] }));
+  function toggleAllowed(digit: PuzzleThrowDigit) {
+    setAllowedChecked((prev) => ({ ...prev, [digit]: !prev[digit] }));
+  }
+
+  function toggleRequired(digit: PuzzleThrowDigit) {
+    setRequiredChecked((prev) => ({ ...prev, [digit]: !prev[digit] }));
   }
 
   return (
@@ -97,17 +134,48 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
       </p>
       <div className="puzzle-bulk-export">
         <div className="puzzle-bulk-export__filters">
-          <span className="puzzle-bulk-export__filters-label">Throws:</span>
+          <span className="puzzle-bulk-export__filters-label">
+            Allowed throws:
+          </span>
           {PUZZLE_THROW_DIGITS.map((digit) => (
             <label key={digit} className="puzzle-bulk-export__chip">
               <input
                 type="checkbox"
-                checked={checked[digit]}
-                onChange={() => toggle(digit)}
+                checked={allowedChecked[digit]}
+                onChange={() => toggleAllowed(digit)}
               />
               <span>{digit}</span>
             </label>
           ))}
+        </div>
+
+        <div className="puzzle-bulk-export__filters">
+          <span className="puzzle-bulk-export__filters-label">
+            Required throws:
+          </span>
+          {PUZZLE_THROW_DIGITS.map((digit) => (
+            <label key={digit} className="puzzle-bulk-export__chip">
+              <input
+                type="checkbox"
+                checked={requiredChecked[digit]}
+                onChange={() => toggleRequired(digit)}
+              />
+              <span>{digit}</span>
+            </label>
+          ))}
+        </div>
+
+        <div className="puzzle-bulk-export__filters">
+          <label className="puzzle-bulk-export__chip puzzle-bulk-export__chip--text">
+            <span className="puzzle-bulk-export__filters-label">
+              Include one counts:
+            </span>
+            <input
+              type="checkbox"
+              checked={includeOneCounts}
+              onChange={() => setIncludeOneCounts((prev) => !prev)}
+            />
+          </label>
         </div>
 
         <PuzzlePieceDownload
