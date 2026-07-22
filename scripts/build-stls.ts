@@ -31,7 +31,7 @@ import { join, resolve } from "path";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { renderJaggedPieceSVGString } from "../src/utils/jaggedPieceSvg.tsx";
-import { classifyDifficulty } from "../src/data/period6_locals.ts";
+import { classifyDifficulty } from "../src/data/difficulty.ts";
 import { siteswapToJIF } from "../src/jif/high_level_converter.ts";
 import { loadWithDefaults } from "../src/jif/jif_loader.ts";
 import { interleaveLocalSiteswap } from "../src/jif/local_pattern.ts";
@@ -40,6 +40,7 @@ const execFileAsync = promisify(execFile);
 
 const REPO_ROOT = resolve(import.meta.dirname, "..");
 const P6_FILE = join(REPO_ROOT, "src/data/P6.txt");
+const P6_BEGINNER_FILE = join(REPO_ROOT, "src/data/P6_beginner.txt");
 const SCAD_FILE = join(REPO_ROOT, "scad/puzzle_piece.scad");
 const STL_OUT = join(REPO_ROOT, "public/stl");
 const SIMPLIFIED_SVG_OUT = join(REPO_ROOT, "public/svg-simplified");
@@ -69,6 +70,13 @@ async function main() {
     .map((line) => line.trim())
     .filter(Boolean);
 
+  const beginnerLocals = new Set(
+    (await readFile(P6_BEGINNER_FILE, "utf-8"))
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean),
+  );
+
   console.log(
     `Building STLs for ${locals.length} patterns (${CONCURRENCY}× concurrency)…`,
   );
@@ -78,7 +86,7 @@ async function main() {
   const failures: { local: string; error: string }[] = [];
   await pmap(locals, CONCURRENCY, async (local) => {
     try {
-      await buildPiece(local, tmpRoot);
+      await buildPiece(local, tmpRoot, beginnerLocals);
     } catch (e) {
       failures.push({ local, error: e instanceof Error ? e.message : `${e}` });
     } finally {
@@ -103,11 +111,19 @@ async function main() {
   console.log(`Done in ${elapsedSec}s. STLs in ${STL_OUT}`);
 }
 
-async function buildPiece(local: string, tmpRoot: string): Promise<void> {
+async function buildPiece(
+  local: string,
+  tmpRoot: string,
+  beginnerLocals: ReadonlySet<string>,
+): Promise<void> {
   const interleaved = interleaveLocalSiteswap(local);
   const siteswap = interleaved + interleaved; // doubled, matches bulk export
   const jif = loadWithDefaults(siteswapToJIF(siteswap, 2));
-  const svg = renderJaggedPieceSVGString(jif, 0, classifyDifficulty(local));
+  const svg = renderJaggedPieceSVGString(
+    jif,
+    0,
+    classifyDifficulty(local, beginnerLocals),
+  );
   if (svg === null) {
     throw new Error("synchronous pattern, not supported");
   }
