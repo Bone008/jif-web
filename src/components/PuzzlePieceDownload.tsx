@@ -47,13 +47,13 @@ const FORMATS: FormatSpec[] = [
     key: "scadTemplate",
     label: "OpenSCAD template",
     description:
-      "WORK IN PROGRESS: Single .scad file that extrudes a Simplified SVG. Tweak thickness or scale, then re-render the STLs yourself.",
+      "Single .scad file that extrudes a Simplified SVG. Tweak thickness or scale, then re-render the STLs yourself.",
   },
   {
     key: "stl",
     label: "3D-printable STLs",
     description:
-      "WORK IN PROGRESS: Pre-built per-layer STLs (4 per pattern). Drop into a slicer and print as a multi-material piece.",
+      "Pre-built per-layer STLs (4 per pattern). Drop into a slicer and print as a multi-material piece.",
   },
 ];
 
