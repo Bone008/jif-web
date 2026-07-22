@@ -177,17 +177,31 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
         categoryByLocal.set(local, prefix);
       }
     }
-    const checkedDigits = PUZZLE_THROW_DIGITS.filter(
-      (d) => allowedChecked[d],
+    // Encode the active filter state into the filename so different exports are
+    // easy to tell apart.
+    const parts = ["puzzle-pieces", VERSION_FOR_ZIP];
+    const set = SET_CONFIGS.find((c) => c.id === selectedSet);
+    if (set) {
+      parts.push(set.label.toLowerCase().replace(/\s+/g, "-"));
+    }
+    parts.push(PUZZLE_THROW_DIGITS.filter((d) => allowedChecked[d]).join(""));
+    const requiredDigits = PUZZLE_THROW_DIGITS.filter(
+      (d) => requiredChecked[d],
     ).join("");
+    if (requiredDigits) {
+      parts.push(`req${requiredDigits}`);
+    }
+    if (!includeOneCounts) {
+      parts.push("no1counts");
+    }
     return {
       svgNameFor: (local: string) => {
         const prefix = categoryByLocal.get(local);
         return prefix ? `${prefix}--${local}` : local;
       },
-      filename: `puzzle-pieces-${VERSION_FOR_ZIP}-${checkedDigits}.zip`,
+      filename: `${parts.join("-")}.zip`,
     };
-  }, [groups, allowedChecked]);
+  }, [groups, selectedSet, allowedChecked, requiredChecked, includeOneCounts]);
 
   // Applies a set preset to all filters at once. Clicking the active set again
   // clears the selection (reverting to the combo-box filters).
