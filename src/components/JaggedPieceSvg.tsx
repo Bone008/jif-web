@@ -17,6 +17,13 @@ export const JAGGED_PIECE_LAYOUT = {
   labelWidth: 100,
 } as const;
 
+// Explicit font for all text in the piece. Without this, the browser preview
+// inherits the page font while a standalone SVG opened in Inkscape falls back
+// to Inkscape's own default — giving different glyph metrics and spacing.
+// "DejaVu Sans" is installed for fontconfig, so both the browser and Inkscape
+// resolve to the exact same font file and render identically.
+const FONT_FAMILY = "'DejaVu Sans', sans-serif";
+
 const UI_COLORS = {
   fill: "#4b3673",
   stroke: "white",
@@ -45,10 +52,10 @@ interface JaggedPieceSvgProps {
 }
 
 // Radius (center → vertex) of the small difficulty hexagons.
-const HEX_RADIUS = 8;
+const HEX_RADIUS = 6.5;
 // Horizontal center of the difficulty hexagons within the label area — to the
 // right of the object-count text and left of the vertical line at labelWidth.
-const HEX_CENTER_X = 88;
+const HEX_CENTER_X = 93;
 // Offsets (from the group center) of each hexagon per difficulty level.
 const DIFFICULTY_HEX_OFFSETS: Record<number, Array<[number, number]>> = {
   1: [[0, 0]],
@@ -190,6 +197,7 @@ export function JaggedPieceSvg({
                 y={height / 2}
                 textAnchor="middle"
                 dominantBaseline="middle"
+                fontFamily={FONT_FAMILY}
                 fontSize="30"
                 fontWeight="bold"
                 fill={colors.throwText}
@@ -212,6 +220,7 @@ export function JaggedPieceSvg({
           y={height / 2}
           textAnchor="start"
           dominantBaseline="central"
+          fontFamily={FONT_FAMILY}
           fontSize="30"
           fontWeight="bold"
           fill={colors.labelText}

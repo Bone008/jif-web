@@ -38,4 +38,14 @@ describe("renderJaggedPieceSVGString", () => {
     // The doubled "665" should contain throw values
     expect(svg).toContain("<text");
   });
+
+  it("declares an explicit font-family on all text so Inkscape and the browser preview render identically", () => {
+    const jif = loadWithDefaults(siteswapToJIF("606050", 2));
+    const svg = renderJaggedPieceSVGString(jif, 0)!;
+    const textCount = (svg.match(/<text/g) ?? []).length;
+    const fontCount = (svg.match(/font-family=/g) ?? []).length;
+    expect(textCount).toBeGreaterThan(0);
+    expect(fontCount).toBe(textCount);
+    expect(svg).toContain("DejaVu Sans");
+  });
 });
