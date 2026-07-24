@@ -45,7 +45,16 @@ total_width = inner_width + wall_thickness * 2;
 total_height = inner_height + wall_thickness * 2 + 1;
 
 show_puzzle_preview = true;
-render_mode = "print"; // ["preview", "print"]
+render_mode = "print_and_text"; // ["preview", "print", "text", "print_and_text"]
+
+// --- Beschriftung (separater STL-Export, wird oben aufgedruckt) ---
+// "text" rendert NUR die Schrift, damit sie separat (2. Farbe) gedruckt
+// und oben auf das Gehaeuse gesetzt werden kann.
+text_font = "DejaVu Sans:style=Bold";
+text_emboss = 0.2;      // Hoehe der erhabenen Schrift
+legend_size = 2.2;      // Schriftgroesse der Zahlen (links) + gesamte rechte Legende
+icon_size = 1.6;        // Kreuz/Strich-Symbole links (kleiner)
+legend_spacing = 5.4;   // Zeilenabstand
 
 // Zackprofil: doppelte Frequenz (Pitch 20 SVG = halber Beat)
 // Flanken 45° (Amplitude 10 ueber 10 SVG); Phase folgt digits_center_svg
@@ -238,8 +247,60 @@ module puzzle_case_for_print() {
     main_housing();
 }
 
+// Mehrzeiliger, linksbuendiger Textblock (y_top = obere Kante der ersten Zeile)
+module text_block(lines, x, y_top, size, spacing) {
+    for (i = [0:len(lines) - 1])
+        translate([x, y_top - i * spacing])
+            text(lines[i], size = size, font = text_font,
+                 halign = "left", valign = "top");
+}
+
+// Eine linke Zeile: grosse Zahl + kleineres Symbol (X / ||), vertikal zentriert auf yc
+module icon_row(digit, icon, x, yc) {
+    translate([x, yc])
+        text(digit, size = legend_size, font = text_font, halign = "left", valign = "center");
+    translate([x + legend_size * 1.25, yc])
+        text(icon, size = icon_size, font = text_font, halign = "left", valign = "center");
+}
+
+// Beschriftung: erhabene Schrift auf der Deckflaeche (z = total_height),
+// links und rechts neben dem Fenster. Separater STL-Export via render_mode="text".
+module case_text() {
+    translate([0, 0, total_height - 0.01])
+        linear_extrude(height = text_emboss + 0.01) {
+            // LINKS: zwei Gruppen (A und B) mit je 3 Zeilen (Zahl gross, Symbol klein)
+            translate([0, -2.5]) {
+                icon_row("5", "X",  -23, 43);
+                icon_row("7", "||", -23, 37.6);
+                icon_row("9", "X",  -23, 32.2);
+                translate([-4, 37.6])
+                    text("A", size = 7, font = text_font, halign = "center", valign = "center");
+            }
+
+            // B: Icons gegenueber A getauscht (gerade <-> Kreuz)
+            icon_row("5", "||", -23, 20);
+            icon_row("7", "X",  -23, 14.6);
+            icon_row("9", "||", -23, 9.2);
+            translate([-4, 14.6])
+                text("B", size = 7, font = text_font, halign = "center", valign = "center");
+
+            // RECHTS: Wurfhoehen-Legende mit Trennstrich, vertikal zentriert
+            text_block(["2  zip", "4  hold/flip", "6  self", "8  heff"],
+                       38, 46, legend_size, legend_spacing);
+            translate([38, 22.6]) square([18, 0.6]);
+            text_block(["5  zap", "7  single", "9  double"],
+                       38, 19.4, legend_size, legend_spacing);
+        }
+}
+
 if (render_mode == "preview") {
     puzzle_case_assembly();
+    color("#333333") case_text();
+} else if (render_mode == "text") {
+    case_text();
+} else if (render_mode == "print_and_text") {
+    color("#3a3a3a") puzzle_case_for_print();
+    color("#e8b400") case_text();
 } else {
     puzzle_case_for_print();
 }
