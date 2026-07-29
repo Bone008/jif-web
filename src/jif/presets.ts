@@ -392,7 +392,7 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
       warningNote: "Claude did wrong and Lukas didn't catch on!",
     },
     {
-      name: "#2.5 - Unnamed (to juggle!)",
+      name: "#2.5 - Guck in die Luft",
       instructions: RAW_DATA_WALKING_FEED_10C,
       manipulators: ["- - sA i2C - - -"],
     },
@@ -560,7 +560,7 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
       manipulators: ["- i2B - - - sB -"],
     },
     {
-      name: "#9.2 - Ambled Buddy Check (to juggle!)",
+      name: "#9.2 - Ambled Buddy Chicks",
       instructions: RAW_DATA_WALKING_FEED_10C,
       manipulators: ["- i2B - - - - sA"],
     },
