@@ -13,6 +13,7 @@ export function renderJaggedPieceSVGString(
   jif: FullJIF,
   juggler: number,
   difficulty?: number,
+  mergeEquivalentThrows = false,
 ): string | null {
   if (inferIsSynchronousPattern(jif)) {
     return null;
@@ -22,6 +23,7 @@ export function renderJaggedPieceSVGString(
       jif={jif}
       juggler={juggler}
       difficulty={difficulty}
+      mergeEquivalentThrows={mergeEquivalentThrows}
       forExport
     />,
   );

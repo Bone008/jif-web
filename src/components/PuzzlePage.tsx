@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { classifyDifficulty } from "../data/period6_locals";
+import {
+  classifyDifficulty,
+  classifyEasiestEquivalentDifficulty,
+} from "../data/period6_locals";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useSearchParams } from "../hooks/useSearchParams";
 import { siteswapToJIF } from "../jif/high_level_converter";
 import { FullJIF, loadWithDefaults } from "../jif/jif_loader";
@@ -46,6 +50,11 @@ export function PuzzlePage() {
     else search.delete(PB_PARAM);
   };
   const [doubled, setDoubled] = useState(true);
+  const [mergeEquivalentThrows, setMergeEquivalentThrows] =
+    useLocalStorage<boolean>("puzzleMergeEquivalentThrows", false);
+  const difficultyOf = mergeEquivalentThrows
+    ? classifyEasiestEquivalentDifficulty
+    : classifyDifficulty;
   const { viewSettings } = useViewSettings();
 
   const combined = useMemo(() => {
@@ -130,6 +139,17 @@ export function PuzzlePage() {
             />
             <span>Repeat twice</span>
           </label>
+          <label
+            className="puzzle-page__doubled-label"
+            title="Show locally equivalent throws (2/8, 4/a, 5/b) stacked in a single piece"
+          >
+            <input
+              type="checkbox"
+              checked={mergeEquivalentThrows}
+              onChange={(e) => setMergeEquivalentThrows(e.target.checked)}
+            />
+            <span>Collapse equivalent throws</span>
+          </label>
         </div>
 
         {combined && (
@@ -166,14 +186,16 @@ export function PuzzlePage() {
               <InterfaceJaggedPiece
                 jif={aResult.jif}
                 juggler={0}
-                difficulty={classifyDifficulty(localA)}
+                difficulty={difficultyOf(localA)}
+                mergeEquivalentThrows={mergeEquivalentThrows}
               />
             )}
             {bResult?.jif && (
               <InterfaceJaggedPiece
                 jif={bResult.jif}
                 juggler={0}
-                difficulty={classifyDifficulty(localB)}
+                difficulty={difficultyOf(localB)}
+                mergeEquivalentThrows={mergeEquivalentThrows}
                 beatShift={
                   combined && localA.length === localB.length
                     ? 1 +

@@ -48,4 +48,14 @@ describe("renderJaggedPieceSVGString", () => {
     expect(fontCount).toBe(textCount);
     expect(svg).toContain("DejaVu Sans");
   });
+
+  it("stacks equivalent throws and shows the object count range when merged", () => {
+    // Local "724": 4 and 2 have equivalents (a and 8), 7 does not.
+    const jif = loadWithDefaults(siteswapToJIF("702040", 2));
+    const svg = renderJaggedPieceSVGString(jif, 0, 1, true)!;
+    const texts = [...svg.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map(
+      (m) => m[1],
+    );
+    expect(texts).toEqual(["7", "2", "8", "4", "a", "2.2", "4.2"]);
+  });
 });

@@ -13,13 +13,23 @@ const DEFAULT_FORMATS: FormatOptions = {
   stl: false,
 };
 
-interface Props {
+/** One download button with its own set of patterns. */
+export interface PieceDownloadSpec {
+  /** Adjective shown in the button label, e.g. "collapsed". */
+  label: string;
   /** Local siteswaps to include in the downloaded ZIP. */
   locals: string[];
   /** Maps a local pattern to a filename basename (no extension). */
   svgNameFor: (local: string) => string;
   /** Filename of the downloaded ZIP. */
   filename: string;
+  /** Render merged pieces with locally equivalent throws stacked. */
+  merged: boolean;
+}
+
+interface Props {
+  /** One button per entry; all share the selected formats. */
+  downloads: PieceDownloadSpec[];
 }
 
 type FormatKey = keyof FormatOptions;
@@ -57,7 +67,7 @@ const FORMATS: FormatSpec[] = [
   },
 ];
 
-export function PuzzlePieceDownload({ locals, svgNameFor, filename }: Props) {
+export function PuzzlePieceDownload({ downloads }: Props) {
   const [formats, setFormats] = useState<FormatOptions>(DEFAULT_FORMATS);
   const [errors, setErrors] = useState<string[]>([]);
   const [downloading, setDownloading] = useState(false);
@@ -66,23 +76,27 @@ export function PuzzlePieceDownload({ locals, svgNameFor, filename }: Props) {
 
   const selectedCount = countSelected(formats);
   const noneSelected = selectedCount === 0;
-  const noPatterns = locals.length === 0;
-  const disabled = downloading || noneSelected || noPatterns;
+  const noPatterns = downloads.every((d) => d.locals.length === 0);
 
   function toggle(key: FormatKey) {
     setFormats((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
-  async function handleDownload() {
-    if (disabled) return;
+  function isDisabled(spec: PieceDownloadSpec) {
+    return downloading || noneSelected || spec.locals.length === 0;
+  }
+
+  async function handleDownload(spec: PieceDownloadSpec) {
+    if (isDisabled(spec)) return;
     setDownloading(true);
     setErrors([]);
     try {
-      const result = await downloadPieceZip(locals, {
+      const result = await downloadPieceZip(spec.locals, {
         doubled: true,
-        filename,
-        svgNameFor,
+        filename: spec.filename,
+        svgNameFor: spec.svgNameFor,
         formats,
+        merged: spec.merged,
       });
       setErrors(result.errors);
     } finally {
@@ -90,9 +104,10 @@ export function PuzzlePieceDownload({ locals, svgNameFor, filename }: Props) {
     }
   }
 
-  const buttonLabel = downloading
-    ? "Building ZIP …"
-    : `Download ${locals.length} pattern${locals.length === 1 ? "" : "s"}`;
+  const buttonLabel = (spec: PieceDownloadSpec) =>
+    downloading
+      ? "Building ZIP …"
+      : `Download ${spec.locals.length} ${spec.label} pattern${spec.locals.length === 1 ? "" : "s"}`;
 
   const disclosureLabel = disclosureStatus({
     noPatterns,
@@ -103,14 +118,17 @@ export function PuzzlePieceDownload({ locals, svgNameFor, filename }: Props) {
   return (
     <section className="puzzle-piece-download">
       <div className="puzzle-piece-download__action">
-        <button
-          type="button"
-          onClick={handleDownload}
-          disabled={disabled}
-          className="button--primary"
-        >
-          {buttonLabel}
-        </button>
+        {downloads.map((spec) => (
+          <button
+            key={spec.label}
+            type="button"
+            onClick={() => handleDownload(spec)}
+            disabled={isDisabled(spec)}
+            className="button--primary"
+          >
+            {buttonLabel(spec)}
+          </button>
+        ))}
         <button
           type="button"
           className="puzzle-piece-download__disclosure"

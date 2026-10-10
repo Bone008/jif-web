@@ -1,6 +1,10 @@
 import { useMemo } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import {
+  collapseToLowestVariant,
+  mergedPieceName,
+} from "../data/equivalent_throws";
+import {
   classifyDifficulty,
   PERIOD_6_LOCALS,
   PUZZLE_THROW_DIGITS,
@@ -8,10 +12,11 @@ import {
 } from "../data/period6_locals";
 import {
   clubCountLabel,
+  fractionalClubsLabel,
   groupLocalsByPuzzleCategory,
 } from "../utils/interface_shapes";
 import { DifficultyHexagons } from "./JaggedPieceSvg";
-import { PuzzlePieceDownload } from "./PuzzlePieceDownload";
+import { PieceDownloadSpec, PuzzlePieceDownload } from "./PuzzlePieceDownload";
 import "./PuzzleBulkExport.scss";
 
 /** Version string to include in the downloaded ZIP filename. */
@@ -169,7 +174,7 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
 
   // Build a local → category-prefix map so files are named e.g. "x.2--a45".
   // For the "x.5, ..." groups, drop the ", N passes" suffix.
-  const { svgNameFor, filename } = useMemo(() => {
+  const downloads = useMemo((): PieceDownloadSpec[] => {
     const categoryByLocal = new Map<string, string>();
     for (const [groupLabel, groupLocals] of groups.entries()) {
       const prefix = groupLabel.split(",")[0].trim();
@@ -194,14 +199,39 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
     if (!includeOneCounts) {
       parts.push("no1counts");
     }
-    return {
-      svgNameFor: (local: string) => {
-        const prefix = categoryByLocal.get(local);
-        return prefix ? `${prefix}--${local}` : local;
+    // Collapsed pieces are named after their lowest variant, which shares the
+    // category of every variant but may itself be filtered out.
+    const collapsedLocals = [
+      ...new Set(qualifying.map(collapseToLowestVariant)),
+    ];
+    return [
+      {
+        label: "collapsed",
+        locals: collapsedLocals,
+        svgNameFor: (local: string) =>
+          `${fractionalClubsLabel(local)}--${mergedPieceName(local)}`,
+        filename: `${[...parts, "collapsed"].join("-")}.zip`,
+        merged: true,
       },
-      filename: `${parts.join("-")}.zip`,
-    };
-  }, [groups, selectedSet, allowedChecked, requiredChecked, includeOneCounts]);
+      {
+        label: "uncollapsed",
+        locals: qualifying,
+        svgNameFor: (local: string) => {
+          const prefix = categoryByLocal.get(local);
+          return prefix ? `${prefix}--${local}` : local;
+        },
+        filename: `${parts.join("-")}.zip`,
+        merged: false,
+      },
+    ];
+  }, [
+    qualifying,
+    groups,
+    selectedSet,
+    allowedChecked,
+    requiredChecked,
+    includeOneCounts,
+  ]);
 
   // Applies a set preset to all filters at once. Clicking the active set again
   // clears the selection (reverting to the combo-box filters).
@@ -312,11 +342,7 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
           </label>
         </div>
 
-        <PuzzlePieceDownload
-          locals={qualifying}
-          svgNameFor={svgNameFor}
-          filename={filename}
-        />
+        <PuzzlePieceDownload downloads={downloads} />
 
         <div className="puzzle-bulk-export__groups">
           {GROUP_ROWS.map((row, rowIndex) => {

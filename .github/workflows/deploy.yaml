@@ -56,7 +56,7 @@ jobs:
           path: |
             public/stl
             public/svg-simplified
-          key: stls-${{ hashFiles('src/data/P6.txt', 'scad/**', 'scripts/build-stls.ts', 'src/components/JaggedPieceSvg.tsx', 'src/utils/jaggedPieceSvg.tsx', 'src/utils/interface_shapes.ts', 'src/jif/**') }}
+          key: stls-${{ hashFiles('src/data/P6.txt', 'src/data/P6_beginner.txt', 'src/data/difficulty.ts', 'src/data/equivalent_throws.ts', 'scad/**', 'scripts/build-stls.ts', 'src/components/JaggedPieceSvg.tsx', 'src/utils/jaggedPieceSvg.tsx', 'src/utils/interface_shapes.ts', 'src/jif/**') }}
 
       - name: Install OpenSCAD and Inkscape
         if: steps.stl-cache.outputs.cache-hit != 'true'

@@ -1,7 +1,11 @@
 import JSZip from "jszip";
 import scadTemplate from "../../scad/puzzle_piece.scad?raw";
 import { renderJaggedPieceSVGString } from "./jaggedPieceSvg";
-import { classifyDifficulty } from "../data/period6_locals";
+import { mergedPieceName } from "../data/equivalent_throws";
+import {
+  classifyDifficulty,
+  classifyEasiestEquivalentDifficulty,
+} from "../data/period6_locals";
 import { siteswapToJIF } from "../jif/high_level_converter";
 import { loadWithDefaults } from "../jif/jif_loader";
 import { interleaveLocalSiteswap } from "../jif/local_pattern";
@@ -44,6 +48,11 @@ export interface BuildPieceZipOptions {
   svgNameFor?: (local: string) => string;
   /** Which kinds of files to include. Defaults to all formats. */
   formats?: FormatOptions;
+  /**
+   * Render merged pieces with locally equivalent throws stacked. The given
+   * locals should then be collapsed representatives (lowest variants).
+   */
+  merged?: boolean;
 }
 
 export interface DownloadPieceZipOptions extends BuildPieceZipOptions {
@@ -82,7 +91,10 @@ export function buildPieceZip(
         const svg = renderJaggedPieceSVGString(
           jif,
           0,
-          classifyDifficulty(local),
+          options.merged
+            ? classifyEasiestEquivalentDifficulty(local)
+            : classifyDifficulty(local),
+          options.merged,
         );
         if (svg === null) {
           errors.push(`${local}: synchronous pattern, not supported`);
@@ -103,8 +115,8 @@ export function buildPieceZip(
  * STLs (under /stl/) for each local and adds them to the zip. Only fetches
  * the formats that are enabled. Network failures append to `errors` so users
  * still get whatever assets succeeded. Filenames inside the zip follow
- * `svgNameFor`; fetch URLs use the raw local since CI builds artifacts by
- * local name.
+ * `svgNameFor`; fetch URLs use the raw local (or its merged piece name) since
+ * CI builds artifacts by that name.
  */
 async function addPrintAssets(
   zip: JSZip,
@@ -119,12 +131,13 @@ async function addPrintAssets(
   const tasks: (() => Promise<void>)[] = [];
   for (const local of locals) {
     const name = nameFor(local);
+    const assetName = options.merged ? mergedPieceName(local) : local;
     for (const layer of LAYERS) {
       if (formats.simplifiedSvg) {
         tasks.push(async () => {
           try {
             const blob = await fetchAsset(
-              `/svg-simplified/${local}_layer${layer}.svg`,
+              `/svg-simplified/${assetName}_layer${layer}.svg`,
             );
             zip.file(`svg-simplified/${name}_layer${layer}.svg`, blob);
           } catch (e) {
@@ -137,7 +150,9 @@ async function addPrintAssets(
       if (formats.stl) {
         tasks.push(async () => {
           try {
-            const blob = await fetchAsset(`/stl/${local}_layer${layer}.stl`);
+            const blob = await fetchAsset(
+              `/stl/${assetName}_layer${layer}.stl`,
+            );
             zip.file(`stl/${name}_layer${layer}.stl`, blob);
           } catch (e) {
             errors.push(`${local}: stl layer${layer} fetch failed: ${e}`);

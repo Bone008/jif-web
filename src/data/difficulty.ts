@@ -5,6 +5,8 @@
  * without a Vite bundler to resolve the `.txt?raw` modules.
  */
 
+import { equivalentVariants } from "./equivalent_throws";
+
 /** True if any rotation of `local` is in the beginner set. */
 export function isBeginnerLocal(
   local: string,
@@ -35,4 +37,19 @@ export function classifyDifficulty(
   if (maxThrow <= 9) return 2;
   if (maxThrow <= 11) return 3; // "b" === 11
   return 4;
+}
+
+/**
+ * Easiest difficulty level among all locally equivalent variants of `local`
+ * (see {@link equivalentVariants}), i.e. the difficulty of a merged piece.
+ */
+export function classifyEasiestEquivalentDifficulty(
+  local: string,
+  beginnerLocals: ReadonlySet<string>,
+): number {
+  return Math.min(
+    ...equivalentVariants(local).map((variant) =>
+      classifyDifficulty(variant, beginnerLocals),
+    ),
+  );
 }

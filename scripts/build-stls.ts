@@ -1,9 +1,10 @@
 /**
  * Generates per-layer STL files for every period-6 local in
- * `src/data/P6.txt`. Output goes to:
+ * `src/data/P6.txt`, plus one merged piece per class of locally equivalent
+ * locals (named after the lowest variant, e.g. "524_merged"). Output goes to:
  *
- *   public/svg-simplified/<local>_layer<n>.svg  - single-layer simplified SVG
- *   public/stl/<local>_layer<n>.stl             - 3D-printable layer (n = 1..4)
+ *   public/svg-simplified/<name>_layer<n>.svg  - single-layer simplified SVG
+ *   public/stl/<name>_layer<n>.stl             - 3D-printable layer (n = 1..4)
  *
  * Pipeline per pattern:
  *   1. Render the same JaggedPieceSvg the live UI uses, with forExport=true
@@ -31,7 +32,14 @@ import { join, resolve } from "path";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { renderJaggedPieceSVGString } from "../src/utils/jaggedPieceSvg.tsx";
-import { classifyDifficulty } from "../src/data/difficulty.ts";
+import {
+  classifyDifficulty,
+  classifyEasiestEquivalentDifficulty,
+} from "../src/data/difficulty.ts";
+import {
+  collapseToLowestVariant,
+  mergedPieceName,
+} from "../src/data/equivalent_throws.ts";
 import { siteswapToJIF } from "../src/jif/high_level_converter.ts";
 import { loadWithDefaults } from "../src/jif/jif_loader.ts";
 import { interleaveLocalSiteswap } from "../src/jif/local_pattern.ts";
@@ -77,22 +85,33 @@ async function main() {
       .filter(Boolean),
   );
 
+  const pieces: PieceSpec[] = [
+    ...locals.map((local) => ({ local, merged: false })),
+    ...[...new Set(locals.map(collapseToLowestVariant))].map((local) => ({
+      local,
+      merged: true,
+    })),
+  ];
+
   console.log(
-    `Building STLs for ${locals.length} patterns (${CONCURRENCY}× concurrency)…`,
+    `Building STLs for ${pieces.length} pieces (${CONCURRENCY}× concurrency)…`,
   );
 
   const start = Date.now();
   let done = 0;
   const failures: { local: string; error: string }[] = [];
-  await pmap(locals, CONCURRENCY, async (local) => {
+  await pmap(pieces, CONCURRENCY, async (piece) => {
     try {
-      await buildPiece(local, tmpRoot, beginnerLocals);
+      await buildPiece(piece, tmpRoot, beginnerLocals);
     } catch (e) {
-      failures.push({ local, error: e instanceof Error ? e.message : `${e}` });
+      failures.push({
+        local: pieceName(piece),
+        error: e instanceof Error ? e.message : `${e}`,
+      });
     } finally {
       done++;
-      if (done % 10 === 0 || done === locals.length) {
-        console.log(`  ${done}/${locals.length}`);
+      if (done % 10 === 0 || done === pieces.length) {
+        console.log(`  ${done}/${pieces.length}`);
       }
     }
   });
@@ -111,25 +130,40 @@ async function main() {
   console.log(`Done in ${elapsedSec}s. STLs in ${STL_OUT}`);
 }
 
+interface PieceSpec {
+  local: string;
+  /** Render with locally equivalent throws merged (see equivalent_throws.ts). */
+  merged: boolean;
+}
+
+function pieceName({ local, merged }: PieceSpec): string {
+  return merged ? mergedPieceName(local) : local;
+}
+
 async function buildPiece(
-  local: string,
+  piece: PieceSpec,
   tmpRoot: string,
   beginnerLocals: ReadonlySet<string>,
 ): Promise<void> {
+  const { local, merged } = piece;
+  const name = pieceName(piece);
   const interleaved = interleaveLocalSiteswap(local);
   const siteswap = interleaved + interleaved; // doubled, matches bulk export
   const jif = loadWithDefaults(siteswapToJIF(siteswap, 2));
   const svg = renderJaggedPieceSVGString(
     jif,
     0,
-    classifyDifficulty(local, beginnerLocals),
+    merged
+      ? classifyEasiestEquivalentDifficulty(local, beginnerLocals)
+      : classifyDifficulty(local, beginnerLocals),
+    merged,
   );
   if (svg === null) {
     throw new Error("synchronous pattern, not supported");
   }
 
-  const rawSvgPath = join(tmpRoot, `${local}.raw.svg`);
-  const flattenedSvgPath = join(tmpRoot, `${local}.flat.svg`);
+  const rawSvgPath = join(tmpRoot, `${name}.raw.svg`);
+  const flattenedSvgPath = join(tmpRoot, `${name}.flat.svg`);
   await writeFile(rawSvgPath, svg);
 
   // Inkscape: flatten <text> to <path>, then stroked outlines to filled
@@ -158,10 +192,10 @@ async function buildPiece(
   const flattened = await readFile(flattenedSvgPath, "utf-8");
   for (const layer of [1, 2, 3, 4]) {
     const layerSvg = extractLayerSvg(flattened, `layer${layer}`);
-    const layerSvgPath = join(SIMPLIFIED_SVG_OUT, `${local}_layer${layer}.svg`);
+    const layerSvgPath = join(SIMPLIFIED_SVG_OUT, `${name}_layer${layer}.svg`);
     await writeFile(layerSvgPath, layerSvg);
 
-    const stlPath = join(STL_OUT, `${local}_layer${layer}.stl`);
+    const stlPath = join(STL_OUT, `${name}_layer${layer}.stl`);
     await execFileAsync("openscad", [
       "-o",
       stlPath,

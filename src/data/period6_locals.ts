@@ -5,6 +5,7 @@
 
 import {
   classifyDifficulty as classifyDifficultyWith,
+  classifyEasiestEquivalentDifficulty as classifyEasiestEquivalentDifficultyWith,
   isBeginnerLocal as isBeginnerLocalWith,
 } from "./difficulty";
 import p6Text from "./P6.txt?raw";
@@ -45,4 +46,15 @@ export function isBeginnerLocal(local: string): boolean {
 /** Difficulty level (1-4) of a local pattern. See {@link classifyDifficultyWith}. */
 export function classifyDifficulty(local: string): number {
   return classifyDifficultyWith(local, PERIOD_6_BEGINNER_LOCALS);
+}
+
+/**
+ * Easiest difficulty level (1-4) among the locally equivalent variants of a
+ * local pattern. See {@link classifyEasiestEquivalentDifficultyWith}.
+ */
+export function classifyEasiestEquivalentDifficulty(local: string): number {
+  return classifyEasiestEquivalentDifficultyWith(
+    local,
+    PERIOD_6_BEGINNER_LOCALS,
+  );
 }

@@ -18,11 +18,13 @@ export function InterfaceJaggedPiece({
   juggler,
   beatShift = 0,
   difficulty,
+  mergeEquivalentThrows = false,
 }: {
   jif: FullJIF;
   juggler: number;
   beatShift?: number;
   difficulty?: number;
+  mergeEquivalentThrows?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showVerticalGridLines, setShowVerticalGridLines] = useState(false);
@@ -35,9 +37,14 @@ export function InterfaceJaggedPiece({
   });
 
   const copyToClipboard = useCallback(() => {
-    const svg = renderJaggedPieceSVGString(jif, juggler);
+    const svg = renderJaggedPieceSVGString(
+      jif,
+      juggler,
+      difficulty,
+      mergeEquivalentThrows,
+    );
     if (svg) navigator.clipboard.writeText(svg);
-  }, [jif, juggler]);
+  }, [jif, juggler, difficulty, mergeEquivalentThrows]);
 
   if (inferIsSynchronousPattern(jif)) {
     return (
@@ -55,6 +62,7 @@ export function InterfaceJaggedPiece({
         beatShift={beatShift}
         showVerticalGridLines={showVerticalGridLines}
         difficulty={difficulty}
+        mergeEquivalentThrows={mergeEquivalentThrows}
       />
       <button onClick={copyToClipboard} title="Copy SVG to clipboard">
         📋

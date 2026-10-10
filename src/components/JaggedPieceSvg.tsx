@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { equivalentThrowPair } from "../data/equivalent_throws";
 import {
   computeInterfaceShapes,
   InterfaceBeatShape,
@@ -49,7 +50,21 @@ interface JaggedPieceSvgProps {
   forExport?: boolean;
   /** Difficulty level (1-4). Renders that many small hexagons in the label. */
   difficulty?: number;
+  /**
+   * Render locally equivalent throws (e.g. 5 and b) stacked on top of each
+   * other, and the object count as a min/max range.
+   */
+  mergeEquivalentThrows?: boolean;
 }
+
+// Font sizes and vertical offsets (from the center) of stacked rows when
+// rendering merged equivalent throws and the object count range.
+const THROW_FONT_SIZE = 30;
+const STACKED_THROW_FONT_SIZE = 22;
+const STACKED_THROW_OFFSET = 10.5;
+const LABEL_FONT_SIZE = 30;
+const STACKED_LABEL_FONT_SIZE = 24;
+const STACKED_LABEL_OFFSET = 13;
 
 // Radius (center → vertex) of the small difficulty hexagons.
 const HEX_RADIUS = 6.5;
@@ -84,6 +99,7 @@ export function JaggedPieceSvg({
   showVerticalGridLines = false,
   forExport = false,
   difficulty,
+  mergeEquivalentThrows = false,
 }: JaggedPieceSvgProps) {
   const colors = forExport ? EXPORT_COLORS : UI_COLORS;
   const { beatWidth, height, jagHeight, strokeWidth, strokeInset, labelWidth } =
@@ -92,7 +108,9 @@ export function JaggedPieceSvg({
   const interfaceShapes = computeInterfaceShapes(jif, juggler);
   const throwsTable = getThrowsTableByJuggler(jif);
   const throws = throwsTable[juggler].slice();
-  const label = generateLabel(throws);
+  const labelRows = mergeEquivalentThrows
+    ? _.uniq(generateLabelRange(throws))
+    : [generateLabel(throws)];
 
   // Pad to avoid throws sitting right on the edge. Mirror the opposite end's
   // shape so the jag looks continuous.
@@ -189,23 +207,31 @@ export function JaggedPieceSvg({
         transform={`translate(${xOffset}, ${jagHeight})`}
       >
         <g transform={`translate(${labelWidth}, 3)`}>
-          {throws.map((thrw, beat) =>
-            thrw ? (
+          {throws.map((thrw, beat) => {
+            if (!thrw) return null;
+            const pair = mergeEquivalentThrows
+              ? equivalentThrowPair(thrw.duration)
+              : null;
+            const rows = pair ?? [thrw.duration];
+            return rows.map((duration, row) => (
               <text
-                key={beat}
+                key={`${beat}-${row}`}
                 x={beat * beatWidth + beatWidth / 2}
-                y={height / 2}
+                y={
+                  height / 2 +
+                  stackedRowOffset(row, rows.length, STACKED_THROW_OFFSET)
+                }
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fontFamily={FONT_FAMILY}
-                fontSize="30"
+                fontSize={pair ? STACKED_THROW_FONT_SIZE : THROW_FONT_SIZE}
                 fontWeight="bold"
                 fill={colors.throwText}
               >
-                {thrw.duration.toString(36)}
+                {duration.toString(36)}
               </text>
-            ) : null,
-          )}
+            ));
+          })}
         </g>
       </g>
 
@@ -215,18 +241,26 @@ export function JaggedPieceSvg({
         className="label"
         transform={`translate(${xOffset}, ${jagHeight})`}
       >
-        <text
-          x={15}
-          y={height / 2}
-          textAnchor="start"
-          dominantBaseline="central"
-          fontFamily={FONT_FAMILY}
-          fontSize="30"
-          fontWeight="bold"
-          fill={colors.labelText}
-        >
-          {label}
-        </text>
+        {labelRows.map((label, row) => (
+          <text
+            key={row}
+            x={15}
+            y={
+              height / 2 +
+              stackedRowOffset(row, labelRows.length, STACKED_LABEL_OFFSET)
+            }
+            textAnchor="start"
+            dominantBaseline="central"
+            fontFamily={FONT_FAMILY}
+            fontSize={
+              labelRows.length > 1 ? STACKED_LABEL_FONT_SIZE : LABEL_FONT_SIZE
+            }
+            fontWeight="bold"
+            fill={colors.labelText}
+          >
+            {label}
+          </text>
+        ))}
 
         {difficulty && DIFFICULTY_HEX_OFFSETS[difficulty]
           ? DIFFICULTY_HEX_OFFSETS[difficulty].map(([dx, dy], i) => (
@@ -246,6 +280,11 @@ export function JaggedPieceSvg({
       </g>
     </svg>
   );
+}
+
+/** Vertical offset of row `row` out of `numRows` (1 or 2) stacked rows. */
+function stackedRowOffset(row: number, numRows: number, offset: number) {
+  return numRows > 1 ? (row === 0 ? -offset : offset) : 0;
 }
 
 /** Points string for a hexagon centered at (cx, cy). */
@@ -419,9 +458,26 @@ export function generateJaggedPath(
 
 /** Formats the label of a jagged piece. */
 export function generateLabel(throws: (FullThrow | null)[]): string {
-  const sum = throws
-    .map((thrw) => (thrw ? thrw.duration : 0))
-    .reduce((a, b) => a + b, 0);
-  const numObjects = sum / throws.length;
-  return numObjects.toFixed(1);
+  return formatObjectCount(throws.map((thrw) => (thrw ? thrw.duration : 0)));
+}
+
+/**
+ * Formats the [min, max] object count labels of a jagged piece whose
+ * equivalent throws are merged: min always takes the low throw of each pair,
+ * max the high one.
+ */
+export function generateLabelRange(
+  throws: (FullThrow | null)[],
+): [string, string] {
+  const durations = throws.map((thrw) => (thrw ? thrw.duration : 0));
+  const pairs = durations.map((d) => equivalentThrowPair(d) ?? [d, d]);
+  return [
+    formatObjectCount(pairs.map(([low]) => low)),
+    formatObjectCount(pairs.map(([, high]) => high)),
+  ];
+}
+
+function formatObjectCount(durations: number[]): string {
+  const sum = durations.reduce((a, b) => a + b, 0);
+  return (sum / durations.length).toFixed(1);
 }
