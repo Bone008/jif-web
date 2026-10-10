@@ -84,13 +84,16 @@ const ALLOWED_UP_TO_B: Record<PuzzleThrowDigit, boolean> = {
   b: true,
 };
 
-type SetId = "beginner" | "main" | "triple";
+type SetId = "all" | "beginner" | "main" | "triple";
 
 interface SetConfig {
   id: SetId;
   label: string;
-  /** Difficulty level this set maps to; selecting it filters by this exactly. */
-  difficulty: number;
+  /**
+   * Difficulty level this set maps to; selecting it filters by this exactly.
+   * Unset for sets that span all difficulty levels.
+   */
+  difficulty?: number;
   allowed: Record<PuzzleThrowDigit, boolean>;
   includeOneCounts: boolean;
 }
@@ -99,6 +102,12 @@ interface SetConfig {
 // list is filtered to exactly that difficulty level; the other fields keep the
 // filter combo boxes in sync. The beginner set only contains throws 2-9.
 const SET_CONFIGS: SetConfig[] = [
+  {
+    id: "all",
+    label: "All",
+    allowed: ALLOWED_UP_TO_B,
+    includeOneCounts: false,
+  },
   {
     id: "beginner",
     label: "Beginner set",
@@ -149,7 +158,7 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
       // A selected set filters the list to exactly its difficulty level.
       if (selectedSet) {
         const level = SET_CONFIGS.find((c) => c.id === selectedSet)?.difficulty;
-        if (classifyDifficulty(local) !== level) {
+        if (level !== undefined && classifyDifficulty(local) !== level) {
           return false;
         }
       }
@@ -287,10 +296,12 @@ export function PuzzleBulkExport({ onAssignA, onAssignB }: Props) {
                 aria-pressed={selectedSet === config.id}
                 onClick={() => applySet(config)}
               >
-                <DifficultyHexagons
-                  difficulty={config.difficulty}
-                  className="puzzle-bulk-export__segment-hex"
-                />
+                {config.difficulty !== undefined && (
+                  <DifficultyHexagons
+                    difficulty={config.difficulty}
+                    className="puzzle-bulk-export__segment-hex"
+                  />
+                )}
                 {config.label}
               </button>
             ))}
