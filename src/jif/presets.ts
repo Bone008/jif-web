@@ -557,7 +557,8 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
       manipulators: ["- i2C - - - - sA"],
     },
     {
-      name: "#9.1 - Unnamed (to juggle!)",
+      name: "#9.1 - Ambled Who's Feeding?!",
+      slug: "ambled-whos-feeding",
       instructions: RAW_DATA_WALKING_FEED_10C,
       manipulators: ["- i2B - - - sB -"],
     },
