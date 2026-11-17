@@ -551,7 +551,8 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
       manipulators: ["- i2C - - - sB -"],
     },
     {
-      name: "#8.4 - Unnamed (to juggle!)",
+      name: "#8.4 - Ambled Fake Express",
+      slug: "ambled-fake-express",
       instructions: RAW_DATA_WALKING_FEED_10C,
       manipulators: ["- i2C - - - - sA"],
     },
