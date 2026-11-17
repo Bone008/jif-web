@@ -606,7 +606,8 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
       manipulators: ["sA - i2A - - - -"],
     },
     {
-      name: "#10.5 - Unnamed (to juggle!)",
+      name: "#10.5 - Ambled 2 Airmail!",
+      slug: "ambled-2-airmail",
       instructions: RAW_DATA_WALKING_FEED_10C,
       manipulators: ["- sB i2A - - - -"],
     },
