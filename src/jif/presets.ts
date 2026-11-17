@@ -509,7 +509,8 @@ export const ALL_PRESETS_BY_CATEGORY: Record<string, Preset[]> = {
       manipulators: ["sC i2A - - - - - -"],
     },
     {
-      name: "#7.1 - Unnamed (to juggle!)",
+      name: "#7.1 - Ambled FSK3",
+      slug: "ambled-fsk3",
       instructions: RAW_DATA_WALKING_FEED_10C,
       manipulators: ["- - - sC - - i2A"],
     },
